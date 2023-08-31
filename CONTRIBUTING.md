@@ -1,0 +1,120 @@
+# Contributing
+
+Contributions are welcome, and they are greatly appreciated. Every little bit
+helps, and credit will always be given.
+
+## Developing pyribs
+
+Ready to contribute? Here's how to set up pyribs for local development.
+
+<!-- 1. [Fork](https://github.com/itsdawei/pyribs/fork) the pyribs repo on GitHub. -->
+1. Clone the fork locally:
+
+   ```bash
+   # With SSH:
+   git clone git@github.com:itsdawei/dynamically_programmed.git
+
+   # Without SSH:
+   git clone https://github.com/itsdawei/dynamically_programmed.git
+   ```
+
+1. Install the local copy and dev requirements into an environment. For
+   instance, with Conda, the following creates an environment at `./env`.
+
+   ```bash
+   cd dynamically_programmed
+   conda create --name=dp python=3.7 # 3.7 is the minimum version pyribs supports.
+   conda activate dp
+   pip install -e .[dev]
+   ```
+
+1. Create a branch for local development:
+
+   ```bash
+   git checkout -b name-of-bugfix-or-feature
+   ```
+
+   Now make the appropriate changes locally.
+
+   - Please follow the
+     [Google Style Guide](https://google.github.io/styleguide/pyguide.html)
+     (particularly when writing docstrings).
+   - Make sure to auto-format the code using YAPF. We highly recommend
+     installing an editor plugin that auto-formats on save, but YAPF also runs
+     on the command line:
+
+     ```bash
+     yapf -i FILES
+     ```
+
+1. After making changes, check that the changes pass the tests:
+
+   ```bash
+   pytest tests/
+   make test # ^ same as above
+   ```
+
+   Finally, to lint the code:
+
+   ```bash
+   pylint dp tests benchmarks examples
+   make lint # ^ same as above
+   ```
+
+   To get pytest and pylint, pip install them into the environment. However,
+   they should already install with `pip install -e .[dev]`.
+
+1. Add your change to the changelog for the current version in `HISTORY.md`.
+
+1. Commit the changes and push the branch to GitHub:
+
+   ```bash
+   git add .
+   git commit -m "Detailed description of changes."
+   git push origin name-of-bugfix-or-feature
+   ```
+
+1. Submit a pull request through the GitHub website.
+
+## Pull Request Guidelines
+
+Before submitting a pull request, check that it meets these guidelines:
+
+1. Style: Code should follow the
+   [Google Style Guide](https://google.github.io/styleguide/pyguide.html) and be
+   auto-formatted with [YAPF](https://github.com/google/yapf).
+1. The pull request should include tests.
+1. If the pull request adds functionality, corresponding docstrings and other
+   documentation should be updated.
+1. The pull request should work for Python 3.7 and higher. GitHub Actions will
+   display test results at the bottom of the pull request page. Check there for
+   test results.
+
+## Instructions
+
+### Running a Subset of Tests
+
+To run a subset of tests, use `pytest` with the directory name, such as:
+
+```bash
+pytest tests/core/test1
+```
+
+### Documentation
+
+Documentation compiled with [MkDocs](https://www.mkdocs.org/).
+
+To preview documentation, use:
+
+```bash
+make servedocs
+```
+
+This will open up a browser window and automatically reload as changes are made
+to the docs.
+
+### Referencing Papers
+
+When referencing papers, refer to them as `Lastname YEAR`, e.g. `Smith 2004`.
+Also, prefer to link to the paper's website, rather than just the PDF. This is
+particularly relevant when linking to arXiv papers.

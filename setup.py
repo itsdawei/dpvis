@@ -18,8 +18,8 @@ install_requires = [
 extras_require = {
     "dev": [
         "pip>=20.3",
-        "pylint==2.8.3",
-        "yapf",
+        "pylint==2.17.5",
+        "yapf==0.40.1",
 
         # Testing
         "pytest==7.0.1",
