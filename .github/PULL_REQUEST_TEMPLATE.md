@@ -8,6 +8,10 @@
 
 - [ ] TODO 1
 
+## TESTING
+
+- [ ] Describe what testing have you done for this feature
+
 ## Questions
 
 <!-- Any concerns or points of confusion? -->
