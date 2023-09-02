@@ -1,5 +1,5 @@
 # HISTORY
 
-## 0.0.0 (2020-09-11)
+## 0.0.0
 
-- Initial project setup (#1)
+- Initial project setup (#1, #2)
