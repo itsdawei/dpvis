@@ -73,6 +73,7 @@ class DPArray:
         Returns:
             self.dtype or np.ndarray:
         """
+        # TODO: Record READ in logger
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -82,6 +83,7 @@ class DPArray:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
         """
+        # TODO: Record WRITE in logger
         self._arr[idx] = self.dtype(value)
 
 
