@@ -6,9 +6,7 @@ class DPArray:
     """DPArray class.
 
     Args:
-        a (tuple or numpy.ndarray): If given tuple, this is interpreted as the
-            dimensions of the array. If given array, it is used as the intial
-            array of the DP.
+        shape (array-like): The dimensions of the array.
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
 
@@ -18,7 +16,8 @@ class DPArray:
 
     def __init__(
         self,
-        a,
+        shape,
+        *,
         logger=None,
         description_string=None,
         row_labels=None,
@@ -27,12 +26,9 @@ class DPArray:
         dtype=np.float64,
     ):
         self._dtype = self._parse_dtype(dtype)
-        if isinstance(a, tuple):
-            self._arr = np.array(a, dtype=self._dtype)
-        elif isinstance(a, np.ndarray):
-            self._arr = a.astype(self._dtype)
-        else:
-            raise ValueError("'a' must be a tuple or np.ndarray")
+
+        self._arr = np.empty(shape, dtype=self._dtype)
+        self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         if logger is None:
             # TODO: Create logger
@@ -87,10 +83,42 @@ class DPArray:
         """
         self._arr[idx] = self.dtype(value)
 
+
+    def __eq__(self, other):
+        """Equal to operator.
+
+        Args:
+            other (DPArray or array-like): Other container.
+
+        Returns:
+            np.ndarray: True/False mask.
+        """
+        if isinstance(other, DPArray):
+            return self.arr == other.arr
+        return self.arr == other
+
+    def __ne__(self, other):
+        """Not equal to operator.
+
+        Args:
+            other (DPArray or array-like): Other container.
+
+        Returns:
+            np.ndarray: True/False mask.
+        """
+        if isinstance(other, DPArray):
+            return self.arr != other.arr
+        return self.arr != other
+
     @property
     def arr(self):
-        """Returns the np.ndarray that contains all the computations."""
+        """Returns the np.ndarray that contains the DP array."""
         return self._arr
+
+    @property
+    def occupied_arr(self):
+        """Returns the np.ndarray that contains the occupied mask."""
+        return self._occupied_arr
 
     # @property
     # def logger(self):
