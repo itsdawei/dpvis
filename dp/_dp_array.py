@@ -114,7 +114,7 @@ class DPArray:
     @property
     def arr(self):
         """Returns the np.ndarray that contains the DP array."""
-        return self._arr
+        return np.array(self._arr, copy=True)
 
     @property
     def occupied_arr(self):

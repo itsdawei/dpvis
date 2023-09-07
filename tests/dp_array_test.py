@@ -18,21 +18,6 @@ def test_str_dtype(dtype):
     assert dp.dtype == np_dtype
 
 
-def test_read_write():
-    dp = DPArray(10)
-    truth = np.arange(10)**2
-
-    # Write
-    for i in range(10):
-        dp[i] = i**2
-
-    assert np.all(dp.arr == truth)
-
-    # Read
-    for i in range(10):
-        assert dp[i] == i**2
-
-
 def test_equal_to():
     dp_a = DPArray(10)
     dp_b = DPArray(10)
@@ -77,6 +62,21 @@ def test_not_equal_to():
     assert np.any(dp_a != dp_b)
 
 
+def test_read_write():
+    dp = DPArray(10)
+    truth = np.arange(10)**2
+
+    # Write
+    for i in range(10):
+        dp[i] = i**2
+
+    assert np.all(dp == truth)
+
+    # Read
+    for i in range(10):
+        assert dp[i] == i**2
+
+
 def test_numpy_slicing_1d():
     dp = DPArray(10)
     truth = np.arange(10)**2
@@ -101,3 +101,16 @@ def test_numpy_slicing_2d():
             dp[10 * x + y, 1] = y
 
     assert np.all(dp == xy)
+
+
+def test_arr_return_copy():
+    dp = DPArray(10)
+    truth = np.arange(10)**2
+
+    for i in range(10):
+        dp[i] = i**2
+
+    copy = dp.arr
+    copy[0] = 100
+
+    assert np.any(dp == truth)
