@@ -11,7 +11,8 @@ class DPArray:
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
 
     Attributes:
-        _solution_dim (int): See ``solution_dim`` arg.
+        _arr (np.array): Contains the values of the DP array.
+        _occupied_arr (np.array): A mask that indicates which index is filled.
     """
 
     def __init__(
