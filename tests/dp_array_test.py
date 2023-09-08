@@ -114,3 +114,16 @@ def test_arr_return_copy():
     copy[0] = 100
 
     assert np.any(dp == truth)
+
+def test_dp_type_assignment():
+    valueErrorOccured = False
+    dp = DPArray(10)
+    try:
+        dp[0] = "test"
+
+    except ValueError:  
+        valueErrorOccured = True
+
+    assert valueErrorOccured
+    assert type(dp[0]) == dp.dtype
+    assert dp.dtype == dp.arr.dtype
