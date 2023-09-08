@@ -48,7 +48,7 @@ class DPArray:
         """Parses the dtype passed into the constructor.
 
         Returns:
-            np.float32 or np.float64
+            np.float32, np.float64, np.int32, or np.int64
         Raises:
             ValueError: There is an error in the bounds configuration.
         """
@@ -61,8 +61,12 @@ class DPArray:
             return np.float32
         if dtype == np.float64:
             return np.float64
+        if dtype == np.int32:
+            return np.int32
+        if dtype == np.int64:
+            return np.int64
 
-        raise ValueError("Unsupported dtype. Must be np.float32 or np.float64")
+        raise ValueError("Unsupported dtype. Must be np.float32, np.float64, np.int32, or np.int64")
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
@@ -73,6 +77,7 @@ class DPArray:
         Returns:
             self.dtype or np.ndarray:
         """
+        # TODO: Check if idx is occupied
         # TODO: Record READ in logger
         return self._arr[idx]
 
@@ -121,7 +126,7 @@ class DPArray:
     @property
     def occupied_arr(self):
         """Returns the np.ndarray that contains the occupied mask."""
-        return self._occupied_arr
+        return np.array(self._occupied_arr, copy=True)
 
     # @property
     # def logger(self):
