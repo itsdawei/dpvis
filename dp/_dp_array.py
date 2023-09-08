@@ -8,7 +8,7 @@ class DPArray:
     Args:
         shape (array-like): The dimensions of the array.
         dtype (str or data-type): Data type of the DPArray. We only support
-            ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
+            ``"f"`` / ``np.float32``, ``"d"`` / ``np.float64`` and ``"i"`` /  ``np.int32`` and ``np.int64``.
 
     Attributes:
         _arr (np.array): Contains the values of the DP array.

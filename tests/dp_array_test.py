@@ -115,7 +115,7 @@ def test_arr_return_copy():
 
     assert np.any(dp == truth)
 
-def test_dp_type_assignment():
+def test_dtype_assignment():
     valueErrorOccured = False
     dp = DPArray(10)
     try:
