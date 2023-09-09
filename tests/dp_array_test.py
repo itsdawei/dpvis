@@ -116,8 +116,7 @@ def test_arr_return_copy():
     assert np.any(dp == truth)
 
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64],
-                         ids=["f", "d"])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64], ids=["f", "d"])
 def test_dtype_assignment(dtype):
     dp = DPArray(10, dtype=dtype)
     for i in range(10):
