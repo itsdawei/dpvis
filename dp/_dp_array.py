@@ -1,6 +1,6 @@
 """This file provides the DPArray class."""
 import numpy as np
-from . import Logger
+from ._logger import Logger
 
 
 class DPArray:
@@ -19,7 +19,7 @@ class DPArray:
     def __init__(
         self,
         shape,
-        array_name,
+        array_name="dp_array",
         *,
         logger=None,
         description_string=None,

@@ -6,7 +6,7 @@ from dp import DPArray
 
 @pytest.mark.parametrize("shape", [(2, 2), (2, 3, 4)])
 def test_constructor_shape(shape):
-    dp = DPArray(shape, "name")
+    dp = DPArray(shape)
     assert dp.arr.shape == shape
 
 
@@ -14,13 +14,13 @@ def test_constructor_shape(shape):
                          ids=["f", "d"])
 def test_str_dtype(dtype):
     str_dtype, np_dtype = dtype
-    dp = DPArray((2, 2), "name", dtype=str_dtype)
+    dp = DPArray((2, 2), dtype=str_dtype)
     assert dp.dtype == np_dtype
 
 
 def test_equal_to():
-    dp_a = DPArray(10, "name")
-    dp_b = DPArray(10, "name")
+    dp_a = DPArray(10, "name_a")
+    dp_b = DPArray(10, "name_b")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -41,8 +41,8 @@ def test_equal_to():
 
 
 def test_not_equal_to():
-    dp_a = DPArray(10, "name")
-    dp_b = DPArray(10, "name")
+    dp_a = DPArray(10, "name_a")
+    dp_b = DPArray(10, "name_b")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -63,7 +63,7 @@ def test_not_equal_to():
 
 
 def test_read_write():
-    dp = DPArray(10, "name")
+    dp = DPArray(10)
     truth = np.arange(10)**2
 
     # Write
@@ -78,7 +78,7 @@ def test_read_write():
 
 
 def test_numpy_slicing_1d():
-    dp = DPArray(10, "name")
+    dp = DPArray(10)
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -92,7 +92,7 @@ def test_numpy_slicing_1d():
 
 
 def test_numpy_slicing_2d():
-    dp = DPArray((100, 2), "name")
+    dp = DPArray((100, 2))
     xy = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
 
     for x in range(10):
@@ -104,7 +104,7 @@ def test_numpy_slicing_2d():
 
 
 def test_arr_return_copy():
-    dp = DPArray(10, "name")
+    dp = DPArray(10)
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -118,7 +118,7 @@ def test_arr_return_copy():
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64], ids=["f", "d"])
 def test_dtype_assignment(dtype):
-    dp = DPArray(10, "name", dtype=dtype)
+    dp = DPArray(10, dtype=dtype)
     for i in range(10):
         dp[i] = i**2
 

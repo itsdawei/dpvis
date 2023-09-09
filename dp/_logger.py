@@ -28,6 +28,9 @@ class Logger:
         Args:
             array_name (str): The name of the array to be added.
         """
+        if array_name in self.array_names:
+            raise ValueError(f"Array name {array_name} already exists in"
+                             f"logger.")
         self.array_names.add(array_name)
 
     def append(self, array_name, operation, idx):
