@@ -1,10 +1,17 @@
 """This file provides the Logger class."""
 import enum as Enum
-import numpy as np
 
 
 class Logger:
     """Logger class.
+
+    Args:
+        array_name (str): The name of the array to be logged.
+
+    Attributes:
+        _logs (list): Contains the logs.
+        array_count (int): The number of arrays logged.
+        array_names (list): The names of the arrays logged.
 
     """
 
@@ -43,8 +50,12 @@ class Logger:
             indice (int): The indice to be logged.
         Returns:
             None
+        Raises:
+            ValueError: Array name not found in logger / array not tracked by logger. 
         """
-        if self._logs.is_empty():
+        if array_name not in self.array_names:
+            raise ValueError("Array name not found in logger.")
+        elif self._logs.is_empty():
             self._logs.append(self.Log(operation, array_name, indice))
         else:
             if self._logs[-1].is_same_operation(operation):
@@ -52,6 +63,36 @@ class Logger:
             else:
                 self._logs.append(self.Log(operation, array_name, indice))
 
+    def __eq__(self, other):
+        """Equal to operator.
+        
+        Args:
+            other (Logger): Other logger.
+
+        Returns:
+            bool: True if equal.
+        """
+        if isinstance(other, Logger):
+            return (self._logs == other._logs 
+                    and self._array_names == other._array_names 
+                    and self._array_count == other._array_count)
+        return False
+    
+    def __ne__(self, other):
+        """Not equal to operator.
+        
+        Args:
+            other (Logger): Other logger.
+
+        Returns:
+            bool: True if not equal.
+        """
+        if isinstance(other, Logger):
+            return (self._logs != other._logs 
+                    or self._array_names != other._array_names 
+                    or self._array_count != other._array_count)
+        return True
+    
     @property
     def logs(self):
         """Returns the logs."""
@@ -68,13 +109,23 @@ class Logger:
         return self._array_count
     
     class Operation(Enum):
+        """Enum for the operation of the log."""
         READ = 1
         WRITE = 2
         HIGHLIGHT = 3
 
     class Log:
         """Wraps the operation and indices of the log.
-        Operation: READ | WRITE | HIGHLIGHT
+
+        Args:
+            operation (Operation): The operation to be logged: READ | WRITE | HIGHLIGHT
+            array_name (str): The name of the array to be logged.
+            indice (int): The indice to be logged.
+
+        Attributes:
+            operation (Operation): The operation of the log.
+            indices (dict): The indices of the log. Key: array_name, Value: list of indices.
+
         """
         def __init__(self, operation, array_name, indice):
             self.operation = operation
