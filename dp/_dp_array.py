@@ -34,10 +34,10 @@ class DPArray:
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         if logger is None:
-            self._logger = Logger(array_name)
+            self._logger = Logger()
         else:
             self._logger = logger
-            self._logger.add_array(array_name)
+        self._logger.add_array(array_name)
 
         self._array_name = array_name
         self._description_string = description_string
@@ -125,10 +125,10 @@ class DPArray:
         """Returns the np.ndarray that contains the occupied mask."""
         return np.array(self._occupied_arr, copy=True)
 
-    # @property
-    # def logger(self):
-    #     """Returns the np.ndarray that contains all the computations."""
-    #     return self._logger
+    @property
+    def logger(self):
+        """Returns the np.ndarray that contains all the computations."""
+        return self._logger
 
     @property
     def dtype(self):
