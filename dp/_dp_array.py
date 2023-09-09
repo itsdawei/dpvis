@@ -8,8 +8,7 @@ class DPArray:
     Args:
         shape (array-like): The dimensions of the array.
         dtype (str or data-type): Data type of the DPArray. We only support
-            ``"f"`` / ``np.float32``, ``"d"`` / ``np.float64``, ``"i"``
-            /  ``np.int32``, and ``"l"`` / ``np.int64``.
+            ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
 
     Attributes:
         _arr (np.array): Contains the values of the DP array.
@@ -49,7 +48,7 @@ class DPArray:
         """Parses the dtype passed into the constructor.
 
         Returns:
-            np.float32, np.float64, np.int32, or np.int64
+            np.float32 and np.float64
         Raises:
             ValueError: Unsupported dtype.
         """
@@ -62,13 +61,8 @@ class DPArray:
             return np.float32
         if dtype == np.float64:
             return np.float64
-        if dtype == np.int32:
-            return np.int32
-        if dtype == np.int64:
-            return np.int64
 
-        raise ValueError("Unsupported dtype. Must be np.float32, np.float64,"
-                         "np.int32, or np.int64")
+        raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
