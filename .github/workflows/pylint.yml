@@ -28,7 +28,7 @@ jobs:
           pip install .[dev]
       - name: Pytest
         run: >
-          pytest tests/archives tests/emitters tests/schedulers
+          pytest tests
   docs:
     runs-on: ubuntu-latest
     steps:
