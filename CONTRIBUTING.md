@@ -3,11 +3,10 @@
 Contributions are welcome, and they are greatly appreciated. Every little bit
 helps, and credit will always be given.
 
-## Developing pyribs
+## Developing
 
-Ready to contribute? Here's how to set up pyribs for local development.
+Ready to contribute? Here's how to set up your environment for local development.
 
-<!-- 1. [Fork](https://github.com/itsdawei/pyribs/fork) the pyribs repo on GitHub. -->
 1. Clone the fork locally:
 
    ```bash
@@ -19,12 +18,13 @@ Ready to contribute? Here's how to set up pyribs for local development.
    ```
 
 1. Install the local copy and dev requirements into an environment. For
-   instance, with Conda, the following creates an environment at `./env`.
+   instance, with Conda, run the following commands:
 
    ```bash
    cd dynamically_programmed
-   conda create --name=dp python=3.7 # 3.7 is the minimum version pyribs supports.
+   conda create --name=dp python=3.7 # 3.7 is the minimum version we support.
    conda activate dp
+   conda install pip
    pip install -e .[dev]
    ```
 

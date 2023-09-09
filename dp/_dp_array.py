@@ -8,7 +8,12 @@ class DPArray:
     Args:
         shape (array-like): The dimensions of the array.
         dtype (str or data-type): Data type of the DPArray. We only support
+<<<<<<< HEAD
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
+=======
+            ``"f"`` / ``np.float32``, ``"d"`` / ``np.float64``, ``"i"``
+            /  ``np.int32``, and ``"l"`` / ``np.int64``.
+>>>>>>> 9cf740c (Create DPArray class (#3))
 
     Attributes:
         _arr (np.array): Contains the values of the DP array.
@@ -36,21 +41,36 @@ class DPArray:
             # self._logger = Logger()
             pass
         else:
+<<<<<<< HEAD
             self._logger=logger
 
         self._description_string=description_string
         self._row_labels=row_labels
         self._column_labels=column_labels
         self._colors=colors
+=======
+            self._logger = logger
+
+        self._description_string = description_string
+        self._row_labels = row_labels
+        self._column_labels = column_labels
+        self._colors = colors
+>>>>>>> 9cf740c (Create DPArray class (#3))
 
     @staticmethod
     def _parse_dtype(dtype):
         """Parses the dtype passed into the constructor.
 
         Returns:
+<<<<<<< HEAD
             np.float32 or np.float64
         Raises:
             ValueError: There is an error in the bounds configuration.
+=======
+            np.float32, np.float64, np.int32, or np.int64
+        Raises:
+            ValueError: Unsupported dtype.
+>>>>>>> 9cf740c (Create DPArray class (#3))
         """
         # First convert str dtype's to np.dtype.
         if isinstance(dtype, str):
@@ -61,8 +81,18 @@ class DPArray:
             return np.float32
         if dtype == np.float64:
             return np.float64
+<<<<<<< HEAD
 
         raise ValueError("Unsupported dtype. Must be np.float32 or np.float64")
+=======
+        if dtype == np.int32:
+            return np.int32
+        if dtype == np.int64:
+            return np.int64
+
+        raise ValueError("Unsupported dtype. Must be np.float32, np.float64,"
+                         "np.int32, or np.int64")
+>>>>>>> 9cf740c (Create DPArray class (#3))
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
@@ -73,6 +103,10 @@ class DPArray:
         Returns:
             self.dtype or np.ndarray:
         """
+<<<<<<< HEAD
+=======
+        # TODO: Check if idx is occupied
+>>>>>>> 9cf740c (Create DPArray class (#3))
         # TODO: Record READ in logger
         return self._arr[idx]
 
@@ -86,7 +120,10 @@ class DPArray:
         # TODO: Record WRITE in logger
         self._arr[idx] = self.dtype(value)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9cf740c (Create DPArray class (#3))
     def __eq__(self, other):
         """Equal to operator.
 
@@ -121,7 +158,11 @@ class DPArray:
     @property
     def occupied_arr(self):
         """Returns the np.ndarray that contains the occupied mask."""
+<<<<<<< HEAD
         return self._occupied_arr
+=======
+        return np.array(self._occupied_arr, copy=True)
+>>>>>>> 9cf740c (Create DPArray class (#3))
 
     # @property
     # def logger(self):
