@@ -10,8 +10,9 @@ def test_constructor_shape(shape):
     assert dp.arr.shape == shape
 
 
-@pytest.mark.parametrize("dtype", [("f", np.float32), ("d", np.float64)],
-                         ids=["f", "d"])
+@pytest.mark.parametrize("dtype", [("f", np.float32), ("d", np.float64),
+                                   ("i", np.int32), ("l", np.int64)],
+                         ids=["f", "d", "i", "l"])
 def test_str_dtype(dtype):
     str_dtype, np_dtype = dtype
     dp = DPArray((2, 2), dtype=str_dtype)
@@ -115,15 +116,16 @@ def test_arr_return_copy():
 
     assert np.any(dp == truth)
 
-def test_dtype_assignment():
-    valueErrorOccured = False
-    dp = DPArray(10)
-    try:
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64],
+                         ids=["f", "d", "i", "l"])
+def test_dtype_assignment(dtype):
+    dp = DPArray(10, dtype=dtype)
+    for i in range(10):
+        dp[i] = i**2
+
+    with pytest.raises(ValueError):
         dp[0] = "test"
 
-    except ValueError:  
-        valueErrorOccured = True
-
-    assert valueErrorOccured
-    assert type(dp[0]) == dp.dtype
+    assert isinstance(dp[0], dp.dtype)
     assert dp.dtype == dp.arr.dtype
