@@ -16,9 +16,9 @@ class Logger:
     """
 
     def __init__(self, array_name):
-        self._logs = []
         self._array_count = 1
         self._array_names = [array_name]
+        self._logs = []
 
     def add_array(self, array_name):
         """Adds an array to the logger.
@@ -44,7 +44,7 @@ class Logger:
         """
         if array_name not in self.array_names:
             raise ValueError("Array name not found in logger.")
-        elif len(self._logs) == 0:
+        if len(self._logs) == 0:
             self._logs.append(self.Log(operation, array_name, indice))
         else:
             if self._logs[-1].is_same_operation(operation):
@@ -107,7 +107,7 @@ class Logger:
         """Wraps the operation and indices of the log.
 
         Args:
-            operation (Operation): The operation to be logged: READ | WRITE | HIGHLIGHT
+            operation (Operation): "READ", "WRITE", or "HIGHLIGHT"
             array_name (str): The name of the array to be logged.
             indice (int): The indice to be logged.
 
