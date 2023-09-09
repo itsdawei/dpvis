@@ -10,23 +10,17 @@ class Logger:
 
     Attributes:
         _logs (list): Contains the logs.
-        array_count (int): The number of arrays logged.
-        array_names (list): The names of the arrays logged.
+        _array_count (int): The number of arrays logged.
+        _array_names (list): The names of the arrays logged.
 
     """
 
-    def __init__(
-        self,
-        array_name
-    ):
+    def __init__(self, array_name):
         self._logs = []
-        self.array_count = 1
-        self.array_names = [array_name]
+        self._array_count = 1
+        self._array_names = [array_name]
 
-    def add_array(
-        self,
-        array_name
-    ):
+    def add_array(self, array_name):
         """Adds an array to the logger.
 
         Args:
@@ -37,12 +31,7 @@ class Logger:
         self.array_count += 1
         self.array_names.append(array_name)
 
-    def append(
-        self,
-        array_name,
-        operation,
-        indice
-    ):
+    def append(self, array_name, operation, indice):
         """Appends a log to the logger.
 
         Args:
@@ -55,7 +44,7 @@ class Logger:
         """
         if array_name not in self.array_names:
             raise ValueError("Array name not found in logger.")
-        elif self._logs.is_empty():
+        elif len(self._logs) == 0:
             self._logs.append(self.Log(operation, array_name, indice))
         else:
             if self._logs[-1].is_same_operation(operation):
@@ -73,11 +62,11 @@ class Logger:
             bool: True if equal.
         """
         if isinstance(other, Logger):
-            return (self._logs == other._logs 
-                    and self._array_names == other._array_names 
-                    and self._array_count == other._array_count)
+            return (self._logs == other._logs and
+                    self._array_names == other._array_names and
+                    self._array_count == other._array_count)
         return False
-    
+
     def __ne__(self, other):
         """Not equal to operator.
         
@@ -88,26 +77,26 @@ class Logger:
             bool: True if not equal.
         """
         if isinstance(other, Logger):
-            return (self._logs != other._logs 
-                    or self._array_names != other._array_names 
-                    or self._array_count != other._array_count)
+            return (self._logs != other._logs or
+                    self._array_names != other._array_names or
+                    self._array_count != other._array_count)
         return True
-    
+
     @property
     def logs(self):
         """Returns the logs."""
         return self._logs
-    
+
     @property
     def array_names(self):
         """Returns the array names."""
         return self._array_names
-    
+
     @property
     def array_count(self):
         """Returns the array count."""
         return self._array_count
-    
+
     class Operation(Enum):
         """Enum for the operation of the log."""
         READ = 1
@@ -127,6 +116,7 @@ class Logger:
             indices (dict): The indices of the log. Key: array_name, Value: list of indices.
 
         """
+
         def __init__(self, operation, array_name, indice):
             self.operation = operation
             self.indices = dict()
@@ -135,7 +125,7 @@ class Logger:
         def is_same_operation(self, operation):
             """Returns True if the operation is the same as the log's operation."""
             return self.operation == operation
-        
+
         def add_indice(self, array_name, indice):
             """Adds an indice to the log."""
             if array_name not in self.indices:
