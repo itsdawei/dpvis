@@ -24,23 +24,23 @@ def test_add_array(logger):
 def test_append(logger):
     logger.append(Logger.Operation.READ, "test", 0)
     assert logger.logs[0].operation == Logger.Operation.READ
-    assert logger.logs[0].indices == {"test": [0]}
+    assert logger.logs[0].indices == {"test": set([0])}
 
     logger.append(Logger.Operation.READ, "test", 1)
     assert logger.logs[0].operation == Logger.Operation.READ
-    assert logger.logs[0].indices == {"test": [0, 1]}
+    assert logger.logs[0].indices == {"test": set([0, 1])}
     assert len(logger.logs) == 1
 
     logger.append(Logger.Operation.READ, "test2", 0)
     assert logger.logs[0].operation == Logger.Operation.READ
-    assert logger.logs[0].indices == {"test": [0, 1], "test2": [0]}
+    assert logger.logs[0].indices == {"test": set([0, 1]), "test2": set([0])}
     assert len(logger.logs) == 1
 
     logger.append(Logger.Operation.WRITE, "test", 0)
     assert logger.logs[0].operation == Logger.Operation.READ
-    assert logger.logs[0].indices == {"test": [0, 1], "test2": [0]}
+    assert logger.logs[0].indices == {"test": set([0, 1]), "test2": set([0])}
     assert logger.logs[1].operation == Logger.Operation.WRITE
-    assert logger.logs[1].indices == {"test": [0]}
+    assert logger.logs[1].indices == {"test": set([0])}
     assert len(logger.logs) == 2
 
 
@@ -74,16 +74,16 @@ def test_ne(logger):
 def test_log_constructor():
     log = Logger.Log(Logger.Operation.READ, "test", 0)
     assert log.operation == Logger.Operation.READ
-    assert log.indices == {"test": [0]}
+    assert log.indices == {"test": set([0])}
 
 
 def test_log_add_indice():
     log = Logger.Log(Logger.Operation.READ, "test", 0)
     log.add_indice("test", 1)
-    assert log.indices == {"test": [0, 1]}
+    assert log.indices == {"test": set([0, 1])}
 
     log.add_indice("test2", 0)
-    assert log.indices == {"test": [0, 1], "test2": [0]}
+    assert log.indices == {"test": set([0, 1]), "test2": set([0])}
 
 
 def test_log_is_same_operation():

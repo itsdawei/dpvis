@@ -90,7 +90,7 @@ class Logger:
         def __init__(self, operation, array_name, indice):
             self.operation = operation
             self.indices = dict()
-            self.indices[array_name] = [indice]
+            self.indices[array_name] = set([indice])
 
         def is_same_operation(self, operation):
             """Returns True if the operation is the same as the log's operation."""
@@ -99,6 +99,6 @@ class Logger:
         def add_indice(self, array_name, indice):
             """Adds an indice to the log."""
             if array_name not in self.indices:
-                self.indices[array_name] = [indice]
+                self.indices[array_name] = set([indice])
             else:
-                self.indices[array_name].append(indice)
+                self.indices[array_name].add(indice)
