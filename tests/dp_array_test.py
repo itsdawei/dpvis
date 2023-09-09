@@ -6,7 +6,7 @@ from dp import DPArray
 
 @pytest.mark.parametrize("shape", [(2, 2), (2, 3, 4)])
 def test_constructor_shape(shape):
-    dp = DPArray(shape)
+    dp = DPArray(shape, "name")
     assert dp.arr.shape == shape
 
 
@@ -15,13 +15,13 @@ def test_constructor_shape(shape):
                          ids=["f", "d", "i", "l"])
 def test_str_dtype(dtype):
     str_dtype, np_dtype = dtype
-    dp = DPArray((2, 2), dtype=str_dtype)
+    dp = DPArray((2, 2), "name", dtype=str_dtype)
     assert dp.dtype == np_dtype
 
 
 def test_equal_to():
-    dp_a = DPArray(10)
-    dp_b = DPArray(10)
+    dp_a = DPArray(10, "name")
+    dp_b = DPArray(10, "name")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -42,8 +42,8 @@ def test_equal_to():
 
 
 def test_not_equal_to():
-    dp_a = DPArray(10)
-    dp_b = DPArray(10)
+    dp_a = DPArray(10, "name")
+    dp_b = DPArray(10, "name")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -64,7 +64,7 @@ def test_not_equal_to():
 
 
 def test_read_write():
-    dp = DPArray(10)
+    dp = DPArray(10, "name")
     truth = np.arange(10)**2
 
     # Write
@@ -79,7 +79,7 @@ def test_read_write():
 
 
 def test_numpy_slicing_1d():
-    dp = DPArray(10)
+    dp = DPArray(10, "name")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -93,7 +93,7 @@ def test_numpy_slicing_1d():
 
 
 def test_numpy_slicing_2d():
-    dp = DPArray((100, 2))
+    dp = DPArray((100, 2), "name")
     xy = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
 
     for x in range(10):
@@ -105,7 +105,7 @@ def test_numpy_slicing_2d():
 
 
 def test_arr_return_copy():
-    dp = DPArray(10)
+    dp = DPArray(10, "name")
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -120,7 +120,7 @@ def test_arr_return_copy():
 @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, np.int64],
                          ids=["f", "d", "i", "l"])
 def test_dtype_assignment(dtype):
-    dp = DPArray(10, dtype=dtype)
+    dp = DPArray(10, "name", dtype=dtype)
     for i in range(10):
         dp[i] = i**2
 

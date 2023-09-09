@@ -1,5 +1,6 @@
 """This file provides the DPArray class."""
 import numpy as np
+import Logger from _logger
 
 
 class DPArray:
@@ -19,6 +20,7 @@ class DPArray:
     def __init__(
         self,
         shape,
+        array_name,
         *,
         logger=None,
         description_string=None,
@@ -33,12 +35,12 @@ class DPArray:
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         if logger is None:
-            # TODO: Create logger
-            # self._logger = Logger()
-            pass
+            self._logger = Logger(array_name)
         else:
             self._logger = logger
+            self._logger.add_array(array_name)
 
+        self._array_name = array_name
         self._description_string = description_string
         self._row_labels = row_labels
         self._column_labels = column_labels
@@ -80,7 +82,7 @@ class DPArray:
             self.dtype or np.ndarray:
         """
         # TODO: Check if idx is occupied
-        # TODO: Record READ in logger
+        self._logger.append(self._array_name, Logger.Operation.READ, idx)
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -90,7 +92,7 @@ class DPArray:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
         """
-        # TODO: Record WRITE in logger
+        self._logger.append(self._array_name, Logger.Operation.WRITE, idx)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):
