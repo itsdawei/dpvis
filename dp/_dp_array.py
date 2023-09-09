@@ -51,7 +51,7 @@ class DPArray:
         Returns:
             np.float32, np.float64, np.int32, or np.int64
         Raises:
-            ValueError: There is an error in the bounds configuration.
+            ValueError: Unsupported dtype.
         """
         # First convert str dtype's to np.dtype.
         if isinstance(dtype, str):
