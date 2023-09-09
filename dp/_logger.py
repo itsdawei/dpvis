@@ -52,36 +52,6 @@ class Logger:
             else:
                 self._logs.append(self.Log(operation, array_name, indice))
 
-    def __eq__(self, other):
-        """Equal to operator.
-        
-        Args:
-            other (Logger): Other logger.
-
-        Returns:
-            bool: True if equal.
-        """
-        if isinstance(other, Logger):
-            return (self._logs == other._logs and
-                    self._array_names == other._array_names and
-                    self._array_count == other._array_count)
-        return False
-
-    def __ne__(self, other):
-        """Not equal to operator.
-        
-        Args:
-            other (Logger): Other logger.
-
-        Returns:
-            bool: True if not equal.
-        """
-        if isinstance(other, Logger):
-            return (self._logs != other._logs or
-                    self._array_names != other._array_names or
-                    self._array_count != other._array_count)
-        return True
-
     @property
     def logs(self):
         """Returns the logs."""
