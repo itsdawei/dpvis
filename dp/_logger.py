@@ -48,9 +48,11 @@ class Logger:
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
         if len(self._logs) == 0 or self._logs[-1]["op"] != operation:
-            self._logs.append({"op": operation, "idx": {array_name: idx}})
+            self._logs.append({"op": operation, "idx": {array_name: set([idx])}})
+        elif array_name not in self._logs[-1]["idx"]:
+            self._logs[-1]["idx"][array_name] = set([idx])
         else:
-            self._logs[-1]["idx"][array_name].append(idx)
+            self._logs[-1]["idx"][array_name].add(idx)
 
     @property
     def logs(self):
