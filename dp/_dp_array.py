@@ -62,7 +62,8 @@ class DPArray:
         if dtype == np.float64:
             return np.float64
 
-        raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
+        raise ValueError(
+            "Unsupported dtype. Must be np.float32 and np.float64")
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
@@ -70,8 +71,8 @@ class DPArray:
         Args:
             idx (int): The index of the array.
 
-        Returns:
-            self.dtype or np.ndarray:
+        Returns:  
+            self.dtype or np.ndarray: hi
         """
         # TODO: Check if idx is occupied
         # TODO: Record READ in logger
