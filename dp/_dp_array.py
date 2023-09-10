@@ -149,6 +149,7 @@ class DPArray:
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.WRITE, log_idx)
         self._arr[idx] = self.dtype(value)
+        self._occupied_arr[idx] = True
 
     def __eq__(self, other):
         """Equal to operator.
@@ -181,10 +182,11 @@ class DPArray:
         
         Args:
             fname (str): filename or file handle
+            fmt (str): format to use
         """
         # Prep array for write
         csv_arr = np.array(self._arr, copy=True)
-        np.place(csv_arr, self._occupied_arr, np.nan)
+        np.place(csv_arr, ~self._occupied_arr, np.nan)
         csv_arr = np.reshape(csv_arr, (csv_arr.shape[0], -1))
         
         # Store other info about the array

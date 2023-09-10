@@ -151,6 +151,48 @@ def test_dtype_assignment(dtype):
     assert dp.dtype == dp.arr.dtype
 
 
+def text_occupied_arr():
+    truth = np.zeros_like(10, dtype=bool)
+    dp = DPArray(shape=10)
+
+    for i in range(0, 10, 2):
+        truth[i] = True
+        dp[i] = i
+
+        assert np.all(dp.occupied_arr == truth)
+
+    for i in range(-1, 9, -2):
+        truth[i] = True
+        dp[i] = i
+
+        assert np.all(dp.occupied_arr == truth)
+
+
+@pytest.mark.parametrize(
+        "shape, dtype, indices",
+        [(5, np.float32, {2, 4}),
+         ((5, 3), np.float64, {(0, 0), (3, 2), (4, 2)}),
+         ((3, 4, 5), np.float32, {(0, 1, 0), (2, 2, 0)})],
+        ids=["a", "b", "c"])
+def test_to_csv(tmp_path, shape, dtype, indices):
+    file = tmp_path / "test.csv"
+    
+    truth = DPArray(shape=shape, dtype=dtype)
+    for index in indices:
+        truth[index] = 1
+    truth.save_csv(file, fmt='%.0f')
+
+    with open(file) as f:
+        header = f.readline()
+        assert header == "# shape=" + str(truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
+
+    arr = np.loadtxt(file, delimiter=",", dtype=dtype, skiprows=1)
+    arr = arr.reshape(shape)
+
+    assert np.all(truth.arr[truth.occupied_arr] == arr[truth.occupied_arr])
+    assert np.all(np.isnan(arr[~truth.occupied_arr]))
+
+
 # Logger related tests #
 
 
@@ -201,36 +243,6 @@ def test_2d_slice_logging(slice_1, slice_2):
              for j in range(*slice_2.indices(10))}
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
     assert len(dp.logger.logs) == 1
-
-# @pytest.mark.parametrize("shape", [(5), (5, 3), (3, 4 ,5)])
-# @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.float32], ids=["f", "d", "f"])
-# @pytest.mark.parametrize("indices", [
-#     {(2), (4)},
-#     {(0, 0), (3, 2), (4, 3)},
-#     {(0, 1, 0), (2, 2, 0)}
-# ])
-@pytest.mark.parametrize("shape", [(5)])
-@pytest.mark.parametrize("dtype", [np.float32], ids=["f"])
-@pytest.mark.parametrize("indices", [
-    {(2), (4)}
-])
-def test_to_csv(tmp_path, shape, dtype, indices):
-    file = tmp_path / "test.csv"
-    
-    truth = DPArray(shape=shape, dtype=dtype)
-    for index in indices:
-        truth[index] = 1
-    truth.save_csv(file, fmt='%.0f')
-
-    with open(file) as f:
-        header = f.readline()
-        assert header == "# shape=" + str(truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
-
-    arr = np.loadtxt(file, delimiter=",", dtype=dtype, skiprows=1)
-    arr = arr.reshape(shape)
-
-    assert np.all(truth[truth.occupied_arr] == arr[truth.occupied_arr])
-    assert np.all(np.isnan(arr[~truth.occupied_arr]))
 
 
 
