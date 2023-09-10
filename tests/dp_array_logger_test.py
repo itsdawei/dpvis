@@ -39,7 +39,7 @@ def test_2d_read_write():
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {(3, 6)}}}
 
 
-def test_array_read_write_log_multiple_arrays():
+def test_multiple_arrays_logging():
     dp1 = DPArray(10, "dp_1")
     dp2 = DPArray(10, "dp_2", logger=dp1.logger)
 
@@ -79,26 +79,17 @@ def test_array_read_write_log_multiple_arrays():
     assert len(dp1.logger.logs) == 3
 
 
-def test_array_slice_read_write_log():
+@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+def test_array_slice(s):
     dp = DPArray(10)
-    dp[0:5] = 1
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp_array": {0, 1, 2, 3, 4}
-        }
-    }
-    assert len(dp.logger.logs) == 1
 
-    _ = dp[1:4]
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp_array": {0, 1, 2, 3, 4}
-        }
-    }
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": {1, 2, 3}}}
-    assert len(dp.logger.logs) == 2
+    dp[s] = 1
+    if isinstance(s, int):
+        s = np.s_[s:s + 1]
+    truth = set(i for i in range(*s.indices(10)))
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+    assert len(dp.logger.logs) == 1
 
 
 @pytest.mark.parametrize("slice_1",
@@ -107,7 +98,7 @@ def test_array_slice_read_write_log():
 @pytest.mark.parametrize("slice_2",
                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
                          ids=["a", "b", "c", "d", "e"])
-def test_2d_array_slice_read_write_log(slice_1, slice_2):
+def test_2d_array_slice(slice_1, slice_2):
     dp = DPArray((10, 10))
 
     dp[slice_1, slice_2] = 1
