@@ -128,9 +128,36 @@ def test_dtype_assignment(dtype):
     assert isinstance(dp[0], dp.dtype)
     assert dp.dtype == dp.arr.dtype
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64], ids=["f", "d"])
-def test_to_csv(tmp_path, dtype):
+# @pytest.mark.parametrize("shape", [(5), (5, 3), (3, 4 ,5)])
+# @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.float32], ids=["f", "d", "f"])
+# @pytest.mark.parametrize("indices", [
+#     {(2), (4)},
+#     {(0, 0), (3, 2), (4, 3)},
+#     {(0, 1, 0), (2, 2, 0)}
+# ])
+@pytest.mark.parametrize("shape", [(5)])
+@pytest.mark.parametrize("dtype", [np.float32], ids=["f"])
+@pytest.mark.parametrize("indices", [
+    {(2), (4)}
+])
+def test_to_csv(tmp_path, shape, dtype, indices):
     file = tmp_path / "test.csv"
     
-    dp = DPArray(10, dtype=dtype)
-    dp.to_csv(file)
+    truth = DPArray(shape=shape, dtype=dtype)
+    for index in indices:
+        truth[index] = 1
+    truth.save_csv(file, fmt='%.0f')
+
+    with open(file) as f:
+        header = f.readline()
+        assert header == "# shape=" + str(truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
+
+    arr = np.loadtxt(file, delimiter=",", dtype=dtype, skiprows=1)
+    arr = arr.reshape(shape)
+
+    assert np.all(truth[truth.occupied_arr] == arr[truth.occupied_arr])
+    assert np.all(np.isnan(arr[~truth.occupied_arr]))
+
+
+
+
