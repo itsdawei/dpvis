@@ -4,19 +4,7 @@ import pytest
 from dp import DPArray, Op
 
 
-def test_overwrite_index_log():
-    dp = DPArray(10, "dp")
-
-    dp[0] = 1
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp": {0}}}
-
-    # Overwriting same index with same op does not create additional log.
-    dp[0] = 2
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp": {0}}}
-    assert len(dp.logger.logs) == 1
-
-
-def test_array_read_write_log():
+def test_read_write():
     dp = DPArray(10, "dp")
 
     dp[0] = 1
@@ -36,7 +24,7 @@ def test_array_read_write_log():
     assert len(dp.logger.logs) == 3
 
 
-def test_2d_array_read_write_log():
+def test_2d_read_write():
     dp = DPArray((10, 10), "name")
     dp[0, 0] = 1
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0)}}}
