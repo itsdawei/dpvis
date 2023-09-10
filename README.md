@@ -47,6 +47,17 @@ The library has three major features:
    pip install .
    ```
 
+## Documentation
+
+The documentation is compiled with
+[mkdocs-material](https://squidfunk.github.io/mkdocs-material/) and
+[mkdocstrings](https://mkdocstrings.github.io/)
+
+To serve the documentation locally, run
+```bash
+make servedocs
+```
+
 ## Contributors
 
 dynvis is developed and maintained by

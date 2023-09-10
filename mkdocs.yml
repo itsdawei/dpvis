@@ -2,9 +2,10 @@ site_name: My Docs
 theme:
   name: material
   features:
+    - content.code.copy
     - navigation.sections
 nav:
-  - Home: index.md
+  - Home: README.md
   - API:
     - dp_array.md
 plugins:
@@ -17,3 +18,11 @@ plugins:
             docstring_style: google
             docstring_options:
               returns_named_value: False
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

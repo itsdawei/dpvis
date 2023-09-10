@@ -58,7 +58,7 @@ Ready to contribute? Here's how to set up your environment for local development
    Finally, to lint the code:
 
    ```bash
-   pylint dp tests benchmarks examples
+   pylint dp tests
    make lint # ^ same as above
    ```
 
@@ -103,16 +103,15 @@ pytest tests/core/test1
 
 ### Documentation
 
-Documentation compiled with [MkDocs](https://www.mkdocs.org/).
+The documentation is compiled with
+[mkdocs-material](https://squidfunk.github.io/mkdocs-material/) and
+[mkdocstrings](https://mkdocstrings.github.io/)
 
-To preview documentation, use:
+To preview documentation locally, use:
 
 ```bash
 make servedocs
 ```
-
-This will open up a browser window and automatically reload as changes are made
-to the docs.
 
 ### Referencing Papers
 
