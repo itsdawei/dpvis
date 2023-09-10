@@ -188,7 +188,7 @@ class DPArray:
         csv_arr = np.array(self._arr, copy=True)
         np.place(csv_arr, ~self._occupied_arr, np.nan)
         csv_arr = np.reshape(csv_arr, (csv_arr.shape[0], -1))
-        
+
         # Store other info about the array
         header = "shape=" + str(self._arr.shape) + ", dtype=" + str(self._dtype)
         np.savetxt(fname, csv_arr, fmt=fmt, delimiter=',', header=header)

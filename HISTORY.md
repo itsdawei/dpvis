@@ -2,6 +2,7 @@
 
 ## 0.0.0
 
+- Added save_csv to DPArray, update occupied_arr in __set_item__ (#6)
 - Added Logger to DPArray class (#4)
 - Create ``Logger`` class (#4)
 - Setup automated test-runners (#5)

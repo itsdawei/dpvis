@@ -152,6 +152,9 @@ def test_dtype_assignment(dtype):
 
 
 def text_occupied_arr():
+    """
+    Testing occupied array
+    """
     truth = np.zeros_like(10, dtype=bool)
     dp = DPArray(shape=10)
 
@@ -168,23 +171,23 @@ def text_occupied_arr():
         assert np.all(dp.occupied_arr == truth)
 
 
-@pytest.mark.parametrize(
-        "shape, dtype, indices",
-        [(5, np.float32, {2, 4}),
-         ((5, 3), np.float64, {(0, 0), (3, 2), (4, 2)}),
-         ((3, 4, 5), np.float32, {(0, 1, 0), (2, 2, 0)})],
-        ids=["a", "b", "c"])
+@pytest.mark.parametrize("shape, dtype, indices",
+                         [(5, np.float32, {2, 4}),
+                          ((5, 3), np.float64, {(0, 0), (3, 2), (4, 2)}),
+                          ((3, 4, 5), np.float32, {(0, 1, 0), (2, 2, 0)})],
+                         ids=["a", "b", "c"])
 def test_to_csv(tmp_path, shape, dtype, indices):
     file = tmp_path / "test.csv"
-    
+
     truth = DPArray(shape=shape, dtype=dtype)
     for index in indices:
         truth[index] = 1
     truth.save_csv(file, fmt='%.0f')
 
-    with open(file) as f:
+    with open(file, "rt", encoding='UTF-8') as f:
         header = f.readline()
-        assert header == "# shape=" + str(truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
+        assert header == "# shape=" + str(
+            truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
 
     arr = np.loadtxt(file, delimiter=",", dtype=dtype, skiprows=1)
     arr = arr.reshape(shape)
@@ -243,7 +246,3 @@ def test_2d_slice_logging(slice_1, slice_2):
              for j in range(*slice_2.indices(10))}
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
     assert len(dp.logger.logs) == 1
-
-
-
-
