@@ -34,10 +34,7 @@ class DPArray:
         self._arr = np.empty(shape, dtype=self._dtype)
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
-        if logger is None:
-            self._logger = Logger()
-        else:
-            self._logger = logger
+        self._logger = Logger() if logger is None else logger
         self._logger.add_array(array_name)
 
         self._array_name = array_name

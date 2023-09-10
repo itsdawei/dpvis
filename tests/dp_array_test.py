@@ -19,8 +19,8 @@ def test_str_dtype(dtype):
 
 
 def test_equal_to():
-    dp_a = DPArray(10, "name_a")
-    dp_b = DPArray(10, "name_b")
+    dp_a = DPArray(10)
+    dp_b = DPArray(10)
     truth = np.arange(10)**2
 
     for i in range(10):
@@ -41,8 +41,8 @@ def test_equal_to():
 
 
 def test_not_equal_to():
-    dp_a = DPArray(10, "name_a")
-    dp_b = DPArray(10, "name_b")
+    dp_a = DPArray(10)
+    dp_b = DPArray(10)
     truth = np.arange(10)**2
 
     for i in range(10):
