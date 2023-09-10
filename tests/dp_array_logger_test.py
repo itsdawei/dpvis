@@ -94,16 +94,20 @@ def test_array_slice_read_write_log():
     assert len(dp.logger.logs) == 2
 
 
-@pytest.mark.parametrize(
-    "slice_1", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], np.s_[5:6]],
-    ids=["a", "b", "c", "d", "e"])
-@pytest.mark.parametrize(
-    "slice_2", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], np.s_[1:2]],
-    ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_1",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_2",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
+                         ids=["a", "b", "c", "d", "e"])
 def test_2d_array_slice_read_write_log(slice_1, slice_2):
     dp = DPArray((10, 10))
 
     dp[slice_1, slice_2] = 1
+    if isinstance(slice_1, int):
+        slice_1 = np.s_[slice_1:slice_1 + 1]
+    if isinstance(slice_2, int):
+        slice_2 = np.s_[slice_2:slice_2 + 1]
     truth = {(i, j)
              for i in range(*slice_1.indices(10))
              for j in range(*slice_2.indices(10))}

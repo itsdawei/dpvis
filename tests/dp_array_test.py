@@ -106,7 +106,7 @@ def test_numpy_indexing_2d():
 
 
 @pytest.mark.parametrize("slice_1",
-                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 50],
+                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 5],
                          ids=["a", "b", "c", "d", "e"])
 @pytest.mark.parametrize("slice_2",
                          [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 1],
