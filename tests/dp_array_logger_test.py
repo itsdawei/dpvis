@@ -88,24 +88,19 @@ def test_array_slice_read_write_log():
     assert dp.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
-            "dp_array": set([0, 1, 2, 3, 4])
+            "dp_array": {0, 1, 2, 3, 4}
         }
     }
     assert len(dp.logger.logs) == 1
 
-    _ = dp[1:4]
+    temp = dp[1:4]
     assert dp.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
-            "dp_array": set([0, 1, 2, 3, 4])
+            "dp_array": {0, 1, 2, 3, 4}
         }
     }
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "dp_array": set([1, 2, 3])
-        }
-    }
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": {1, 2, 3}}}
     assert len(dp.logger.logs) == 2
 
 
