@@ -2,6 +2,7 @@
 
 ## 0.0.0
 
+- Documentation with mkdocs (#7)
 - Setup automated test-runners
     - mkdocs (#7)
     - pytest (#5)
