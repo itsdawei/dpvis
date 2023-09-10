@@ -5,5 +5,5 @@ from dp._logger import Logger, Op
 __all__ = [
     "DPArray",
     "Logger",
-    "Operation"
+    "Op"
 ]
