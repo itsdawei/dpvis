@@ -19,26 +19,27 @@ def test_add_array(logger):
 
 
 def test_append(logger):
+    logger.add_array("test2")
+
     logger.append("test", Operation.READ, 0)
     assert logger.logs[0]["op"] == Operation.READ
-    assert logger.logs[0]["idx"] == {"test": set([0])}
+    assert logger.logs[0]["idx"]["test"] == {0}
 
     logger.append("test", Operation.READ, 1)
     assert logger.logs[0]["op"] == Operation.READ
-    assert logger.logs[0]["idx"] == {"test": set([0, 1])}
+    assert logger.logs[0]["idx"]["test"] == {0, 1}
     assert len(logger.logs) == 1
 
-    logger.add_array("test2")
     logger.append("test2", Operation.READ, 0)
     assert logger.logs[0]["op"] == Operation.READ
-    assert logger.logs[0]["idx"] == {"test": set([0, 1]), "test2": set([0])}
+    assert logger.logs[0]["idx"] == {"test": {0, 1}, "test2": {0}}
     assert len(logger.logs) == 1
 
     logger.append("test", Operation.WRITE, 0)
     assert logger.logs[0]["op"] == Operation.READ
-    assert logger.logs[0]["idx"] == {"test": set([0, 1]), "test2": set([0])}
+    assert logger.logs[0]["idx"] == {"test": {0, 1}, "test2": {0}}
     assert logger.logs[1]["op"] == Operation.WRITE
-    assert logger.logs[1]["idx"] == {"test": set([0])}
+    assert logger.logs[1]["idx"]["test"] == {0}
     assert len(logger.logs) == 2
 
 

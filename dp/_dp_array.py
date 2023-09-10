@@ -85,8 +85,9 @@ class DPArray:
                 - Mixture: (slice(0, 10, 2), 5, 1)
 
         Returns:
-            numpy.ndarray: shape (n, d) array where n is the number of indices
-                and d is the dimension DPArray.
+            list of tuples/integer: length n list of d-tuples, where n is the number of
+                indices and d is the dimension DPArray. If d = 1, then the list will
+                contain integers instead.
 
         Raises:
             ValueError: If ``nd_slice`` is not a slice object, a list of slice
@@ -119,6 +120,10 @@ class DPArray:
         # n-dimensional index tuples.
         indices = np.column_stack(np.meshgrid(*slice_indices, indexing="ij"))
 
+        # Convert to tuple if index is > 1D, otherwise remove the last
+        # dimension.
+        indices = ([tuple(row) for row in indices]
+                   if indices.shape[1] != 1 else np.squeeze(indices, axis=1))
         return indices
 
     def __getitem__(self, idx):

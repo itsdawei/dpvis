@@ -34,6 +34,9 @@ class Logger:
         if array_name in self.array_names:
             raise ValueError(f"Array name {array_name} already exists in"
                              f"logger.")
+        if len(self._logs) > 0:
+            raise ValueError(
+                f"Cannot add array {array_name} to a non-empty logger.")
         self.array_names.add(array_name)
 
     def append(self, array_name, operation, idx):
@@ -41,7 +44,7 @@ class Logger:
 
         Args:
             operation (Operation): Operation performed.
-            idx (int or arry-like): Index of the array.
+            idx (list of tuple/int): Index of the array.
 
         Raises:
             ValueError: Array name not recognized by logger. 
@@ -62,10 +65,10 @@ class Logger:
             self._logs.append({
                 "op": operation,
                 "idx": {
-                    array_name: [] for name in self._array_names
+                    name: set() for name in self._array_names
                 }
             })
-        self._logs[-1]["idx"][array_name] += idx_list
+        self._logs[-1]["idx"][array_name] |= set(idx_list)
 
     @property
     def logs(self):
