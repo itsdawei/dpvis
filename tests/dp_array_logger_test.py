@@ -26,6 +26,7 @@ def test_read_write():
 
 def test_2d_read_write():
     dp = DPArray((10, 10), "name")
+
     dp[0, 0] = 1
     assert len(dp.logger.logs) == 1
 
