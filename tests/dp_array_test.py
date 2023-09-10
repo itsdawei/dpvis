@@ -1,7 +1,8 @@
+"""Tests the methods in DPArray."""
 import numpy as np
 import pytest
 
-from dp import DPArray
+from dp import DPArray, Logger, Op
 
 
 @pytest.mark.parametrize("shape", [(2, 2), (2, 3, 4)])
@@ -91,16 +92,37 @@ def test_numpy_slicing_1d():
     assert np.all(dp[:6] == truth[:6])
 
 
-def test_numpy_slicing_2d():
+def test_numpy_indexing_2d():
     dp = DPArray((100, 2))
-    xy = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
+    truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
 
     for x in range(10):
         for y in range(10):
             dp[10 * x + y, 0] = x
             dp[10 * x + y, 1] = y
 
-    assert np.all(dp == xy)
+    assert np.all(dp == truth)
+    assert dp[0, 1] == truth[0, 1]
+    assert dp[10, 1] == truth[10, 1]
+
+
+@pytest.mark.parametrize("slice_1",
+                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_2",
+                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 1],
+                         ids=["a", "b", "c", "d", "e"])
+def test_numpy_slicing_2d(slice_1, slice_2):
+    dp = DPArray((100, 2))
+    truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
+
+    for x in range(10):
+        for y in range(10):
+            dp[10 * x + y, 0] = x
+            dp[10 * x + y, 1] = y
+
+    nd_slice = (slice_1, slice_2)
+    assert np.all(dp[nd_slice] == truth[nd_slice])
 
 
 def test_arr_return_copy():
@@ -127,6 +149,58 @@ def test_dtype_assignment(dtype):
 
     assert isinstance(dp[0], dp.dtype)
     assert dp.dtype == dp.arr.dtype
+
+
+# Logger related tests #
+
+
+def test_constructor_custom_logger():
+    logger = Logger()
+    dp1 = DPArray(10, "dp1", logger=logger)
+    dp2 = DPArray(10, "dp2", logger=logger)
+    assert dp1.logger == dp2.logger == logger
+    assert logger.array_names == {"dp1", "dp2"}
+
+
+def test_constructor_default_logger():
+    dp1 = DPArray(10, "dp1")
+    dp2 = DPArray(10, "dp2", logger=dp1.logger)
+    assert dp1.logger == dp2.logger
+    assert dp1.logger.array_names == {"dp1", "dp2"}
+
+
+@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+def test_slice_logging(s):
+    dp = DPArray(10)
+
+    dp[s] = 1
+    if isinstance(s, int):
+        s = np.s_[s:s + 1]
+    truth = set(i for i in range(*s.indices(10)))
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+    assert len(dp.logger.logs) == 1
+
+
+@pytest.mark.parametrize("slice_1",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_2",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
+                         ids=["a", "b", "c", "d", "e"])
+def test_2d_slice_logging(slice_1, slice_2):
+    dp = DPArray((10, 10))
+
+    dp[slice_1, slice_2] = 1
+    if isinstance(slice_1, int):
+        slice_1 = np.s_[slice_1:slice_1 + 1]
+    if isinstance(slice_2, int):
+        slice_2 = np.s_[slice_2:slice_2 + 1]
+    truth = {(i, j)
+             for i in range(*slice_1.indices(10))
+             for j in range(*slice_2.indices(10))}
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+    assert len(dp.logger.logs) == 1
 
 # @pytest.mark.parametrize("shape", [(5), (5, 3), (3, 4 ,5)])
 # @pytest.mark.parametrize("dtype", [np.float32, np.float64, np.float32], ids=["f", "d", "f"])
