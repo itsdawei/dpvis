@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dp import DPArray
+from dp import DPArray, Logger
 
 
 @pytest.mark.parametrize("shape", [(2, 2), (2, 3, 4)])
@@ -148,3 +148,27 @@ def test_dtype_assignment(dtype):
 
     assert isinstance(dp[0], dp.dtype)
     assert dp.dtype == dp.arr.dtype
+
+
+# Logger related tests #
+
+
+def test_constructor_custom_logger():
+    logger = Logger()
+    dp1 = DPArray(10, "dp1", logger=logger)
+    dp2 = DPArray(10, "dp2", logger=logger)
+    assert dp1.logger == dp2.logger == logger
+    assert logger.array_names == {"dp1", "dp2"}
+
+
+def test_constructor_default_logger():
+    dp1 = DPArray(10, "dp1")
+    dp2 = DPArray(10, "dp2", logger=dp1.logger)
+    assert dp1.logger == dp2.logger
+    assert dp1.logger.array_names == {"dp1", "dp2"}
+
+
+def test_constructor_duplicate_name_error():
+    dp1 = DPArray(10, "duplicate_name")
+    with pytest.raises(ValueError):
+        _ = DPArray(10, "duplicate_name", logger=dp1.logger)
