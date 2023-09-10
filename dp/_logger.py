@@ -1,6 +1,8 @@
 """This file provides the Logger class."""
 from enum import IntEnum
 
+import numpy as np
+
 
 class Operation(IntEnum):
     """The allowed operation on the DPArray."""
@@ -12,10 +14,11 @@ class Operation(IntEnum):
 class Logger:
     """Logger class.
 
+    # TODO: add explanation of the format of the log
+
     Attributes:
         _logs (list): Contains the logs.
         _array_names (list): The names of the arrays logged.
-
     """
 
     def __init__(self):
@@ -38,7 +41,7 @@ class Logger:
 
         Args:
             operation (Operation): Operation performed.
-            idx (int): Index of the array.
+            idx (int or arry-like): Index of the array.
 
         Raises:
             ValueError: Array name not recognized by logger. 
@@ -47,12 +50,22 @@ class Logger:
             raise ValueError(f"Array name {array_name} not recognized by"
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
+
+        idx_list = idx
+        if isinstance(idx, np.ndarray):
+            idx_list = idx.tolist()
+        elif isinstance(idx, int):
+            idx_list = [idx]
+
+        # Initialize new operation.
         if len(self._logs) == 0 or self._logs[-1]["op"] != operation:
-            self._logs.append({"op": operation, "idx": {array_name: set([idx])}})
-        elif array_name not in self._logs[-1]["idx"]:
-            self._logs[-1]["idx"][array_name] = set([idx])
-        else:
-            self._logs[-1]["idx"][array_name].add(idx)
+            self._logs.append({
+                "op": operation,
+                "idx": {
+                    array_name: [] for name in self._array_names
+                }
+            })
+        self._logs[-1]["idx"][array_name] += idx_list
 
     @property
     def logs(self):

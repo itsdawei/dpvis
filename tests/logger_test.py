@@ -2,6 +2,9 @@ import pytest
 
 from dp import Logger, Operation
 
+# pylint: disable=redefined-outer-name
+
+
 @pytest.fixture
 def logger():
     """Returns a logger with one array."""

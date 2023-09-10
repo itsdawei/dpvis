@@ -1,5 +1,6 @@
 """This file provides the DPArray class."""
 import numpy as np
+
 from ._logger import Logger, Operation
 
 
@@ -66,6 +67,60 @@ class DPArray:
 
         raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
 
+    def _nd_slice_to_indices(self, nd_slice):
+        """Converts a nd-slice to indices.
+
+        Calculate the indices from the slices.
+        1. Get the start, stop, and step values for each slice.
+        2. Use np.arange to create arrays of indices for each slice.
+        3. Create 1D array of indices using meshgrid and column_stack.
+
+        Args:
+            nd_slice (slice/int, list/tuple of slice/int):
+                nd_slice can be anything used to index a numpy array. For
+                example:
+                - Direct indexing: (0, 0, ...)
+                - 1d slice: slice(0, 10, 2)
+                - nd slice: (slice(0, 10, 2), slice(1, 5, 1), ...)
+                - Mixture: (slice(0, 10, 2), 5, 1)
+
+        Returns:
+            numpy.ndarray: shape (n, d) array where n is the number of indices
+                and d is the dimension DPArray.
+
+        Raises:
+            ValueError: If ``nd_slice`` is not a slice object, a list of slice
+                objects, or a list of tuples of integers.
+            ValueError: If any element in ``nd_slice`` is not a valid slice
+                object or integer.
+        """
+        if isinstance(nd_slice, (slice, int)):
+            # Convert 1d slice to nd slice.
+            nd_slice = (nd_slice,)
+        if not isinstance(nd_slice, (list, tuple)):
+            raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be"
+                             f"a slice object, a list/tuple of slice objects,"
+                             f"or a list/tuple of integers.")
+
+        slice_indices = []
+        for dim, size in enumerate(self._arr.shape):
+            s = nd_slice[dim]
+            if isinstance(s, slice):
+                # Handle slice objects.
+                slice_indices.append(np.arange(*s.indices(size)))
+            elif isinstance(s, int):
+                # Handle tuple of integers for direct indexing.
+                slice_indices.append(s)
+            else:
+                raise ValueError("Each element in 'nd_slice' must be a valid"
+                                 "slice object or integer.")
+
+        # Generate the meshgrid of indices and combine indices into
+        # n-dimensional index tuples.
+        indices = np.column_stack(np.meshgrid(*slice_indices, indexing="ij"))
+
+        return indices
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
@@ -76,7 +131,8 @@ class DPArray:
             self.dtype or np.ndarray:
         """
         # TODO: Check if idx is occupied
-        self._logger.append(self._array_name, Operation.READ, idx)
+        log_idx = self._nd_slice_to_indices(idx)
+        self._logger.append(self._array_name, Operation.READ, log_idx)
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -86,7 +142,8 @@ class DPArray:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
         """
-        self._logger.append(self._array_name, Operation.WRITE, idx)
+        log_idx = self._nd_slice_to_indices(idx)
+        self._logger.append(self._array_name, Operation.WRITE, log_idx)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):

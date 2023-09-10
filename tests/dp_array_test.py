@@ -91,16 +91,37 @@ def test_numpy_slicing_1d():
     assert np.all(dp[:6] == truth[:6])
 
 
-def test_numpy_slicing_2d():
+def test_numpy_indexing_2d():
     dp = DPArray((100, 2))
-    xy = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
+    truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
 
     for x in range(10):
         for y in range(10):
             dp[10 * x + y, 0] = x
             dp[10 * x + y, 1] = y
 
-    assert np.all(dp == xy)
+    assert np.all(dp == truth)
+    assert dp[0, 1] == truth[0, 1]
+    assert dp[10, 1] == truth[10, 1]
+
+
+@pytest.mark.parametrize("slice_1",
+                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 50],
+                         ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_2",
+                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 1],
+                         ids=["a", "b", "c", "d", "e"])
+def test_numpy_slicing_2d(slice_1, slice_2):
+    dp = DPArray((100, 2))
+    truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
+
+    for x in range(10):
+        for y in range(10):
+            dp[10 * x + y, 0] = x
+            dp[10 * x + y, 1] = y
+
+    nd_slice = (slice_1, slice_2)
+    assert np.all(dp[nd_slice] == truth[nd_slice])
 
 
 def test_arr_return_copy():
