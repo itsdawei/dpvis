@@ -1,7 +1,7 @@
 """This file provides the DPArray class."""
 import numpy as np
 
-from ._logger import Logger, Operation
+from dp._logger import Logger, Operation
 
 
 class DPArray:
