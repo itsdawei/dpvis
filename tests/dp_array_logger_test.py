@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 from dp import DPArray, Op
@@ -92,26 +93,19 @@ def test_array_slice_read_write_log():
     assert dp.logger.logs[1]["idx"] == {"dp_array": set([1, 2, 3])}
     assert len(dp.logger.logs) == 2
 
-def test_2d_array_slice_read_write_log():
+
+@pytest.mark.parametrize(
+    "slice_1", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], np.s_[5:6]],
+    ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize(
+    "slice_2", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], np.s_[1:2]],
+    ids=["a", "b", "c", "d", "e"])
+def test_2d_array_slice_read_write_log(slice_1, slice_2):
     dp = DPArray((10, 10))
 
-    dp[0:2, 0:2] = 1
-    assert dp.logger.logs[0]["op"] == Op.WRITE
-    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(0, 0), (0, 1), (1, 0), (1, 1)])}
+    dp[slice_1, slice_2] = 1
+    truth = {(i, j)
+             for i in range(*slice_1.indices(10))
+             for j in range(*slice_2.indices(10))}
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
     assert len(dp.logger.logs) == 1
-
-    dp[0:5, 0:5] = 1
-    assert dp.logger.logs[0]["op"] == Op.WRITE
-    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(i, j) for i in range(5) for j in range(5)])}
-    assert len(dp.logger.logs) == 1
-
-    dp[::3, ::3] = 2
-    assert dp.logger.logs[0]["op"] == Op.WRITE
-    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(i, j) for i in range(5) for j in range(5)])}
-
-    temp = dp[3::, 4:8]
-    assert dp.logger.logs[0]["op"] == Op.WRITE
-    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(i, j) for i in range(5) for j in range(5)])}
-    assert dp.logger.logs[1]["op"] == Op.READ
-    assert dp.logger.logs[1]["idx"] == {"dp_array": set([(i, j) for i in range(3, 10) for j in range(4, 8)])}
-    assert len(dp.logger.logs) == 2
