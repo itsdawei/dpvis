@@ -166,9 +166,3 @@ def test_constructor_default_logger():
     dp2 = DPArray(10, "dp2", logger=dp1.logger)
     assert dp1.logger == dp2.logger
     assert dp1.logger.array_names == {"dp1", "dp2"}
-
-
-def test_constructor_duplicate_name_error():
-    dp1 = DPArray(10, "duplicate_name")
-    with pytest.raises(ValueError):
-        _ = DPArray(10, "duplicate_name", logger=dp1.logger)

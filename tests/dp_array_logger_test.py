@@ -4,7 +4,7 @@ import pytest
 from dp import DPArray, Op
 
 
-def test_overwrite_index_log():
+def test_overwrite_log_index():
     dp = DPArray(10, "dp")
 
     dp[0] = 1
@@ -16,7 +16,7 @@ def test_overwrite_index_log():
     assert len(dp.logger.logs) == 1
 
 
-def test_array_read_write_log():
+def test_read_write():
     dp = DPArray(10, "dp")
 
     dp[0] = 1
