@@ -107,7 +107,7 @@ def test_2d_array_slice_read_write_log():
 
     dp[::3, ::3] = 2
     assert dp.logger.logs[0]["op"] == Op.WRITE
-    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(i, j) for i in range(5) for j in range(3)])}
+    assert dp.logger.logs[0]["idx"] == {"dp_array": set([(i, j) for i in range(3) for j in range(3)])}
 
     temp = dp[3::, 4:8]
     assert dp.logger.logs[0]["op"] == Op.WRITE
