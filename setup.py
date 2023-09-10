@@ -29,6 +29,9 @@ extras_require = {
 
         # Documentation
         "mkdocs==1.5.2",
+        "mkdocs-material==9.2.8",
+        "mkdocstrings[python]==0.23.0",
+        "mkdocs-gen-files==1.16.0",
 
         # Distribution
         # "bump2version==1.0.1",
