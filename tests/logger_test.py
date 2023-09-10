@@ -1,3 +1,4 @@
+"""Tests the methods in Logger."""
 import pytest
 
 from dp import DPArray, Logger, Op

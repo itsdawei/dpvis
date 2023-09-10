@@ -1,3 +1,4 @@
+"""Tests the interaction between DPArray and Logger."""
 import numpy as np
 import pytest
 

@@ -1,3 +1,4 @@
+"""Tests the methods in DPArray."""
 import numpy as np
 import pytest
 
