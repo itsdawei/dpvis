@@ -27,19 +27,16 @@ def test_read_write():
 def test_2d_read_write():
     dp = DPArray((10, 10), "name")
     dp[0, 0] = 1
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0)}}}
     assert len(dp.logger.logs) == 1
 
     temp = dp[0, 0]
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0)}}}
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {(0, 0)}}}
     assert len(dp.logger.logs) == 2
 
     dp[3, 6] = temp
+    assert len(dp.logger.logs) == 3
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0)}}}
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {(0, 0)}}}
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {(3, 6)}}}
-    assert len(dp.logger.logs) == 3
 
 
 def test_array_read_write_log_multiple_arrays():
