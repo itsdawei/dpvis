@@ -2,6 +2,13 @@ name: Tests
 
 on: [push]
 
+defaults:
+  run:
+    # The default shell must be set like this so that bash will source the
+    # profile, which contains settings initialized by Conda:
+    # https://github.com/marketplace/actions/setup-miniconda#important
+    shell: bash -el {0}
+
 jobs:
   test:
     strategy:
@@ -22,8 +29,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: | 
+        run: |
           pip install .[dev]
-      - name: Pytest
+      - name: pytest
         run: >
           pytest tests
