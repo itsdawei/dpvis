@@ -1,6 +1,6 @@
 import pytest
 
-from dp import DPArray, Operation
+from dp import DPArray, Op
 
 
 def test_array_constructor_inits_logger():
@@ -24,27 +24,27 @@ def test_array_read_write_log():
     dp = DPArray(10, "name")
 
     dp[0] = 1
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {0}}
     assert len(dp.logger.logs) == 1
 
     dp[0] = 2
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {0}}
 
     dp[1] = 3
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {0, 1}}
 
     temp = dp[1]
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {0, 1}}
-    assert dp.logger.logs[1]["op"] == Operation.READ
+    assert dp.logger.logs[1]["op"] == Op.READ
     assert dp.logger.logs[1]["idx"] == {"name": {1}}
     assert len(dp.logger.logs) == 2
 
     dp[2] = temp
-    assert dp.logger.logs[2]["op"] == Operation.WRITE
+    assert dp.logger.logs[2]["op"] == Op.WRITE
     assert dp.logger.logs[2]["idx"] == {"name": {2}}
     assert len(dp.logger.logs) == 3
 
@@ -52,19 +52,19 @@ def test_array_read_write_log():
 def test_2d_array_read_write_log():
     dp = DPArray((10, 10), "name")
     dp[0, 0] = 1
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {(0, 0)}}
     assert len(dp.logger.logs) == 1
 
     temp = dp[0, 0]
-    assert dp.logger.logs[0]["op"] == Operation.WRITE
+    assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"name": {(0, 0)}}
-    assert dp.logger.logs[1]["op"] == Operation.READ
+    assert dp.logger.logs[1]["op"] == Op.READ
     assert dp.logger.logs[1]["idx"] == {"name": {(0, 0)}}
     assert len(dp.logger.logs) == 2
 
     dp[3, 6] = temp
-    assert dp.logger.logs[2]["op"] == Operation.WRITE
+    assert dp.logger.logs[2]["op"] == Op.WRITE
     assert dp.logger.logs[2]["idx"] == {"name": {(3, 6)}}
     assert len(dp.logger.logs) == 3
 
@@ -75,16 +75,16 @@ def test_array_read_write_log_multiple_arrays():
 
     dp1[0] = 1
     dp2[0] = 2
-    assert dp1.logger.logs[0]["op"] == Operation.WRITE
+    assert dp1.logger.logs[0]["op"] == Op.WRITE
     assert dp1.logger.logs[0]["idx"] == {"dp_1": {0}, "dp_2": {0}}
 
     dp1[1] = 3
     dp2[1] = dp1[1]
-    assert dp1.logger.logs[0]["op"] == Operation.WRITE
+    assert dp1.logger.logs[0]["op"] == Op.WRITE
     assert dp1.logger.logs[0]["idx"] == {"dp_1": {0, 1}, "dp_2": {0}}
-    assert dp1.logger.logs[1]["op"] == Operation.READ
+    assert dp1.logger.logs[1]["op"] == Op.READ
     assert dp1.logger.logs[1]["idx"]["dp_1"] == {1}
-    assert dp1.logger.logs[2]["op"] == Operation.WRITE
+    assert dp1.logger.logs[2]["op"] == Op.WRITE
     assert dp1.logger.logs[2]["idx"]["dp_2"] == {1}
     assert len(dp1.logger.logs) == 3
 

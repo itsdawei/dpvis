@@ -1,7 +1,7 @@
 """This file provides the DPArray class."""
 import numpy as np
 
-from dp._logger import Logger, Operation
+from dp._logger import Logger, Op
 
 
 class DPArray:
@@ -134,7 +134,7 @@ class DPArray:
         """
         # TODO: Check if idx is occupied
         log_idx = self._nd_slice_to_indices(idx)
-        self._logger.append(self._array_name, Operation.READ, log_idx)
+        self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -145,7 +145,7 @@ class DPArray:
             value (self.dtype): The assigned value.
         """
         log_idx = self._nd_slice_to_indices(idx)
-        self._logger.append(self._array_name, Operation.WRITE, log_idx)
+        self._logger.append(self._array_name, Op.WRITE, log_idx)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):

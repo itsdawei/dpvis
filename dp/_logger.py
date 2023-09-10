@@ -4,7 +4,7 @@ from enum import IntEnum
 import numpy as np
 
 
-class Operation(IntEnum):
+class Op(IntEnum):
     """The allowed operation on the DPArray."""
     READ = 1
     WRITE = 2
