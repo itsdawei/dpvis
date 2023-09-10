@@ -116,7 +116,8 @@ class DPArray:
         # Generate the meshgrid of indices and combine indices into
         # n-dimensional index tuples.
         mesh_indices = np.meshgrid(*slice_indices, indexing="ij")
-        indices = np.stack(mesh_indices, axis=-1).reshape(-1, len(slice_indices))
+        indices = np.stack(mesh_indices,
+                           axis=-1).reshape(-1, len(slice_indices))
 
         # Convert to tuple if index is > 1D, otherwise remove the last
         # dimension.
