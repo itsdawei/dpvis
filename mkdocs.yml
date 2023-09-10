@@ -1,15 +1,20 @@
-site_name: My Docs
+site_name: dpvis Documentation
 theme:
   name: material
   features:
     - content.code.copy
     - navigation.sections
+    - navigation.path
+    - navigation.top
 nav:
   - Home: README.md
   - API:
     - dp_array.md
 plugins:
   - search
+  - gen-files:
+      scripts:
+      - docs/gen_ref_pages.py 
   - mkdocstrings:
       default_handler: python
       handlers:

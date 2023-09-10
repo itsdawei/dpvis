@@ -72,7 +72,7 @@ class DPArray:
             idx (int): The index of the array.
 
         Returns:  
-            self.dtype or np.ndarray: hi
+            self.dtype or np.ndarray: corresponding item
         """
         # TODO: Check if idx is occupied
         # TODO: Record READ in logger
