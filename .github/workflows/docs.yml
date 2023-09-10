@@ -3,9 +3,7 @@ name: Docs
 on: [push]
 
 jobs:
-  pull_request:
-    branches:
-      - master  docs:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
