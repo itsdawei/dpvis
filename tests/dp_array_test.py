@@ -127,3 +127,10 @@ def test_dtype_assignment(dtype):
 
     assert isinstance(dp[0], dp.dtype)
     assert dp.dtype == dp.arr.dtype
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64], ids=["f", "d"])
+def test_to_csv(tmp_path, dtype):
+    file = tmp_path / "test.csv"
+    
+    dp = DPArray(10, dtype=dtype)
+    dp.to_csv(file)

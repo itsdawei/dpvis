@@ -64,6 +64,17 @@ class DPArray:
 
         raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
 
+    @staticmethod
+    def load_csv(fname):
+        """Load a DPArray from a .csv file
+        
+        Args:
+            Name of the .csv file
+        
+        """
+
+        
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
@@ -112,6 +123,21 @@ class DPArray:
         if isinstance(other, DPArray):
             return self.arr != other.arr
         return self.arr != other
+
+    def save_csv(self, fname, fmt='%.18e'):
+        """Write to a file in csv format
+        
+        Args:
+            fname (str): filename or file handle
+        """
+        # Prep array for write
+        csv_arr = np.array(self._arr, copy=True)
+        np.place(csv_arr, self._occupied_arr, np.nan)
+        csv_arr = np.reshape(csv_arr, (csv_arr.shape[0], -1))
+        
+        # Store other info about the array
+        header = "shape=" + str(self._arr.shape) + ", dtype=" + str(self._dtype)
+        np.savetxt(fname, csv_arr, fmt=fmt, delimiter=',', header=header)
 
     @property
     def arr(self):
