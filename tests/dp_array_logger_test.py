@@ -86,7 +86,7 @@ def test_array_slice_read_write_log():
     assert dp.logger.logs[0]["idx"] == {"dp_array": set([0, 1, 2, 3, 4])}
     assert len(dp.logger.logs) == 1
 
-    temp = dp[1:4]
+    _ = dp[1:4]
     assert dp.logger.logs[0]["op"] == Op.WRITE
     assert dp.logger.logs[0]["idx"] == {"dp_array": set([0, 1, 2, 3, 4])}
     assert dp.logger.logs[1]["op"] == Op.READ
