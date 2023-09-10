@@ -35,6 +35,7 @@ def test_add_during_logging_error(logger):
         logger.add_array("dp2")
 
 
+# TODO: test_multiple_array_append
 def test_append(logger):
     logger.add_array("dp2")
 
@@ -83,10 +84,50 @@ def test_append(logger):
     assert len(logger.logs) == 2
 
 
+def test_multiple_arrays_logging():
+    dp1 = DPArray(10, "dp_1")
+    dp2 = DPArray(10, "dp_2", logger=dp1.logger)
+
+    dp1[0] = 1
+    dp2[0] = 2
+    assert dp1.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": {0},
+            "dp_2": {0}
+        }
+    }
+
+    dp1[1] = 3
+    dp2[1] = dp1[1] # READ happens before WRITE
+    assert dp1.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": {0, 1},
+            "dp_2": {0}
+        }
+    }
+    assert dp1.logger.logs[1] == {
+        "op": Op.READ,
+        "idx": {
+            "dp_1": {1},
+            "dp_2": set()
+        }
+    }
+    assert dp1.logger.logs[2] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": set(),
+            "dp_2": {1}
+        }
+    }
+    assert len(dp1.logger.logs) == 3
+
+
 @pytest.mark.parametrize(
     "op",
     [Op.WRITE, Op.READ,
-     pytest.param(Op.HIGHLIGHT, marks=pytest.mark.xfail)], # Expected to fail
+     pytest.param(Op.HIGHLIGHT, marks=pytest.mark.xfail)],  # Expected to fail
     ids=["w", "r", "h"])
 def test_same_op_and_index(op):
     """Same operation with same index does not create additional log."""
