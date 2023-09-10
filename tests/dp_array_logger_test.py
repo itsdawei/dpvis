@@ -60,25 +60,64 @@ def test_array_read_write_log_multiple_arrays():
 
     dp1[0] = 1
     dp2[0] = 2
-    assert dp1.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_1": {0}, "dp_2": {0}}}
+    assert dp1.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": {0},
+            "dp_2": {0}
+        }
+    }
 
     dp1[1] = 3
     dp2[1] = dp1[1]
-    assert dp1.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_1": {0, 1}, "dp_2": {0}}}
-    assert dp1.logger.logs[1] == {"op": Op.READ, "idx": {"dp_1": {1}, "dp_2": set()}}
-    assert dp1.logger.logs[2] == {"op": Op.WRITE, "idx": {"dp_1": set(), "dp_2": {1}}}
+    assert dp1.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": {0, 1},
+            "dp_2": {0}
+        }
+    }
+    assert dp1.logger.logs[1] == {
+        "op": Op.READ,
+        "idx": {
+            "dp_1": {1},
+            "dp_2": set()
+        }
+    }
+    assert dp1.logger.logs[2] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_1": set(),
+            "dp_2": {1}
+        }
+    }
     assert len(dp1.logger.logs) == 3
 
 
 def test_array_slice_read_write_log():
     dp = DPArray(10)
     dp[0:5] = 1
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": set([0, 1, 2, 3, 4])}}
+    assert dp.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_array": set([0, 1, 2, 3, 4])
+        }
+    }
     assert len(dp.logger.logs) == 1
 
-    temp = dp[1:4]
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": set([0, 1, 2, 3, 4])}}
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": set([1, 2, 3])}}
+    _ = dp[1:4]
+    assert dp.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_array": set([0, 1, 2, 3, 4])
+        }
+    }
+    assert dp.logger.logs[1] == {
+        "op": Op.READ,
+        "idx": {
+            "dp_array": set([1, 2, 3])
+        }
+    }
     assert len(dp.logger.logs) == 2
 
 
