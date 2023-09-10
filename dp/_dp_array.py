@@ -115,13 +115,14 @@ class DPArray:
 
         # Generate the meshgrid of indices and combine indices into
         # n-dimensional index tuples.
-        indices = np.column_stack(np.meshgrid(*slice_indices, indexing="ij"))
+        mesh_indices = np.meshgrid(*slice_indices, indexing="ij")
+        indices = np.vstack(mesh_indices).reshape(len(slice_indices), -1).T
 
         # Convert to tuple if index is > 1D, otherwise remove the last
         # dimension.
-        indices = ([tuple(row) for row in indices]
-                   if indices.shape[1] != 1 else np.squeeze(indices, axis=1))
-        return indices
+        indices_tuples = ([tuple(row) for row in indices] if indices.shape[1]
+                          != 1 else np.squeeze(indices, axis=1))
+        return indices_tuples
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
