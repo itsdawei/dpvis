@@ -93,7 +93,7 @@ def test_array_slice_read_write_log():
     }
     assert len(dp.logger.logs) == 1
 
-    temp = dp[1:4]
+    _ = dp[1:4]
     assert dp.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
