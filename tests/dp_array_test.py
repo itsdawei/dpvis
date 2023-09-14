@@ -1,4 +1,5 @@
 """Tests the methods in DPArray."""
+import os
 import numpy as np
 import pytest
 
@@ -155,7 +156,7 @@ def test_occupied_arr():
     """
     Testing occupied array
     """
-    truth = np.zeros_like(10, dtype=bool)
+    truth = np.zeros(shape=10, dtype=bool)
     dp = DPArray(shape=10)
 
     for i in range(0, 10, 2):
@@ -171,29 +172,35 @@ def test_occupied_arr():
         assert np.all(dp.occupied_arr == truth)
 
 
-@pytest.mark.parametrize("shape, dtype, indices",
-                         [(5, np.float32, {2, 4}),
-                          ((5, 3), np.float64, {(0, 0), (3, 2), (4, 2)}),
-                          ((3, 4, 5), np.float32, {(0, 1, 0), (2, 2, 0)})],
+@pytest.mark.parametrize("shape, dtype, indices, filenum",
+                         [(5, np.float32, {2, 4}, 1),
+                          ((5, 3), np.float64, {(0, 0), (3, 2), (4, 2)}, 2),
+                          ((3, 4, 5), np.float32, {(0, 1, 0), (2, 2, 0)}, 3)],
                          ids=["a", "b", "c"])
-def test_to_csv(tmp_path, shape, dtype, indices):
-    file = tmp_path / "test.csv"
+def test_save_csv(tmp_path, shape, dtype, indices, filenum):
+    tmp_filename = tmp_path / "test.csv"
+    truth_filename = os.getcwd() + f"\\references\\to_csv_text{filenum}.csv"
 
-    truth = DPArray(shape=shape, dtype=dtype)
+    # Save DPArray
+    arr = DPArray(shape=shape, dtype=dtype)
     for index in indices:
-        truth[index] = 1
-    truth.save_csv(file, fmt='%.0f')
+        arr[index] = 1
+    arr.save_csv(tmp_filename, fmt='%.0f')
 
-    with open(file, "rt", encoding='UTF-8') as f:
-        header = f.readline()
-        assert header == "# shape=" + str(
-            truth.arr.shape) + ", dtype=" + str(dtype) + "\n"
-
-    arr = np.loadtxt(file, delimiter=",", dtype=dtype, skiprows=1)
-    arr = arr.reshape(shape)
-
-    assert np.all(truth.arr[truth.occupied_arr] == arr[truth.occupied_arr])
-    assert np.all(np.isnan(arr[~truth.occupied_arr]))
+    # Start code used from
+    # "https://codereview.stackexchange.com/questions/171003/python-code-that-compares-two-files-byte-by-byte" # pylint: disable=line-too-long
+    with open(tmp_filename, "rb") as tmp_file,\
+        open(truth_filename, "rb") as truth_file:
+        # Compare files byte by byte
+        while True:
+            b_tmp = tmp_file.read()
+            b_truth = truth_file.read()
+            if b_tmp != b_truth:
+                assert False, "Mismatch between save_csv file output" + \
+                     f"and expected file output for filenum={filenum}"
+            if not b_tmp:
+                break
+    # End cited code
 
 
 # Logger related tests #
