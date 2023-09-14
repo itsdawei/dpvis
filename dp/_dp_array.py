@@ -1,6 +1,8 @@
 """This file provides the DPArray class."""
 import numpy as np
 
+from dp._logger import Logger, Op
+
 
 class DPArray:
     """DPArray class.
@@ -18,6 +20,7 @@ class DPArray:
     def __init__(
         self,
         shape,
+        array_name="dp_array",
         *,
         logger=None,
         description_string=None,
@@ -31,13 +34,10 @@ class DPArray:
         self._arr = np.empty(shape, dtype=self._dtype)
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
-        if logger is None:
-            # TODO: Create logger
-            # self._logger = Logger()
-            pass
-        else:
-            self._logger = logger
+        self._logger = Logger() if logger is None else logger
+        self._logger.add_array(array_name)
 
+        self._array_name = array_name
         self._description_string = description_string
         self._row_labels = row_labels
         self._column_labels = column_labels
@@ -65,6 +65,67 @@ class DPArray:
         raise ValueError(
             "Unsupported dtype. Must be np.float32 and np.float64")
 
+    def _nd_slice_to_indices(self, nd_slice):
+        """Converts a nd-slice to indices.
+
+        Calculate the indices from the slices.
+        1. Get the start, stop, and step values for each slice.
+        2. Use np.arange to create arrays of indices for each slice.
+        3. Create 1D array of indices using meshgrid and column_stack.
+
+        Args:
+            nd_slice (slice/int, list/tuple of slice/int):
+                nd_slice can be anything used to index a numpy array. For
+                example:
+                - Direct indexing: (0, 0, ...)
+                - 1d slice: slice(0, 10, 2)
+                - nd slice: (slice(0, 10, 2), slice(1, 5, 1), ...)
+                - Mixture: (slice(0, 10, 2), 5, 1)
+
+        Returns:
+            list of tuples/integer: length n list of d-tuples, where n is the number of
+                indices and d is the dimension DPArray. If d = 1, then the list will
+                contain integers instead.
+
+        Raises:
+            ValueError: If ``nd_slice`` is not a slice object, a list of slice
+                objects, or a list of tuples of integers.
+            ValueError: If any element in ``nd_slice`` is not a valid slice
+                object or integer.
+        """
+        if isinstance(nd_slice, (slice, int)):
+            # Convert 1d slice to nd slice.
+            nd_slice = (nd_slice,)
+        if not isinstance(nd_slice, (list, tuple)):
+            raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be"
+                             f"a slice object, a list/tuple of slice objects,"
+                             f"or a list/tuple of integers.")
+
+        slice_indices = []
+        for dim, size in enumerate(self._arr.shape):
+            s = nd_slice[dim]
+            if isinstance(s, slice):
+                # Handle slice objects.
+                slice_indices.append(np.arange(*s.indices(size)))
+            elif isinstance(s, int):
+                # Handle tuple of integers for direct indexing.
+                slice_indices.append(s)
+            else:
+                raise ValueError("Each element in 'nd_slice' must be a valid"
+                                 "slice object or integer.")
+
+        # Generate the meshgrid of indices and combine indices into
+        # n-dimensional index tuples.
+        mesh_indices = np.meshgrid(*slice_indices, indexing="ij")
+        indices = np.stack(mesh_indices,
+                           axis=-1).reshape(-1, len(slice_indices))
+
+        # Convert to tuple if index is > 1D, otherwise remove the last
+        # dimension.
+        indices_tuples = ([tuple(row) for row in indices] if indices.shape[1]
+                          != 1 else np.squeeze(indices, axis=1))
+        return indices_tuples
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
@@ -75,7 +136,8 @@ class DPArray:
             self.dtype or np.ndarray: corresponding item
         """
         # TODO: Check if idx is occupied
-        # TODO: Record READ in logger
+        log_idx = self._nd_slice_to_indices(idx)
+        self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -85,7 +147,8 @@ class DPArray:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
         """
-        # TODO: Record WRITE in logger
+        log_idx = self._nd_slice_to_indices(idx)
+        self._logger.append(self._array_name, Op.WRITE, log_idx)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):
@@ -124,10 +187,10 @@ class DPArray:
         """Returns the np.ndarray that contains the occupied mask."""
         return np.array(self._occupied_arr, copy=True)
 
-    # @property
-    # def logger(self):
-    #     """Returns the np.ndarray that contains all the computations."""
-    #     return self._logger
+    @property
+    def logger(self):
+        """Returns the np.ndarray that contains all the computations."""
+        return self._logger
 
     @property
     def dtype(self):
