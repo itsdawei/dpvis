@@ -62,7 +62,8 @@ class DPArray:
         if dtype == np.float64:
             return np.float64
 
-        raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
+        raise ValueError(
+            "Unsupported dtype. Must be np.float32 and np.float64")
 
     def _nd_slice_to_indices(self, nd_slice):
         """Converts a nd-slice to indices.
@@ -131,8 +132,8 @@ class DPArray:
         Args:
             idx (int): The index of the array.
 
-        Returns:
-            self.dtype or np.ndarray:
+        Returns:  
+            self.dtype or np.ndarray: corresponding item
         """
         # TODO: Check if idx is occupied
         log_idx = self._nd_slice_to_indices(idx)

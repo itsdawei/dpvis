@@ -18,11 +18,12 @@ Ready to contribute? Here's how to set up your environment for local development
    ```
 
 1. Install the local copy and dev requirements into an environment. For
-   instance, with Conda, run the following commands:
+   instance, with [Conda](https://docs.conda.io/projects/miniconda/en/latest/),
+   run the following commands:
 
    ```bash
    cd dynamically_programmed
-   conda create --name=dp python=3.7 # 3.7 is the minimum version we support.
+   conda create --name=dp python=3.8 # 3.8 is the minimum version we support.
    conda activate dp
    conda install pip
    pip install -e .[dev]
@@ -57,7 +58,7 @@ Ready to contribute? Here's how to set up your environment for local development
    Finally, to lint the code:
 
    ```bash
-   pylint dp tests benchmarks examples
+   pylint dp tests
    make lint # ^ same as above
    ```
 
@@ -102,16 +103,15 @@ pytest tests/core/test1
 
 ### Documentation
 
-Documentation compiled with [MkDocs](https://www.mkdocs.org/).
+The documentation is compiled with
+[mkdocs-material](https://squidfunk.github.io/mkdocs-material/) and
+[mkdocstrings](https://mkdocstrings.github.io/)
 
-To preview documentation, use:
+To preview documentation locally, use:
 
 ```bash
 make servedocs
 ```
-
-This will open up a browser window and automatically reload as changes are made
-to the docs.
 
 ### Referencing Papers
 

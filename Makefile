@@ -41,29 +41,21 @@ clean-test: ## remove test and coverage artifacts
 .PHONY: clean-test
 
 lint: ## check style with pylint
-	pylint dp tests examples benchmarks
+	pylint dp tests
 .PHONY: lint
 
 test: ## run tests with the default Python
 	pytest tests
 .PHONY: test
 
-# TODO Setup MkDocs 
-# docs: ## generate Sphinx HTML documentation, including API docs
-# 	$(MAKE) -C docs clean
-# 	$(MAKE) -C docs html
-# 	$(BROWSER) docs/_build/html/index.html
-# .PHONY: docs
+docs: ## generate HTML documentation, including API docs
+	mkdocs build
+	$(BROWSER) site/index.html
+.PHONY: docs
 
-# servedocs: ## compile the docs watching for changes
-# 	DOCS_MODE=dev sphinx-autobuild \
-# 		--open-browser \
-# 		--watch ribs/ \
-# 		--watch examples/ \
-# 		--watch tutorials/ \
-# 		docs/ \
-# 		docs/_build/html
-# .PHONY: servedocs
+servedocs: ## compile the docs watching for changes
+	mkdocs serve
+.PHONY: servedocs
 
 # TODO Setup deployment
 # release-test: dist ## package and upload a release to TestPyPI
