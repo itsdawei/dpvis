@@ -151,7 +151,7 @@ def test_dtype_assignment(dtype):
     assert dp.dtype == dp.arr.dtype
 
 
-def text_occupied_arr():
+def test_occupied_arr():
     """
     Testing occupied array
     """
