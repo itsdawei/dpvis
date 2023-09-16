@@ -5,6 +5,12 @@ import pytest
 from dp import DPArray, Op
 
 
+def test_duplicate_array_error():
+    dp1 = DPArray(10, "duplicate_name")
+    with pytest.raises(ValueError):
+        _ = DPArray(10, "duplicate_name", logger=dp1.logger)
+
+
 def test_read_write():
     dp = DPArray(10, "dp")
 

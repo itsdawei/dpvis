@@ -1,7 +1,7 @@
 """Tests the methods in Logger."""
 import pytest
 
-from dp import DPArray, Logger, Op
+from dp import Logger, Op
 
 # pylint: disable=redefined-outer-name
 
@@ -12,12 +12,6 @@ def logger():
     logger = Logger()
     logger.add_array("dp1")
     return logger
-
-
-def test_duplicate_array_error():
-    dp1 = DPArray(10, "duplicate_name")
-    with pytest.raises(ValueError):
-        _ = DPArray(10, "duplicate_name", logger=dp1.logger)
 
 
 def test_array_not_found_error(logger):
