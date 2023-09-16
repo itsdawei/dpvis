@@ -22,6 +22,7 @@ class Logger:
     """
 
     def __init__(self):
+        """Initializes the logger."""
         self._array_names = set()
         self._logs = []
 
@@ -78,10 +79,12 @@ class Logger:
                 "op": operation,
                 "idx": {
                     # array_name: {idx1: value1, idx2: value2, ...}
-                    name: dict() for name in self._array_names
+                    name: {} for name in self._array_names
                 },
             })
-        self._logs[-1]["idx"][array_name] |= dict(zip(idx_list, values) if values else zip(idx_list, [None] * len(idx_list)))
+        self._logs[-1]["idx"][array_name] |= dict(
+            zip(idx_list, values) if values else zip(idx_list, [None] *
+                                                     len(idx_list)))
 
     @property
     def logs(self):

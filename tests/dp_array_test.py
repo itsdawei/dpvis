@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from dp import DPArray, Logger, Op
+from dp import DPArray, Logger
 
 
 @pytest.mark.parametrize("shape", [(2, 2), (2, 3, 4)])
@@ -167,37 +167,3 @@ def test_constructor_default_logger():
     dp2 = DPArray(10, "dp2", logger=dp1.logger)
     assert dp1.logger == dp2.logger
     assert dp1.logger.array_names == {"dp1", "dp2"}
-
-
-# @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-#                          ids=["a", "b", "c", "d", "e"])
-# def test_slice_logging(s):
-#     dp = DPArray(10)
-
-#     dp[s] = 1
-#     if isinstance(s, int):
-#         s = np.s_[s:s + 1]
-#     truth = set(i for i in range(*s.indices(10)))
-#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-#     assert len(dp.logger.logs) == 1
-
-
-# @pytest.mark.parametrize("slice_1",
-#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-#                          ids=["a", "b", "c", "d", "e"])
-# @pytest.mark.parametrize("slice_2",
-#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
-#                          ids=["a", "b", "c", "d", "e"])
-# def test_2d_slice_logging(slice_1, slice_2):
-#     dp = DPArray((10, 10))
-
-#     dp[slice_1, slice_2] = 1
-#     if isinstance(slice_1, int):
-#         slice_1 = np.s_[slice_1:slice_1 + 1]
-#     if isinstance(slice_2, int):
-#         slice_2 = np.s_[slice_2:slice_2 + 1]
-#     truth = {(i, j)
-#              for i in range(*slice_1.indices(10))
-#              for j in range(*slice_2.indices(10))}
-#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-#     assert len(dp.logger.logs) == 1

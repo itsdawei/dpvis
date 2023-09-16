@@ -41,13 +41,24 @@ def test_append(logger):
 
     # Append to dp1.
     logger.append("dp1", Op.READ, 0)
-    assert logger.logs[0] == {"op": Op.READ, "idx": {"dp1": {0:None}, "dp2": dict()}}
+    assert logger.logs[0] == {
+        "op": Op.READ,
+        "idx": {
+            "dp1": {
+                0: None
+            },
+            "dp2": {}
+        }
+    }
     logger.append("dp1", Op.READ, 1)
     assert logger.logs[0] == {
         "op": Op.READ,
         "idx": {
-            "dp1": {0:None, 1:None},
-            "dp2": dict(),
+            "dp1": {
+                0: None,
+                1: None
+            },
+            "dp2": {},
         }
     }
     assert len(logger.logs) == 1
@@ -57,8 +68,13 @@ def test_append(logger):
     assert logger.logs[0] == {
         "op": Op.READ,
         "idx": {
-            "dp1": {0:None, 1:None},
-            "dp2": {0:None},
+            "dp1": {
+                0: None,
+                1: None
+            },
+            "dp2": {
+                0: None
+            },
         }
     }
     assert len(logger.logs) == 1
@@ -68,16 +84,23 @@ def test_append(logger):
     assert logger.logs[0] == {
         "op": Op.READ,
         "idx": {
-            "dp1": {0: None, 1: None},
-            "dp2": {0: None},
+            "dp1": {
+                0: None,
+                1: None
+            },
+            "dp2": {
+                0: None
+            },
         }
     }
     # Current time-step is updated.
     assert logger.logs[1] == {
         "op": Op.WRITE,
         "idx": {
-            "dp1": {0: 1},
-            "dp2": dict(),
+            "dp1": {
+                0: 1
+            },
+            "dp2": {},
         }
     }
     # Total time-step.
