@@ -148,7 +148,8 @@ class DPArray:
             value (self.dtype): The assigned value.
         """
         log_idx = self._nd_slice_to_indices(idx)
-        self._logger.append(self._array_name, Op.WRITE, log_idx)
+        # TODO: match values to log_idx? 
+        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):

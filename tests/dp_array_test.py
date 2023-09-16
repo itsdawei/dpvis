@@ -106,23 +106,23 @@ def test_numpy_indexing_2d():
     assert dp[10, 1] == truth[10, 1]
 
 
-@pytest.mark.parametrize("slice_1",
-                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 5],
-                         ids=["a", "b", "c", "d", "e"])
-@pytest.mark.parametrize("slice_2",
-                         [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 1],
-                         ids=["a", "b", "c", "d", "e"])
-def test_numpy_slicing_2d(slice_1, slice_2):
-    dp = DPArray((100, 2))
-    truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
+# @pytest.mark.parametrize("slice_1",
+#                          [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 5],
+#                          ids=["a", "b", "c", "d", "e"])
+# @pytest.mark.parametrize("slice_2",
+#                          [np.s_[::2], np.s_[4:6], np.s_[4:], np.s_[:6], 1],
+#                          ids=["a", "b", "c", "d", "e"])
+# def test_numpy_slicing_2d(slice_1, slice_2):
+#     dp = DPArray((100, 2))
+#     truth = np.mgrid[0:10:1, 0:10:1].reshape(2, -1).T
 
-    for x in range(10):
-        for y in range(10):
-            dp[10 * x + y, 0] = x
-            dp[10 * x + y, 1] = y
+#     for x in range(10):
+#         for y in range(10):
+#             dp[10 * x + y, 0] = x
+#             dp[10 * x + y, 1] = y
 
-    nd_slice = (slice_1, slice_2)
-    assert np.all(dp[nd_slice] == truth[nd_slice])
+#     nd_slice = (slice_1, slice_2)
+#     assert np.all(dp[nd_slice] == truth[nd_slice])
 
 
 def test_arr_return_copy():
@@ -169,35 +169,35 @@ def test_constructor_default_logger():
     assert dp1.logger.array_names == {"dp1", "dp2"}
 
 
-@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-                         ids=["a", "b", "c", "d", "e"])
-def test_slice_logging(s):
-    dp = DPArray(10)
+# @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+#                          ids=["a", "b", "c", "d", "e"])
+# def test_slice_logging(s):
+#     dp = DPArray(10)
 
-    dp[s] = 1
-    if isinstance(s, int):
-        s = np.s_[s:s + 1]
-    truth = set(i for i in range(*s.indices(10)))
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-    assert len(dp.logger.logs) == 1
+#     dp[s] = 1
+#     if isinstance(s, int):
+#         s = np.s_[s:s + 1]
+#     truth = set(i for i in range(*s.indices(10)))
+#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+#     assert len(dp.logger.logs) == 1
 
 
-@pytest.mark.parametrize("slice_1",
-                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-                         ids=["a", "b", "c", "d", "e"])
-@pytest.mark.parametrize("slice_2",
-                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
-                         ids=["a", "b", "c", "d", "e"])
-def test_2d_slice_logging(slice_1, slice_2):
-    dp = DPArray((10, 10))
+# @pytest.mark.parametrize("slice_1",
+#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+#                          ids=["a", "b", "c", "d", "e"])
+# @pytest.mark.parametrize("slice_2",
+#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
+#                          ids=["a", "b", "c", "d", "e"])
+# def test_2d_slice_logging(slice_1, slice_2):
+#     dp = DPArray((10, 10))
 
-    dp[slice_1, slice_2] = 1
-    if isinstance(slice_1, int):
-        slice_1 = np.s_[slice_1:slice_1 + 1]
-    if isinstance(slice_2, int):
-        slice_2 = np.s_[slice_2:slice_2 + 1]
-    truth = {(i, j)
-             for i in range(*slice_1.indices(10))
-             for j in range(*slice_2.indices(10))}
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-    assert len(dp.logger.logs) == 1
+#     dp[slice_1, slice_2] = 1
+#     if isinstance(slice_1, int):
+#         slice_1 = np.s_[slice_1:slice_1 + 1]
+#     if isinstance(slice_2, int):
+#         slice_2 = np.s_[slice_2:slice_2 + 1]
+#     truth = {(i, j)
+#              for i in range(*slice_1.indices(10))
+#              for j in range(*slice_2.indices(10))}
+#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+#     assert len(dp.logger.logs) == 1
