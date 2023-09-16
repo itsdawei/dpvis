@@ -1,5 +1,6 @@
 """Tests the methods in Logger."""
 import pytest
+import numpy as np
 
 from dp import Logger, Op
 
@@ -10,7 +11,7 @@ from dp import Logger, Op
 def logger():
     """Returns a logger with one array."""
     logger = Logger()
-    logger.add_array("dp1")
+    logger.add_array("dp1", 10)
     return logger
 
 
@@ -20,18 +21,18 @@ def test_array_not_found_error(logger):
 
 
 def test_add_array(logger):
-    logger.add_array("dp2")
+    logger.add_array("dp2", 10)
     assert logger.array_names == {"dp1", "dp2"}
 
 
 def test_add_during_logging_error(logger):
     logger.append("dp1", Op.READ, 0, 0)
     with pytest.raises(ValueError):
-        logger.add_array("dp2")
+        logger.add_array("dp2", 10)
 
 
 def test_append(logger):
-    logger.add_array("dp2")
+    logger.add_array("dp2", 10)
 
     # Append to dp1.
     logger.append("dp1", Op.READ, 0)
@@ -100,6 +101,7 @@ def test_append(logger):
     # Total time-step.
     assert len(logger.logs) == 2
 
+
 @pytest.mark.parametrize(
     "op",
     [Op.WRITE, Op.READ, Op.HIGHLIGHT],
@@ -123,3 +125,71 @@ def test_same_ops_and_index(logger, op):
             },
         }
     }
+
+
+def test_to_timesteps_one_array():
+    logger = Logger()
+    logger.add_array("dp1", 3)
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 1, 2)
+    logger.append("dp1", Op.READ, 1)
+    logger.append("dp1", Op.HIGHLIGHT, 0)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append("dp1", Op.WRITE, 2, 4)
+
+    timesteps = logger.to_timesteps()
+    print(timesteps)
+    assert len(timesteps) == 2
+    assert np.all(timesteps[0]["dp1"]["contents"] == [1, 2, None])
+    assert timesteps[0]["dp1"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0, 1},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert np.all(timesteps[1]["dp1"]["contents"] == [1, 2, 4])
+    assert timesteps[1]["dp1"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: {2},
+            Op.HIGHLIGHT: {0},
+        }.items()
+    
+
+def test_to_timesteps_two_arrays():
+    logger = Logger()
+    logger.add_array("dp1", 3)
+    logger.add_array("dp2", 3)
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append("dp2", Op.WRITE, 0, 2)
+    logger.append("dp2", Op.WRITE, 1, 4)
+    logger.append("dp1", Op.READ, 1)
+    logger.append("dp2", Op.READ, 1)
+    logger.append("dp1", Op.HIGHLIGHT, 0)
+
+    timesteps = logger.to_timesteps()
+    assert len(timesteps) == 2
+    assert np.all(timesteps[0]["dp1"]["contents"] == [1, None, 3])
+    assert timesteps[0]["dp1"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0, 2},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert np.all(timesteps[0]["dp2"]["contents"] == [2, 4, None])
+    assert timesteps[0]["dp2"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0, 1},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert np.all(timesteps[1]["dp1"]["contents"] == [1, None, 3])
+    assert timesteps[1]["dp1"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: {0},
+        }.items()
+    assert np.all(timesteps[1]["dp2"]["contents"] == [2, 4, None])
+    assert timesteps[1]["dp2"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: set(),
+        }.items()
+    

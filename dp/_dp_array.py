@@ -36,7 +36,7 @@ class DPArray:
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         self._logger = Logger() if logger is None else logger
-        self._logger.add_array(array_name)
+        self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
         self._description_string = description_string
