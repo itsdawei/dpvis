@@ -99,3 +99,27 @@ def test_append(logger):
     }
     # Total time-step.
     assert len(logger.logs) == 2
+
+@pytest.mark.parametrize(
+    "op",
+    [Op.WRITE, Op.READ, Op.HIGHLIGHT],
+    ids=["w", "r", "h"])
+def test_same_ops_and_index(logger, op):
+    if op == Op.WRITE:
+        logger.append("dp1", Op.WRITE, 0, 1)
+        logger.append("dp1", Op.WRITE, 0, 2)
+    elif op == Op.READ:
+        logger.append("dp1", Op.READ, 0)
+        logger.append("dp1", Op.READ, 0)
+    elif op == Op.HIGHLIGHT:
+        logger.append("dp1", Op.HIGHLIGHT, 0)
+        logger.append("dp1", Op.HIGHLIGHT, 0)
+    assert len(logger.logs) == 1
+    assert logger.logs[0] == {
+        "op": op,
+        "idx": {
+            "dp1": {
+                0: 2 if op == Op.WRITE else None
+            },
+        }
+    }
