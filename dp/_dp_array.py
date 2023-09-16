@@ -126,6 +126,27 @@ class DPArray:
                           != 1 else np.squeeze(indices, axis=1))
         return indices_tuples
 
+    def get_timesteps(self):
+        """Retrieve the timesteps of all DPArrays associated with this array's 
+            logger.
+        
+        Returns:
+            list of timesteps where each timestep is:
+            timestep: {
+                "array_name": {
+                    "contents": array contents at this timestep,
+                    Op.READ: [idx1, idx2, ...],
+                    Op.WRITE: [idx1, idx2, ...],
+                    Op.HIGHLIGHT: [idx1, idx2, ...],
+                },
+                "array_2": {
+                    ...
+                },
+            }
+
+        """
+        return self._logger.to_timesteps()
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 

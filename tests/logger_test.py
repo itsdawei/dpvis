@@ -130,27 +130,59 @@ def test_same_ops_and_index(logger, op):
 def test_to_timesteps_one_array():
     logger = Logger()
     logger.add_array("dp1", 3)
-    logger.append("dp1", Op.WRITE, 0, 1)
-    logger.append("dp1", Op.WRITE, 1, 2)
-    logger.append("dp1", Op.READ, 1)
-    logger.append("dp1", Op.HIGHLIGHT, 0)
-    logger.append("dp1", Op.WRITE, 2, 3)
-    logger.append("dp1", Op.WRITE, 2, 4)
 
+    logger.append("dp1", Op.WRITE, 0, 1)
     timesteps = logger.to_timesteps()
-    print(timesteps)
-    assert len(timesteps) == 2
-    assert np.all(timesteps[0]["dp1"]["contents"] == [1, 2, None])
+    assert len(timesteps) == 1
+    assert np.all(timesteps[0]["dp1"]["contents"] == [1, None, None])
     assert timesteps[0]["dp1"].items() >= {
             Op.READ: set(),
-            Op.WRITE: {0, 1},
+            Op.WRITE: {0},
             Op.HIGHLIGHT: set(),
         }.items()
-    assert np.all(timesteps[1]["dp1"]["contents"] == [1, 2, 4])
-    assert timesteps[1]["dp1"].items() >= {
+    
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append("dp1", Op.WRITE, 2, 4)
+    timesteps1 = logger.to_timesteps()
+    assert len(timesteps1) == 1
+    assert np.all(timesteps1[0]["dp1"]["contents"] == [1, None, 4])
+    assert timesteps1[0]["dp1"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0, 2},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    
+    logger.append("dp1", Op.READ, 1)
+    timesteps2 = logger.to_timesteps()
+    assert len(timesteps2) == 2
+    assert np.all(timesteps2[1]["dp1"]["contents"] == [1, None, 4])
+    assert timesteps2[1]["dp1"].items() >= {
             Op.READ: {1},
-            Op.WRITE: {2},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: set(),
+        }.items()
+    
+    logger.append("dp1", Op.HIGHLIGHT, 0)
+    logger.append("dp1", Op.WRITE, 0, 5)
+    timesteps3 = logger.to_timesteps()
+    assert len(timesteps3) == 2
+    assert np.all(timesteps3[1]["dp1"]["contents"] == [5, None, 4])
+    assert timesteps3[1]["dp1"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: {0},
             Op.HIGHLIGHT: {0},
+        }.items()
+    
+    logger.append("dp1", Op.READ, 1)
+    logger.append("dp1", Op.HIGHLIGHT, 2)
+    logger.append("dp1", Op.READ, 2)
+    timesteps4 = logger.to_timesteps()
+    assert len(timesteps4) == 3
+    assert np.all(timesteps4[2]["dp1"]["contents"] == [5, None, 4])
+    assert timesteps4[2]["dp1"].items() >= {
+            Op.READ: {1, 2},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: {2},
         }.items()
     
 
