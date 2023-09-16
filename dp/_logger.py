@@ -95,10 +95,11 @@ class Logger:
                     name: {} for name in self._array_names
                 },
             })
-        self._logs[-1]["idx"][array_name].update(dict(
-            zip(idx_list, values) if values else zip(idx_list, [None] *
-                                                     len(idx_list))))
-        
+        self._logs[-1]["idx"][array_name].update(
+            dict(
+                zip(idx_list, values
+                   ) if values else zip(idx_list, [None] * len(idx_list))))
+
     def to_timesteps(self):
         """Converts the logs to timesteps.
         
@@ -141,7 +142,8 @@ class Logger:
                 for name, idx in log["idx"].items():
                     timesteps[-1][name][log["op"]] = set(idx.keys())
                     array_contents[name][list(idx.keys())] = list(idx.values())
-                    timesteps[-1][name]["contents"] = array_contents[name].copy()
+                    timesteps[-1][name]["contents"] = array_contents[name].copy(
+                    )
                 new_timestep = True
             else:
                 # NON-WRITE / READ and HIGHLIGHT operations
@@ -159,7 +161,7 @@ class Logger:
     def array_names(self):
         """Returns the array names."""
         return self._array_names
-    
+
     @property
     def shapes(self):
         """Returns the array shapes."""
