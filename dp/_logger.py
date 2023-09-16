@@ -22,6 +22,7 @@ class Logger:
     """
 
     def __init__(self):
+        """Initializes the logger."""
         self._array_names = set()
         self._logs = []
 
@@ -39,12 +40,13 @@ class Logger:
                 f"Cannot add array {array_name} to a non-empty logger.")
         self.array_names.add(array_name)
 
-    def append(self, array_name, operation, idx):
+    def append(self, array_name, operation, idx, values=None):
         """Appends an operation to the log.
 
         Args:
             operation (Operation): Operation performed.
             idx (list of tuple/int): Index of the array.
+            values (list): Values updated, 
 
         Raises:
             ValueError: Array name not recognized by logger. 
@@ -60,15 +62,29 @@ class Logger:
         elif isinstance(idx, int):
             idx_list = [idx]
 
+        if values:
+            if isinstance(values, np.ndarray):
+                values = values.tolist()
+            elif isinstance(values, (int, float, np.float32, np.float64)):
+                values = [values]
+            if len(idx_list) != len(values):
+                raise ValueError(f"Length of idx {idx_list} and values {values}"
+                                 f"do not match.")
+        elif values is None and operation == Op.WRITE:
+            raise ValueError(f"Values must be provided for {operation}.")
+
         # Initialize new operation.
         if len(self._logs) == 0 or self._logs[-1]["op"] != operation:
             self._logs.append({
                 "op": operation,
                 "idx": {
-                    name: set() for name in self._array_names
-                }
+                    # array_name: {idx1: value1, idx2: value2, ...}
+                    name: {} for name in self._array_names
+                },
             })
-        self._logs[-1]["idx"][array_name] |= set(idx_list)
+        self._logs[-1]["idx"][array_name].update(dict(
+            zip(idx_list, values) if values else zip(idx_list, [None] *
+                                                     len(idx_list))))
 
     @property
     def logs(self):

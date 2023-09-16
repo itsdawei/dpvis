@@ -29,6 +29,7 @@ class DPArray:
         colors=None,
         dtype=np.float64,
     ):
+        """Initializes the DPArray."""
         self._dtype = self._parse_dtype(dtype)
 
         self._arr = np.empty(shape, dtype=self._dtype)
@@ -62,8 +63,7 @@ class DPArray:
         if dtype == np.float64:
             return np.float64
 
-        raise ValueError(
-            "Unsupported dtype. Must be np.float32 and np.float64")
+        raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
 
     def _nd_slice_to_indices(self, nd_slice):
         """Converts a nd-slice to indices.
@@ -83,9 +83,9 @@ class DPArray:
                 - Mixture: (slice(0, 10, 2), 5, 1)
 
         Returns:
-            list of tuples/integer: length n list of d-tuples, where n is the number of
-                indices and d is the dimension DPArray. If d = 1, then the list will
-                contain integers instead.
+            list of tuples/integer: length n list of d-tuples, where n is the 
+                number of indices and d is the dimension DPArray. If d = 1, 
+                then the list will contain integers instead.
 
         Raises:
             ValueError: If ``nd_slice`` is not a slice object, a list of slice
@@ -148,7 +148,8 @@ class DPArray:
             value (self.dtype): The assigned value.
         """
         log_idx = self._nd_slice_to_indices(idx)
-        self._logger.append(self._array_name, Op.WRITE, log_idx)
+        # TODO: match values to log_idx?
+        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
         self._arr[idx] = self.dtype(value)
 
     def __eq__(self, other):
