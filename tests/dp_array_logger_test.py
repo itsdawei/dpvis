@@ -217,5 +217,56 @@ def test_get_timesteps_one_array():
         }.items()
 
 def test_get_timesteps_two_arrays():
-    # TODO: write this
+    dp = DPArray(3, "dp")
+    dp2 = DPArray(3, "dp2", logger=dp.logger)
+
+    dp[0] = 1
+    dp[1] = 2
+    dp2[0] = 2
+    timesteps = dp.get_timesteps()
+    assert len(timesteps) == 1
+    assert np.all(timesteps[0]["dp"]["contents"] == [1, 2, None])
+    assert np.all(timesteps[0]["dp2"]["contents"] == [2, None, None])
+    assert timesteps[0]["dp"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0, 1},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert timesteps[0]["dp2"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {0},
+            Op.HIGHLIGHT: set(),
+        }.items()
+    
+    _ = dp[1]
+    timesteps1 = dp.get_timesteps()
+    assert len(timesteps1) == 2
+    assert np.all(timesteps1[1]["dp"]["contents"] == [1, 2, None])
+    assert np.all(timesteps1[1]["dp2"]["contents"] == [2, None, None])
+    assert timesteps1[1]["dp"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert timesteps1[1]["dp2"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: set(),
+        }.items()
+    
+    dp2[2] = 3
+    timesteps2 = dp.get_timesteps()
+    assert len(timesteps2) == 2
+    assert np.all(timesteps2[1]["dp"]["contents"] == [1, 2, None])
+    assert np.all(timesteps2[1]["dp2"]["contents"] == [2, None, 3])
+    assert timesteps2[1]["dp"].items() >= {
+            Op.READ: {1},
+            Op.WRITE: set(),
+            Op.HIGHLIGHT: set(),
+        }.items()
+    assert timesteps2[1]["dp2"].items() >= {
+            Op.READ: set(),
+            Op.WRITE: {2},
+            Op.HIGHLIGHT: set(),
+        }.items()
     
