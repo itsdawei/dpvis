@@ -27,12 +27,12 @@ class Logger:
                 },
             }
             note that values are None for READ and HIGHLIGHT.
-        _array_names (list): The names of the arrays logged.
+        _array_shapes (dict): The shapes of the arrays associated with 
+            a logger instance. Key: Array name, Value: Array shape.
     """
 
     def __init__(self):
         """Initializes an empty logger."""
-        self._array_names = set()
         self._array_shapes = {}
         self._logs = []
 
@@ -43,15 +43,13 @@ class Logger:
             array_name (str): The name of the array to be added.
             shape (int or tuple): The shape of the array to be added.
         """
-        if array_name in self.array_names:
+        if array_name in self._array_shapes:
             raise ValueError(f"Array name {array_name} already exists in"
                              f"logger.")
         if len(self._logs) > 0:
             raise ValueError(
                 f"Cannot add array {array_name} to a non-empty logger.")
-        self.array_names.add(array_name)
-
-        self.shapes[array_name] = shape
+        self._array_shapes[array_name] = shape
 
     def append(self, array_name, operation, idx, values=None):
         """Appends an operation to the log.
@@ -64,7 +62,7 @@ class Logger:
         Raises:
             ValueError: Array name not recognized by logger. 
         """
-        if array_name not in self.array_names:
+        if array_name not in self._array_shapes:
             raise ValueError(f"Array name {array_name} not recognized by"
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
@@ -92,7 +90,7 @@ class Logger:
                 "op": operation,
                 "idx": {
                     # array_name: {idx1: value1, idx2: value2, ...}
-                    name: {} for name in self._array_names
+                    name: {} for name in self._array_shapes
                 },
             })
         self._logs[-1]["idx"][array_name].update(
@@ -122,7 +120,8 @@ class Logger:
         """
         timesteps = []
         array_contents = {
-            name: np.full(self.shapes[name], None) for name in self._array_names
+            name: np.full(shape, None)
+            for name, shape in self._array_shapes.items()
         }
 
         new_timestep = True
@@ -134,7 +133,7 @@ class Logger:
                         Op.READ: set(),
                         Op.WRITE: set(),
                         Op.HIGHLIGHT: set(),
-                    } for name in self._array_names
+                    } for name in self._array_shapes
                 })
                 new_timestep = False
 
@@ -158,11 +157,6 @@ class Logger:
         return self._logs
 
     @property
-    def array_names(self):
-        """Returns the array names."""
-        return self._array_names
-
-    @property
-    def shapes(self):
+    def array_shapes(self):
         """Returns the array shapes."""
         return self._array_shapes

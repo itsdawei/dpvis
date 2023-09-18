@@ -22,7 +22,7 @@ def test_array_not_found_error(logger):
 
 def test_add_array(logger):
     logger.add_array("dp2", 10)
-    assert logger.array_names == {"dp1", "dp2"}
+    assert logger.array_shapes == {"dp1": 10, "dp2": 10}
 
 
 def test_add_during_logging_error(logger):

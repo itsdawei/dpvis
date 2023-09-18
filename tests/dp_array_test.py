@@ -159,11 +159,11 @@ def test_constructor_custom_logger():
     dp1 = DPArray(10, "dp1", logger=logger)
     dp2 = DPArray(10, "dp2", logger=logger)
     assert dp1.logger == dp2.logger == logger
-    assert logger.array_names == {"dp1", "dp2"}
+    assert logger.array_shapes == {"dp1": 10, "dp2": 10}
 
 
 def test_constructor_default_logger():
     dp1 = DPArray(10, "dp1")
     dp2 = DPArray(10, "dp2", logger=dp1.logger)
     assert dp1.logger == dp2.logger
-    assert dp1.logger.array_names == {"dp1", "dp2"}
+    assert dp1.logger.array_shapes == {"dp1": 10, "dp2": 10}
