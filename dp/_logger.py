@@ -73,7 +73,7 @@ class Logger:
         elif isinstance(idx, int):
             idx_list = [idx]
 
-        if values:
+        if values is not None:
             if isinstance(values, np.ndarray):
                 values = values.tolist()
             elif isinstance(values, (int, float, np.float32, np.float64)):
@@ -96,7 +96,7 @@ class Logger:
         self._logs[-1]["idx"][array_name].update(
             dict(
                 zip(idx_list, values
-                   ) if values else zip(idx_list, [None] * len(idx_list))))
+                   ) if values is not None else zip(idx_list, [None] * len(idx_list))))
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
