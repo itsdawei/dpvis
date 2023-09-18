@@ -73,7 +73,7 @@ class Logger:
         elif isinstance(idx, int):
             idx_list = [idx]
 
-        if values:
+        if values is not None:
             if isinstance(values, np.ndarray):
                 values = values.tolist()
             elif isinstance(values, (int, float, np.float32, np.float64)):
