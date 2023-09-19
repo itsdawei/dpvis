@@ -112,8 +112,6 @@ def test_min():
             refs=[i - 2, i - 2, i - 3],
             preprocessing=[lambda x: x + c[i], lambda x: x + c[i - 1], lambda x: x + c[i - 1]]
         )
-
-        min(arr[i-2] + c[i], arr[i-2] + c[i-1], arr[i-3] + c[c-1])
         
         assert dp.logger.logs[next_log] == {"op": Op.READ, "idx": {"name": {i - 2, i - 3}}}
         assert dp.logger.logs[next_log + 1] == {"op": Op.HIGHLIGHT, "idx": {"name": {highlight_ans[i]}}}

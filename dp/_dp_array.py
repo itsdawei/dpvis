@@ -96,7 +96,7 @@ class DPArray:
             # Convert 1d slice to nd slice.
             nd_slice = (nd_slice,)
         if not isinstance(nd_slice, (list, tuple)):
-            raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be"
+            raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be "
                              f"a slice object, a list/tuple of slice objects,"
                              f"or a list/tuple of integers.")
 
@@ -203,7 +203,8 @@ class DPArray:
         Args:
             cmp (callable): Use x > y for max and x < y for min
             idx: The index to assign the calculated value to
-            refs (iterable of indices): Indicies to retreive values from to use in the max/min function
+            refs (iterable of indices): Indices to retreive values from to use in the max/min function.
+                Must be an iterable even if the iterable is a singleton
             preprocessing (callable or iterable of callables): 
                 If callable preprocessing will be applied to each refs value before applying the max/min function. 
                 If iterable of callables, then it is requried the len(refs) = len(preprocessing).
@@ -216,10 +217,10 @@ class DPArray:
         # Error handling
         if len(refs) == 0:
             raise ValueError("Expecting reference to at least one index")
-        if not callable(preprocessing) and len(refs) != len(preprocessing):
+        if not callable(preprocessing) and len(preprocessing) != len(refs):
             raise ValueError("Expected refs and preprocessing of same length or single preprocessing callable.")
 
-        # Make generator to iterate over
+        # Make iterable to iterate over
         if callable(preprocessing):
             itr = [(ref, preprocessing) for ref in refs]
         else:
@@ -230,6 +231,14 @@ class DPArray:
         best_val = const
         for ref, func in itr:
             val = func(self[ref])
+            
+            if isinstance(val, np.ndarray):
+                slice_indices = self._nd_slice_to_indices(ref)
+                val = val.flatten()
+                slice_max_idx = val.argmax()
+                val = val[slice_max_idx]
+                ref = slice_indices[slice_max_idx]
+
             if best_val is None or cmp(val, best_val):
                 best_idx = ref
                 best_val = val
