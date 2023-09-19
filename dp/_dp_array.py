@@ -36,7 +36,7 @@ class DPArray:
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         self._logger = Logger() if logger is None else logger
-        self._logger.add_array(array_name)
+        self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
         self._description_string = description_string
@@ -125,6 +125,27 @@ class DPArray:
         indices_tuples = ([tuple(row) for row in indices] if indices.shape[1]
                           != 1 else np.squeeze(indices, axis=1))
         return indices_tuples
+
+    def get_timesteps(self):
+        """Retrieve the timesteps of all DPArrays associated with this array's 
+            logger.
+        
+        Returns:
+            list of timesteps where each timestep is:
+            timestep: {
+                "array_name": {
+                    "contents": array contents at this timestep,
+                    Op.READ: [idx1, idx2, ...],
+                    Op.WRITE: [idx1, idx2, ...],
+                    Op.HIGHLIGHT: [idx1, idx2, ...],
+                },
+                "array_2": {
+                    ...
+                },
+            }
+
+        """
+        return self._logger.to_timesteps()
 
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.

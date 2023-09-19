@@ -9,6 +9,7 @@
 - Added Logger to DPArray class (#4)
 - Create ``Logger`` class (#4)
   - Added Value field to Logger class for tracking (#10)
+  - Added to_timestamp method to Logger class (#11)
 - Setup automated test-runners (#5)
     - Reduce GitHub Action usage (#9)
 - Remove int support (#4)
