@@ -94,9 +94,9 @@ class Logger:
                 },
             })
         self._logs[-1]["idx"][array_name].update(
-            dict(
-                zip(idx_list, values
-                   ) if values is not None else zip(idx_list, [None] * len(idx_list))))
+            dict(zip(idx_list, values) \
+                if values is not None \
+                else zip(idx_list, [None] * len(idx_list))))
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
@@ -141,8 +141,8 @@ class Logger:
                 for name, idx in log["idx"].items():
                     timesteps[-1][name][log["op"]] = set(idx.keys())
                     array_contents[name][list(idx.keys())] = list(idx.values())
-                    timesteps[-1][name]["contents"] = array_contents[name].copy(
-                    )
+                    timesteps[-1][name]["contents"] = \
+                        array_contents[name].copy()
                 new_timestep = True
             else:
                 # NON-WRITE / READ and HIGHLIGHT operations
