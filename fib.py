@@ -1,5 +1,7 @@
 from dp import DPArray, Op
 
+from colorama import Fore, Back, Style
+
 def fib(n):
     """dynamic programming fibonacci
         fib(0) = 0
@@ -17,7 +19,7 @@ def fib(n):
     arr[1] = 1
 
     for i in range(2, n+1):
-        arr[i] = arr[i-1] + arr[i-2]
+        arr[i] = int(arr[i-1] + arr[i-2])
 
     timesteps = arr.logger.to_timesteps()
     for i, ts in enumerate(timesteps):
@@ -28,12 +30,15 @@ def fib(n):
             print("\t[", end="")
             for i in range(shape):
                 if i in ts[name][Op.WRITE]:
-                    print("*", end="")
+                    print(Fore.RED, f'{ts[name]["contents"][i]:>2}', end="")
                 elif i in ts[name][Op.READ]:
-                    print("%", end="")
+                    print(Fore.YELLOW, f'{ts[name]["contents"][i]:>2}', end="")
+                elif ts[name]["contents"][i] is None:
+                    print("   ", end="")
                 else:
-                    print(ts[name]["contents"][i], end="")
-                print(", ", end="")
+                    print(f'{ts[name]["contents"][i]:>3}', end="")
+                print(Style.RESET_ALL, end="")
+                print(",", end="")
             print("]")
 
     return arr[n]
