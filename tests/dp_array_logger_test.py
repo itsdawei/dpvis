@@ -46,7 +46,10 @@ def test_2d_read_write():
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {(0, 0): None}}}
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {(3, 6): 1}}}
 
-def test_max_highlight():
+def test_max():
+    """
+    Test logger entries when using the DPArray max function.
+    """
     dp = DPArray(5, "name")
     dp[0] = 1
     dp[1] = 3
@@ -65,6 +68,58 @@ def test_max_highlight():
     assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0}}}
     assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4}}}
 
+
+
+def test_min():
+    """
+    Test logger entries when using the DPArray min function.
+
+    Setting:
+    A city wants to place fire hydrants on a street.
+    In front of each house, they can choose to build a fire hydrant.
+    If the city builds a fire hydrant in front of house i, they incur a cost of c[i] due to construction costs.
+    Law states that every house on the street must have a fire hydrant or be adjacent to a house with a fire hydrant.
+    Find an optimal placement of fire hydrants so that the city spends as little as possible and the above law is satisfied.
+    """
+    c = [7, 6, 2, 9, 8, 10, 1, 3]
+    highlight_ans = [None, None, None, 1, 2, 2, 4, 5]
+    val_ans = [None, None, None, 8, 14, 14, 15, 15]
+    identity = lambda x: x
+    dp = DPArray(8, "name")
+
+    # pytest.set_trace()
+
+    dp[0] = c[0]
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0}}}
+
+    dp.min(1, [0], const=c[1])
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0}}}
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1}}}
+
+    dp.min(2, [0, 1], [lambda x: x + c[2], identity])
+    assert dp.logger.logs[3] == {"op": Op.READ, "idx": {"name": {0, 1}}}
+    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1}}}
+    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2}}}
+
+    next_log = 6
+    for i in range(3, 8):
+        # Three options
+        # Hydrant at i and then satisfy law for i - 2
+        # Hydrant at i - 1 and satisfy law for i - 2
+        # Hydrant at i - 1 and satisfy law for i - 3
+        dp.min(
+            i,
+            refs=[i - 2, i - 2, i - 3],
+            preprocessing=[lambda x: x + c[i], lambda x: x + c[i - 1], lambda x: x + c[i - 1]]
+        )
+
+        min(arr[i-2] + c[i], arr[i-2] + c[i-1], arr[i-3] + c[c-1])
+        
+        assert dp.logger.logs[next_log] == {"op": Op.READ, "idx": {"name": {i - 2, i - 3}}}
+        assert dp.logger.logs[next_log + 1] == {"op": Op.HIGHLIGHT, "idx": {"name": {highlight_ans[i]}}}
+        assert dp.logger.logs[next_log + 2] == {"op": Op.WRITE, "idx": {"name": {i}}}
+        assert dp.arr[i] == val_ans[i]
+        next_log = next_log + 3
 
 
 def test_multiple_arrays_logging():

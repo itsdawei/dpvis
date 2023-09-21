@@ -198,17 +198,18 @@ class DPArray:
             return self.arr != other.arr
         return self.arr != other
 
-    def max(self, idx, refs, preprocessing=(lambda x: x)):
+    def _max_min(self, cmp, idx, refs, preprocessing, const):
         """
-        
         Args:
+            cmp (callable): Use x > y for max and x < y for min
             idx: The index to assign the calculated value to
-            refs: Indicies to retreive values from to use in the max function
+            refs (iterable of indices): Indicies to retreive values from to use in the max/min function
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to each refs value before applying the max function. 
+                If callable preprocessing will be applied to each refs value before applying the max/min function. 
                 If iterable of callables, then it is requried the len(refs) = len(preprocessing).
                 preprocessing[i] will be applied to refs[i] before applying the max function.
-        
+            const (float): A constant value to use in the min/max operation
+                
         Returns:
             None        
         """
@@ -224,19 +225,51 @@ class DPArray:
         else:
             itr = zip(refs, preprocessing)
 
-        # Find max value and corresponding idx
-        max_idx = None
-        max_val = 0
+        # Find max/min value and corresponding idx
+        best_idx = None
+        best_val = const
         for ref, func in itr:
             val = func(self[ref])
-            if max_idx is None or val > max_val:
-                max_idx = ref
-                max_val = val
+            if best_val is None or cmp(val, best_val):
+                best_idx = ref
+                best_val = val
 
-        self.logger.append(self._array_name, Op.HIGHLIGHT, max_idx)
-        self[idx] = max_val
+        # Highlight and write value
+        if best_idx is not None:
+            self.logger.append(self._array_name, Op.HIGHLIGHT, best_idx)
+        self[idx] = best_val
 
+    def max(self, idx, refs, preprocessing=(lambda x: x), const=None):
+        """
+        Args:
+            idx: The index to assign the calculated value to
+            refs (iterable of indices): Indicies to retreive values from to use in the max function
+            preprocessing (callable or iterable of callables): 
+                If callable preprocessing will be applied to each refs value before applying the max function. 
+                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
+                preprocessing[i] will be applied to refs[i] before applying the max function.
+                const (float): A constant value to use in the min/max operation
+                
+        Returns:
+            None        
+        """
+        self._max_min(cmp=lambda x, y: x > y, idx=idx, refs=refs, preprocessing=preprocessing, const=const)
 
+    def min(self, idx, refs, preprocessing=(lambda x: x), const=None):
+        """
+        Args:
+            idx: The index to assign the calculated value to
+            refs (iterable of indices): Indicies to retreive values from to use in the min function
+            preprocessing (callable or iterable of callables): 
+                If callable preprocessing will be applied to each refs value before applying the min function. 
+                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
+                preprocessing[i] will be applied to refs[i] before applying the min function.
+                const (float): A constant value to use in the min/max operation
+                
+        Returns:
+            None        
+        """
+        self._max_min(cmp=lambda x, y: x < y, idx=idx, refs=refs, preprocessing=preprocessing, const=const)
 
     @property
     def arr(self):
