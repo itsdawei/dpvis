@@ -151,18 +151,13 @@ def test_min():
     assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
     next_log = 6
+    funcs = [functools.partial(add_const, const=c[i]) for i in range(len(c))]
     for i in range(3, 8):
         # Three options
         # Hydrant at i and then satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 3
-        funcs = [
-            functools.partial(add_const, const=c[i]),
-            functools.partial(add_const, const=c[i - 1]),
-            functools.partial(add_const, const=c[i - 1])
-        ]
-
-        dp.min(i, refs=[i - 2, i - 2, i - 3], preprocessing=funcs)
+        dp.min(i, refs=[i - 2, i - 2, i - 3], preprocessing=[funcs[i], funcs[i - 1], funcs[i - 1]])
 
         assert dp.logger.logs[next_log] == {
             "op": Op.READ,
