@@ -51,42 +51,19 @@ def test_max_highlight():
     dp[0] = 1
     dp[1] = 3
     dp[2] = 0
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0, 1, 2}}}
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 1, 1: 3, 2: 0}}}
 
     dp.max(idx=3, refs=[0, 1, 2])
     assert dp.arr[3] == 3
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0, 1, 2}}}
-    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1}}}
-    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3}}}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None, 1: None, 2: None}}}
+    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
 
     dp.max(idx=4, refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
     assert dp.arr[4] == 0
-    assert dp.logger.logs[4] == {"op": Op.READ, "idx": {"name": {0, 1, 2, 3}}}
-    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0}}}
-    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4}}}
-
-
-def test_max():
-    """
-    Test logger entries when using the DPArray max function.
-    """
-    dp = DPArray(5, "name")
-    dp[0] = 1
-    dp[1] = 3
-    dp[2] = 0
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0, 1, 2}}}
-
-    dp.max(idx=3, refs=[0, 1, 2])
-    assert dp.arr[3] == 3
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0, 1, 2}}}
-    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1}}}
-    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3}}}
-
-    dp.max(idx=4, refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
-    assert dp.arr[4] == 0
-    assert dp.logger.logs[4] == {"op": Op.READ, "idx": {"name": {0, 1, 2, 3}}}
-    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0}}}
-    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4}}}
+    assert dp.logger.logs[4] == {"op": Op.READ, "idx": {"name": {0: None, 1: None, 2: None, 3: None}}}
+    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4: 0}}}
 
 
 
@@ -110,16 +87,16 @@ def test_min():
     # pytest.set_trace()
 
     dp[0] = c[0]
-    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0}}}
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
     dp.min(1, [0], const=c[1])
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0}}}
-    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1}}}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
     dp.min(2, [0, 1], [lambda x: x + c[2], identity])
-    assert dp.logger.logs[3] == {"op": Op.READ, "idx": {"name": {0, 1}}}
-    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1}}}
-    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2}}}
+    assert dp.logger.logs[3] == {"op": Op.READ, "idx": {"name": {0: None, 1: None}}}
+    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
     next_log = 6
     for i in range(3, 8):
@@ -133,9 +110,9 @@ def test_min():
             preprocessing=[lambda x: x + c[i], lambda x: x + c[i - 1], lambda x: x + c[i - 1]]
         )
         
-        assert dp.logger.logs[next_log] == {"op": Op.READ, "idx": {"name": {i - 2, i - 3}}}
-        assert dp.logger.logs[next_log + 1] == {"op": Op.HIGHLIGHT, "idx": {"name": {highlight_ans[i]}}}
-        assert dp.logger.logs[next_log + 2] == {"op": Op.WRITE, "idx": {"name": {i}}}
+        assert dp.logger.logs[next_log] == {"op": Op.READ, "idx": {"name": {i - 2: None, i - 3: None}}}
+        assert dp.logger.logs[next_log + 1] == {"op": Op.HIGHLIGHT, "idx": {"name": {highlight_ans[i]: None}}}
+        assert dp.logger.logs[next_log + 2] == {"op": Op.WRITE, "idx": {"name": {i: val_ans[i]}}}
         assert dp.arr[i] == val_ans[i]
         next_log = next_log + 3
 

@@ -167,51 +167,58 @@ def test_max(len, funcs):
         dp.max(idx=i, refs=[i - 2, i - 1], preprocessing=funcs)
         assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]), funcs[1](dp.arr[i - 1]))
 
-@pytest.mark.parametrize(
-        "r, ans",
-        [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
-         (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)], 
-        ids=["a", "b"]
-)
-def text_max_2d(r, truth):
-    """
-    Given a reward matrix r, start at index (0, 0) (top left).
-    Find the strategy yielding the largest reward when constrained to moving down and right.
-    The largest reward acheivable is given by truth
-    """
-    h, w = r.shape[0] + 1, r.shape[1] + 1
-    dp = DPArray((h, w))
+# TODO: uncomment if slicing is supported
+# @pytest.mark.parametrize(
+#         "r, ans",
+#         [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
+#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)], 
+#         ids=["a", "b"]
+# )
+# def text_max_2d(r, truth):
+#     """
+#     Given a reward matrix r, start at index (0, 0) (top left).
+#     Find the strategy yielding the largest reward when constrained to moving down and right.
+#     The largest reward acheivable is given by truth
+#     """
+#     h, w = r.shape[0] + 1, r.shape[1] + 1
+#     dp = DPArray((h, w))
     
-    # fill column and row with padding
-    dp[0, :] = 0
-    dp[1:, 0] = 0
+#     # fill column and row with padding
+#     dp[0, :] = 0
+#     dp[1:, 0] = 0
 
-    for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
-        dp.max((i, j), refs=[(i - 1, j), (i, j - 1)], preprocessing=lambda x: x + r[i, j])
+#     for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
+#         dp.max((i, j), refs=[(i - 1, j), (i, j - 1)], preprocessing=lambda x: x + r[i, j])
     
-    assert dp.arr[h, w] == truth
+#     assert dp.arr[h, w] == truth
 
 
-
-@pytest.mark.parametrize(
-        "c, ans",
-        [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
-         (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)], 
-        ids=["a", "b"]
-)
-def test_min_2d(c, truth):
-    """
-    Given a cost matrix c, start at index (0, 0) (top left).
-    Find the strategy yielding the lowest cost path from the top left of the matrix to the bottom left.
-    Note that the user is constrained to moving only down and right
-    The lowest cost achievable is given by truth
-    """
-    h, w = r.shape[0] + 1, r.shape[1] + 1
-    dp = DPArray((h, w))
+# TODO: uncomment if slicing is supported
+# @pytest.mark.parametrize(
+#         "c, truth",
+#         [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 10),
+#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 20)], 
+#         ids=["a", "b"]
+# )
+# def test_min_2d(c, truth):
+#     """
+#     Given a cost matrix c, start at index (0, 0) (top left).
+#     Find the strategy yielding the lowest cost path from the top left of the matrix to the bottom left.
+#     Note that the user is constrained to moving only down and right
+#     The lowest cost achievable is given by truth
+#     """
+#     h, w = c.shape[0] + 1, c.shape[1] + 1
+#     dp = DPArray((h, w))
     
-    # fill column and row with padding (Use a large number to pad)
-    dp[0, :] = 1000
-    dp[1:, 0] = 1000
+#     # fill column and row with padding (Use a large number to pad)
+#     dp[0, :] = 1000
+#     dp[1:, 0] = 1000
+#     dp[1,1] = c[0, 0]
+
+#     for i, j in [(i,j) for i in range(1, h) for j in range(1, w) if (i, j) != (1, 1)]:
+#         dp.min((i, j), refs=[(i - 1, j), (i, j - 1)], preprocessing=lambda x: x + c[i, j])
+
+#     assert dp.arr[h, w] == truth
 
 
 # Logger related tests #
