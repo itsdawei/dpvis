@@ -151,77 +151,92 @@ def test_dtype_assignment(dtype):
     assert dp.dtype == dp.arr.dtype
 
 
-@pytest.mark.parametrize("len, funcs", [(10, [lambda x: x + 2, lambda x: x]), (5, [lambda x: 2 * x, lambda x: x])], ids=["a", "b"])
-def test_max(len, funcs):
-    dp = DPArray(len)
+@pytest.mark.parametrize("n, funcs", [(10, [lambda x: x + 2, lambda x: x]),
+                                      (5, [lambda x: 2 * x, lambda x: x])],
+                         ids=["a", "b"])
+def test_max(n, funcs):
+    dp = DPArray(n)
     dp[0] = 0
     dp[1] = 1
 
-    with pytest.raises(ValueError, match="Expecting reference to at least one index"):
+    with pytest.raises(ValueError,
+                       match="Expecting reference to at least one index"):
         dp.max(idx=2, refs=[])
-    
-    with pytest.raises(ValueError, match="Expected refs and preprocessing of same length or single preprocessing callable."):
+
+    with pytest.raises(
+            ValueError,
+            match="Expected refs and preprocessing of same length or " + \
+            "single preprocessing callable."
+    ):
         dp.max(idx=2, refs=[0, 1], preprocessing=[lambda x: x])
 
-    for i in range(2, len):
+    for i in range(2, n):
         dp.max(idx=i, refs=[i - 2, i - 1], preprocessing=funcs)
-        assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]), funcs[1](dp.arr[i - 1]))
+        assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]),
+                                funcs[1](dp.arr[i - 1]))
+
 
 # TODO: uncomment if slicing is supported
 # @pytest.mark.parametrize(
 #         "r, ans",
 #         [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
-#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)], 
+#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
+#               [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)],
 #         ids=["a", "b"]
 # )
 # def text_max_2d(r, truth):
 #     """
 #     Given a reward matrix r, start at index (0, 0) (top left).
-#     Find the strategy yielding the largest reward when constrained to moving down and right.
-#     The largest reward acheivable is given by truth
+#     Find the strategy yielding the largest reward when
+#     constrained to moving down and right. The largest
+#     reward acheivable is given by truth
 #     """
 #     h, w = r.shape[0] + 1, r.shape[1] + 1
 #     dp = DPArray((h, w))
-    
+
 #     # fill column and row with padding
 #     dp[0, :] = 0
 #     dp[1:, 0] = 0
 
 #     for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
-#         dp.max((i, j), refs=[(i - 1, j), (i, j - 1)], preprocessing=lambda x: x + r[i, j])
-    
-#     assert dp.arr[h, w] == truth
+#         dp.max((i, j), refs=[(i - 1, j), (i, j - 1)],
+#             preprocessing=lambda x: x + r[i, j])
 
+#     assert dp.arr[h, w] == truth
 
 # TODO: uncomment if slicing is supported
 # @pytest.mark.parametrize(
 #         "c, truth",
 #         [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 10),
-#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4], [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 20)], 
+#          (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
+#               [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 20)],
 #         ids=["a", "b"]
 # )
 # def test_min_2d(c, truth):
 #     """
 #     Given a cost matrix c, start at index (0, 0) (top left).
-#     Find the strategy yielding the lowest cost path from the top left of the matrix to the bottom left.
-#     Note that the user is constrained to moving only down and right
+#     Find the strategy yielding the lowest cost path from the top
+#     left of the matrix to the bottom left. Note that the user is
+#     constrained to moving only down and right
 #     The lowest cost achievable is given by truth
 #     """
 #     h, w = c.shape[0] + 1, c.shape[1] + 1
 #     dp = DPArray((h, w))
-    
+
 #     # fill column and row with padding (Use a large number to pad)
 #     dp[0, :] = 1000
 #     dp[1:, 0] = 1000
 #     dp[1,1] = c[0, 0]
 
-#     for i, j in [(i,j) for i in range(1, h) for j in range(1, w) if (i, j) != (1, 1)]:
-#         dp.min((i, j), refs=[(i - 1, j), (i, j - 1)], preprocessing=lambda x: x + c[i, j])
+#     for i, j in [(i,j) for i in range(1, h) for j in range(1, w)
+#                  if (i, j) != (1, 1)]:
+#         dp.min((i, j), refs=[(i - 1, j), (i, j - 1)],
+#                preprocessing=lambda x: x + c[i, j])
 
 #     assert dp.arr[h, w] == truth
 
-
 # Logger related tests #
+
 
 def test_constructor_custom_logger():
     logger = Logger()
