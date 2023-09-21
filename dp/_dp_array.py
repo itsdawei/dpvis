@@ -1,6 +1,5 @@
 """This file provides the DPArray class."""
 import numpy as np
-
 from dp._logger import Logger, Op
 
 
@@ -198,6 +197,46 @@ class DPArray:
         if isinstance(other, DPArray):
             return self.arr != other.arr
         return self.arr != other
+
+    def max(self, idx, refs, preprocessing=(lambda x: x)):
+        """
+        
+        Args:
+            idx: The index to assign the calculated value to
+            refs: Indicies to retreive values from to use in the max function
+            preprocessing (callable or iterable of callables): 
+                If callable preprocessing will be applied to each refs value before applying the max function. 
+                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
+                preprocessing[i] will be applied to refs[i] before applying the max function.
+        
+        Returns:
+            None        
+        """
+        # Error handling
+        if len(refs) == 0:
+            raise ValueError("Expecting reference to at least one index")
+        if not callable(preprocessing) and len(refs) != len(preprocessing):
+            raise ValueError("Expected refs and preprocessing of same length or single preprocessing callable.")
+
+        # Make generator to iterate over
+        if callable(preprocessing):
+            itr = [(ref, preprocessing) for ref in refs]
+        else:
+            itr = zip(refs, preprocessing)
+
+        # Find max value and corresponding idx
+        max_idx = None
+        max_val = 0
+        for ref, func in itr:
+            val = func(self[ref])
+            if max_idx is None or val > max_val:
+                max_idx = ref
+                max_val = val
+
+        self.logger.append(self._array_name, Op.HIGHLIGHT, max_idx)
+        self[idx] = max_val
+
+
 
     @property
     def arr(self):

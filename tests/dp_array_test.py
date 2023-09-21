@@ -151,6 +151,24 @@ def test_dtype_assignment(dtype):
     assert dp.dtype == dp.arr.dtype
 
 
+@pytest.mark.parametrize("len, funcs", [(10, [lambda x: x + 2, lambda x: x]), (5, [lambda x: 2 * x, lambda x: x])], ids=["a", "b"])
+def test_max(len, funcs):
+    dp = DPArray(len)
+    dp[0] = 0
+    dp[1] = 1
+
+    with pytest.raises(ValueError, match="Expecting reference to at least one index"):
+        dp.max(idx=2, refs=[])
+    
+    with pytest.raises(ValueError, match="Expected refs and preprocessing of same length or single preprocessing callable."):
+        dp.max(idx=2, refs=[0, 1], preprocessing=[lambda x: x])
+
+    for i in range(2, len):
+        dp.max(idx=i, refs=[i - 2, i - 1], preprocessing=funcs)
+        assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]), funcs[1](dp.arr[i - 1]))
+    
+
+
 # Logger related tests #
 
 
