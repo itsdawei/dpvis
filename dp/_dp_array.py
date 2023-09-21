@@ -203,12 +203,15 @@ class DPArray:
         Args:
             cmp (callable): Use x > y for max and x < y for min
             idx: The index to assign the calculated value to
-            refs (iterable of indices): Indices to retreive values from to use in the max/min function.
-                Must be an iterable even if the iterable is a singleton
+            refs (iterable of indices): Indices to retreive values
+                from to use in the max/min function. Must be an
+                iterable even if the iterable is a singleton
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to each refs value before applying the max/min function. 
-                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
-                preprocessing[i] will be applied to refs[i] before applying the max function.
+                If callable preprocessing will be applied to each
+                ref value before applying the max/min function. 
+                If iterable of callables, then it is requried the
+                len(refs) = len(preprocessing). preprocessing[i]
+                will be applied to refs[i] before applying the max function.
             const (float): A constant value to use in the min/max operation
                 
         Returns:
@@ -218,7 +221,10 @@ class DPArray:
         if len(refs) == 0:
             raise ValueError("Expecting reference to at least one index")
         if not callable(preprocessing) and len(preprocessing) != len(refs):
-            raise ValueError("Expected refs and preprocessing of same length or single preprocessing callable.")
+            raise ValueError(
+                "Expected refs and preprocessing of same length or single " + \
+                "preprocessing callable."
+            )
 
         # Make iterable to iterate over
         if callable(preprocessing):
@@ -231,7 +237,7 @@ class DPArray:
         best_val = const
         for ref, func in itr:
             val = func(self[ref])
-            
+
             if isinstance(val, np.ndarray):
                 slice_indices = self._nd_slice_to_indices(ref)
                 val = val.flatten()
@@ -252,33 +258,51 @@ class DPArray:
         """
         Args:
             idx: The index to assign the calculated value to
-            refs (iterable of indices): Indicies to retreive values from to use in the max function
+            refs (iterable of indices): Indicies to retreive
+                values from to use in the max function
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to each refs value before applying the max function. 
-                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
-                preprocessing[i] will be applied to refs[i] before applying the max function.
-                const (float): A constant value to use in the min/max operation
+                If callable preprocessing will be applied to
+                each refs value before applying the max function. 
+                If iterable of callables, then it is requried the
+                len(refs) = len(preprocessing). preprocessing[i]
+                will be applied to refs[i] before applying the max
+                function.
+            const (float): A constant value to use in the min/max
+                operation
                 
         Returns:
             None        
         """
-        self._max_min(cmp=lambda x, y: x > y, idx=idx, refs=refs, preprocessing=preprocessing, const=const)
+        self._max_min(cmp=lambda x, y: x > y,
+                      idx=idx,
+                      refs=refs,
+                      preprocessing=preprocessing,
+                      const=const)
 
     def min(self, idx, refs, preprocessing=(lambda x: x), const=None):
         """
         Args:
             idx: The index to assign the calculated value to
-            refs (iterable of indices): Indicies to retreive values from to use in the min function
+            refs (iterable of indices): Indicies to retreive
+                values from to use in the min function
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to each refs value before applying the min function. 
-                If iterable of callables, then it is requried the len(refs) = len(preprocessing).
-                preprocessing[i] will be applied to refs[i] before applying the min function.
-                const (float): A constant value to use in the min/max operation
+                If callable preprocessing will be applied to
+                each refs value before applying the min function. 
+                If iterable of callables, then it is requried the
+                len(refs) = len(preprocessing). preprocessing[i]
+                will be applied to refs[i] before applying the min
+                function.
+            const (float): A constant value to use in the min/max
+                operation
                 
         Returns:
             None        
         """
-        self._max_min(cmp=lambda x, y: x < y, idx=idx, refs=refs, preprocessing=preprocessing, const=const)
+        self._max_min(cmp=lambda x, y: x < y,
+                      idx=idx,
+                      refs=refs,
+                      preprocessing=preprocessing,
+                      const=const)
 
     @property
     def arr(self):
