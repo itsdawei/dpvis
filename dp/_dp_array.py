@@ -1,4 +1,5 @@
 """This file provides the DPArray class."""
+from typing import Iterable
 import numpy as np
 from dp._logger import Logger, Op
 
@@ -198,7 +199,7 @@ class DPArray:
             return self.arr != other.arr
         return self.arr != other
 
-    def _max_min(self, cmp, idx, refs, preprocessing, const):
+    def _max_min(self, cmp, refs, preprocessing, const):
         """
         Args:
             cmp (callable): Use x > y for max and x < y for min
@@ -215,11 +216,14 @@ class DPArray:
             const (float): A constant value to use in the min/max operation
                 
         Returns:
-            None        
+            The max/min value of the references after applying preprocessing  
         """
         # Error handling
-        if len(refs) == 0:
-            raise ValueError("Expecting reference to at least one index")
+        if not isinstance(refs, Iterable) or len(refs) == 0:
+            raise ValueError(
+                "Expecting reference to be Iterable of length " + \
+                "at least one."
+            )
         if not callable(preprocessing) and len(preprocessing) != len(refs):
             raise ValueError(
                 "Expected refs and preprocessing of same length or single " + \
@@ -252,9 +256,9 @@ class DPArray:
         # Highlight and write value
         if best_idx is not None:
             self.logger.append(self._array_name, Op.HIGHLIGHT, best_idx)
-        self[idx] = best_val
+        return best_val
 
-    def max(self, idx, refs, preprocessing=(lambda x: x), const=None):
+    def max(self, refs, preprocessing=(lambda x: x), const=None):
         """
         Args:
             idx: The index to assign the calculated value to
@@ -271,15 +275,14 @@ class DPArray:
                 operation
                 
         Returns:
-            None        
+            The maximum value after applying preprocessing to refs             
         """
-        self._max_min(cmp=lambda x, y: x > y,
-                      idx=idx,
-                      refs=refs,
-                      preprocessing=preprocessing,
-                      const=const)
+        return self._max_min(cmp=lambda x, y: x > y,
+                             refs=refs,
+                             preprocessing=preprocessing,
+                             const=const)
 
-    def min(self, idx, refs, preprocessing=(lambda x: x), const=None):
+    def min(self, refs, preprocessing=(lambda x: x), const=None):
         """
         Args:
             idx: The index to assign the calculated value to
@@ -296,13 +299,12 @@ class DPArray:
                 operation
                 
         Returns:
-            None        
+            The minimum value after applying preprocessing to refs       
         """
-        self._max_min(cmp=lambda x, y: x < y,
-                      idx=idx,
-                      refs=refs,
-                      preprocessing=preprocessing,
-                      const=const)
+        return self._max_min(cmp=lambda x, y: x < y,
+                             refs=refs,
+                             preprocessing=preprocessing,
+                             const=const)
 
     @property
     def arr(self):
