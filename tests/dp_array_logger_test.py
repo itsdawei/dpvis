@@ -64,7 +64,7 @@ def test_max_highlight():
         }
     }
 
-    dp.max(idx=3, refs=[0, 1, 2])
+    dp[3] = dp.max(refs=[0, 1, 2])
     assert dp.arr[3] == 3
     assert dp.logger.logs[1] == {
         "op": Op.READ,
@@ -79,7 +79,7 @@ def test_max_highlight():
     assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
     assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
 
-    dp.max(idx=4, refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
+    dp[4] = dp.max(refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
     assert dp.arr[4] == 0
     assert dp.logger.logs[4] == {
         "op": Op.READ,
@@ -133,11 +133,11 @@ def test_min():
     dp[0] = c[0]
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
-    dp.min(1, [0], const=c[1])
+    dp[1] = dp.min([0], const=c[1])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
-    dp.min(2, [0, 1], [lambda x: x + c[2], identity])
+    dp[2] = dp.min([0, 1], [lambda x: x + c[2], identity])
     assert dp.logger.logs[3] == {
         "op": Op.READ,
         "idx": {
@@ -157,7 +157,8 @@ def test_min():
         # Hydrant at i and then satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 3
-        dp.min(i, refs=[i - 2, i - 2, i - 3], preprocessing=[funcs[i], funcs[i - 1], funcs[i - 1]])
+        dp[i] = dp.min(refs=[i - 2, i - 2, i - 3],
+                       preprocessing=[funcs[i], funcs[i - 1], funcs[i - 1]])
 
         assert dp.logger.logs[next_log] == {
             "op": Op.READ,

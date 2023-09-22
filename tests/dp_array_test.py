@@ -159,19 +159,29 @@ def test_max(n, funcs):
     dp[0] = 0
     dp[1] = 1
 
-    with pytest.raises(ValueError,
-                       match="Expecting reference to at least one index"):
-        dp.max(idx=2, refs=[])
+    with pytest.raises(
+            ValueError,
+            match="Expecting reference to be Iterable of length " + \
+            "at least one."
+        ):
+        dp[2] = dp.max(refs=2)
+
+    with pytest.raises(
+            ValueError,
+            match="Expecting reference to be Iterable of length " + \
+            "at least one."
+        ):
+        dp[2] = dp.max(refs=[])
 
     with pytest.raises(
             ValueError,
             match="Expected refs and preprocessing of same length or " + \
             "single preprocessing callable."
     ):
-        dp.max(idx=2, refs=[0, 1], preprocessing=[lambda x: x])
+        dp[2] = dp.max(refs=[0, 1], preprocessing=[lambda x: x])
 
     for i in range(2, n):
-        dp.max(idx=i, refs=[i - 2, i - 1], preprocessing=funcs)
+        dp[i] = dp.max(refs=[i - 2, i - 1], preprocessing=funcs)
         assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]),
                                 funcs[1](dp.arr[i - 1]))
 
@@ -199,7 +209,7 @@ def test_max(n, funcs):
 #     dp[1:, 0] = 0
 
 #     for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
-#         dp.max((i, j), refs=[(i - 1, j), (i, j - 1)],
+#         dp[i,j] = dp.max(refs=[(i - 1, j), (i, j - 1)],
 #             preprocessing=lambda x: x + r[i, j])
 
 #     assert dp.arr[h, w] == truth
@@ -230,7 +240,7 @@ def test_max(n, funcs):
 
 #     for i, j in [(i,j) for i in range(1, h) for j in range(1, w)
 #                  if (i, j) != (1, 1)]:
-#         dp.min((i, j), refs=[(i - 1, j), (i, j - 1)],
+#         dp[i, j] = dp.min(, refs=[(i - 1, j), (i, j - 1)],
 #                preprocessing=lambda x: x + c[i, j])
 
 #     assert dp.arr[h, w] == truth
