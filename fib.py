@@ -15,7 +15,7 @@ def fib(n):
 
     arr = DPArray(n+1)
     arr[0] = 0
-    print(arr.logger.logs)
+    # print(arr.logger.logs)
     arr[1] = 1
 
     for i in range(2, n+1):
