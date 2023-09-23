@@ -187,12 +187,10 @@ def test_max(n, funcs):
 
 
 @pytest.mark.parametrize(
-        "r, ans",
-        [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
-         (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
-              [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)],
-        ids=["a", "b"]
-)
+    "r, ans", [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
+               (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
+                          [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 36)],
+    ids=["a", "b"])
 def text_max_2d(r, truth):
     """
     Given a reward matrix r, start at index (0, 0) (top left).
@@ -209,22 +207,18 @@ def text_max_2d(r, truth):
     for i in range(h):
         dp[i, 0] = 0
 
-    for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
-        dp[i,j] = dp.max(refs=[(i - 1, j), (i, j - 1)],
-            preprocessing=lambda x: x + r[i-1, j-1])
+    for i, j in [(i, j) for i in range(1, h) for j in range(1, w)]:
+        dp[i, j] = dp.max(refs=[(i - 1, j), (i, j - 1)],
+                          preprocessing=lambda x: x + r[i - 1, j - 1])
 
-    assert dp.arr[h-1, w-1] == truth
+    assert dp.arr[h - 1, w - 1] == truth
+
 
 @pytest.mark.parametrize(
-        "c, truth",
-        [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 10),
-         (np.array([[3, 4, 0, 0, 5], 
-                    [4, 1, 2, 4, 4], 
-                    [5, 1, 5, 5, 4],
-                    [2, 1, 1, 1, 4], 
-                    [0, 0, 4, 3, 5]]), 20)],
-        ids=["a", "b"]
-)
+    "c, truth", [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 10),
+                 (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
+                            [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 20)],
+    ids=["a", "b"])
 def test_min_2d(c, truth):
     """
     Given a cost matrix c, start at index (0, 0) (top left).
@@ -238,19 +232,20 @@ def test_min_2d(c, truth):
 
     # fill column and row with padding (Use a large number to pad)
     for i in range(w):
-        dp[0, i] = 1000*i
+        dp[0, i] = 1000 * i
     for i in range(h):
-        dp[i, 0] = 1000*i
-    dp[1,1] = c[0, 0]
+        dp[i, 0] = 1000 * i
+    dp[1, 1] = c[0, 0]
 
-    for i, j in [(i,j) for i in range(1, h) for j in range(1, w)]:
-        print(i,j, dp[i,j], dp.arr.shape)
-        dp[i,j] = dp.min(refs=[(i - 1, j), (i, j - 1)],
-            preprocessing=lambda x: x + c[i-1, j-1])
+    for i, j in [(i, j) for i in range(1, h) for j in range(1, w)]:
+        dp[i, j] = dp.min(refs=[(i - 1, j), (i, j - 1)],
+                          preprocessing=lambda x: x + c[i - 1, j - 1])
 
-    assert dp.arr[h-1, w-1]-1000 == truth
+    assert dp.arr[h - 1, w - 1] - 1000 == truth
+
 
 # Logger related tests #
+
 
 def test_constructor_custom_logger():
     logger = Logger()

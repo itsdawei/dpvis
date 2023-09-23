@@ -76,7 +76,8 @@ class Logger:
         if values is not None:
             if isinstance(values, np.ndarray):
                 values = values.tolist()
-            elif isinstance(values, (int, float, np.float32, np.float64, np.int64)):
+            elif isinstance(values,
+                            (int, float, np.float32, np.float64, np.int64)):
                 values = [values]
             if len(idx_list) != len(values):
                 raise ValueError(f"Length of idx {idx_list} and values {values}"
