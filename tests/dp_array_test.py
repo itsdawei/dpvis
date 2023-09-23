@@ -1,4 +1,5 @@
 """Tests the methods in DPArray."""
+import functools
 import numpy as np
 import pytest
 
@@ -185,6 +186,11 @@ def test_max(n, funcs):
         assert dp.arr[i] == max(funcs[0](dp.arr[i - 2]),
                                 funcs[1](dp.arr[i - 1]))
 
+def add_const(x, const):
+    """
+    Add a constant to x. Used for partial functions.
+    """
+    return x + const
 
 @pytest.mark.parametrize(
     "r, ans", [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 14),
@@ -207,9 +213,11 @@ def text_max_2d(r, truth):
     for i in range(h):
         dp[i, 0] = 0
 
+    # Note that dp and r indicies are off by one
     for i, j in [(i, j) for i in range(1, h) for j in range(1, w)]:
+        func = functools.partial(add_const, const = r[i - 1, j - 1])
         dp[i, j] = dp.max(refs=[(i - 1, j), (i, j - 1)],
-                          preprocessing=lambda x: x + r[i - 1, j - 1])
+                          preprocessing=func)
 
     assert dp.arr[h - 1, w - 1] == truth
 
@@ -237,9 +245,11 @@ def test_min_2d(c, truth):
         dp[i, 0] = 1000 * i
     dp[1, 1] = c[0, 0]
 
+    # Note that dp and c indicies are off by one
     for i, j in [(i, j) for i in range(1, h) for j in range(1, w)]:
+        func = functools.partial(add_const, const=c[i - 1, j - 1])
         dp[i, j] = dp.min(refs=[(i - 1, j), (i, j - 1)],
-                          preprocessing=lambda x: x + c[i - 1, j - 1])
+                          preprocessing=func)
 
     assert dp.arr[h - 1, w - 1] - 1000 == truth
 
