@@ -155,9 +155,13 @@ class DPArray:
 
         Returns:  
             self.dtype or np.ndarray: corresponding item
+
+        Raises:
+            IndexError: If element at idx is undefined.
+            idx must have an assigned value before bing referenced
         """
         if not np.all(self._occupied_arr[idx]):
-            raise IndexError("Referenced undefined element.")
+            raise IndexError("Referencing undefined element.")
 
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
@@ -174,7 +178,7 @@ class DPArray:
         # TODO: match values to log_idx?
         self._logger.append(self._array_name, Op.WRITE, log_idx, value)
         self._arr[idx] = self.dtype(value)
-        self.occupied_arr[idx] = True
+        self._occupied_arr[idx] = True
 
     def __eq__(self, other):
         """Equal to operator.
@@ -219,7 +223,12 @@ class DPArray:
             const (float): A constant value to use in the min/max operation
                 
         Returns:
-            The max/min value of the references after applying preprocessing  
+            The max/min value of the references after applying preprocessing
+        
+        Raises:
+            ValueError: A ValueError will be thrown if refs is not a non-empty
+            iterable or if preprocessing is not callable or an iterable of
+            equal length to that of refs.
         """
         # Error handling
         if not isinstance(refs, Iterable) or len(refs) == 0:
@@ -266,11 +275,13 @@ class DPArray:
         Args:
             idx: The index to assign the calculated value to
             refs (iterable of indices): Indicies to retreive
-                values from to use in the max function
+                values from to use in the max function.
+                refs be an Iterable of length at least 1.
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to
+                If callable, preprocessing will be applied to
                 each refs value before applying the max function. 
-                If iterable of callables, then it is requried the
+                If preprocessing is an iterable of callables,
+                then it is requried the
                 len(refs) = len(preprocessing). preprocessing[i]
                 will be applied to refs[i] before applying the max
                 function.
@@ -290,9 +301,10 @@ class DPArray:
         Args:
             idx: The index to assign the calculated value to
             refs (iterable of indices): Indicies to retreive
-                values from to use in the min function
+                values from to use in the min function.
+                refs must be an Iterable of length at least 1.
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to
+                If callable ,preprocessing will be applied to
                 each refs value before applying the min function. 
                 If iterable of callables, then it is requried the
                 len(refs) = len(preprocessing). preprocessing[i]

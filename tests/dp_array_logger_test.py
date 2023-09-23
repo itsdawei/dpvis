@@ -251,11 +251,7 @@ def test_same_op_and_index(op):
     """Same operation with same index does not create additional log."""
     dp = DPArray(10, "dp")
 
-    log_idx = {
-        Op.WRITE: 0,
-        Op.READ: 1,
-        Op.HIGHLIGHT: 1
-    }
+    log_idx = {Op.WRITE: 0, Op.READ: 1, Op.HIGHLIGHT: 1}
 
     if op == Op.WRITE:
         dp[0] = 1
