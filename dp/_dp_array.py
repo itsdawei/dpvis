@@ -147,6 +147,14 @@ class DPArray:
         """
         return self._logger.to_timesteps()
 
+    def print_timesteps(self):
+        """Prints the timesteps in color. Currently works for 1D arrays only.
+        
+        Raises:
+            ValueError: If the array shapes are not 1D.
+        """
+        self._logger.print_timesteps()
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
