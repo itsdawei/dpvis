@@ -174,19 +174,19 @@ class Logger:
                 print("\t[", end="")
                 for i in range(shape):
                     if i in ts[name][Op.WRITE]:
-                        print(Fore.RED, f'{ts[name]["contents"][i]:>2}', end="")
-                    elif i in ts[name][Op.READ]:
-                        print(Fore.YELLOW,
-                              f'{ts[name]["contents"][i]:>2}',
-                              end="")
+                        print(Fore.RED, f'{ts[name]["contents"][i]:>2.0f}', end="")
                     elif i in ts[name][Op.HIGHLIGHT]:
                         print(Fore.GREEN,
-                              f'{ts[name]["contents"][i]:>2}',
+                              f'{ts[name]["contents"][i]:>2.0f}',
+                              end="")
+                    elif i in ts[name][Op.READ]:
+                        print(Fore.YELLOW,
+                              f'{ts[name]["contents"][i]:>2.0f}',
                               end="")
                     elif ts[name]["contents"][i] is None:
                         print("   ", end="")
                     else:
-                        print(f'{ts[name]["contents"][i]:>3}', end="")
+                        print(f'{ts[name]["contents"][i]:>3.0f}', end="")
                     print(Style.RESET_ALL, end="")
                     print(",", end="")
                 print("]")
