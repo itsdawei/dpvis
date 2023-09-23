@@ -261,3 +261,24 @@ def test_constructor_default_logger():
     dp2 = DPArray(10, "dp2", logger=dp1.logger)
     assert dp1.logger == dp2.logger
     assert dp1.logger.array_shapes == {"dp1": 10, "dp2": 10}
+
+def test_reference_undefined_element():  
+    dp = DPArray(10)
+    dp[0] = 0
+    dp[1] = 1
+
+    dp[2] = dp[1] + dp[0]
+
+    with pytest.raises(
+            IndexError,
+            match="Referencing undefined element."
+        ):
+        dp[3] = dp[4] + dp[5]
+
+    dp[3] = dp[2] + dp[1]
+
+    with pytest.raises(
+            IndexError,
+            match="Referencing undefined element."
+        ):
+        dp[4] = dp[9] + dp[1]

@@ -251,16 +251,23 @@ def test_same_op_and_index(op):
     """Same operation with same index does not create additional log."""
     dp = DPArray(10, "dp")
 
+    log_idx = {
+        Op.WRITE: 0,
+        Op.READ: 1,
+        Op.HIGHLIGHT: 1
+    }
+
     if op == Op.WRITE:
         dp[0] = 1
         dp[0] = 2
     elif op == Op.READ:
+        dp[0] = 1
         _ = dp[0]
         _ = dp[0]
     elif op == Op.HIGHLIGHT:
         # TODO: Perform highlight action
         pass
-    assert dp.logger.logs[0] == {
+    assert dp.logger.logs[log_idx[op]] == {
         "op": op,
         "idx": {
             "dp": {
@@ -268,7 +275,7 @@ def test_same_op_and_index(op):
             }
         }
     }
-    assert len(dp.logger.logs) == 1
+    assert len(dp.logger.logs) == log_idx[op] + 1
 
 
 # @pytest.mark.parametrize("s",
