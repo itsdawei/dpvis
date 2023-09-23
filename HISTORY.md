@@ -15,4 +15,5 @@
 - Remove int support (#4)
 - Create ``DPArray`` class (#3)
   - Added max/min functionality to dp class (#12)
+  - Enable reading with slices (#14)
 - Initial project setup (#1, #2)
