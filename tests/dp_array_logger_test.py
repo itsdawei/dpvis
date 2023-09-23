@@ -128,8 +128,6 @@ def test_min():
     val_ans = [None, None, None, 8, 14, 14, 15, 15]
     dp = DPArray(8, "name")
 
-    # pytest.set_trace()
-
     dp[0] = c[0]
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
@@ -187,6 +185,8 @@ def test_min():
         }
         assert dp.arr[i] == val_ans[i]
         next_log = next_log + 3
+
+    dp.print_timesteps()
 
 
 def test_multiple_arrays_logging():
