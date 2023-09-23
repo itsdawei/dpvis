@@ -1,5 +1,6 @@
 """This file provides the Logger class."""
 from enum import IntEnum
+from colorama import Fore, Style
 
 import numpy as np
 
@@ -150,6 +151,47 @@ class Logger:
                     timesteps[-1][name][log["op"]] |= set(idx.keys())
 
         return timesteps
+
+    def print_timesteps(self):
+        """Prints the timesteps in color. Currently works for 1D arrays only.
+        
+        Raises:
+            ValueError: If the array shapes are not 1D.
+        """
+        # if array_shapes are not 1D, raise error
+        for name, shape in self.array_shapes.items():
+            if not isinstance(shape, int):
+                raise ValueError("must be 1D array to print timesteps.")
+
+        timesteps = self.to_timesteps()
+
+        for i, ts in enumerate(timesteps):
+            print(i)
+            for name, shape in self.array_shapes.items():  # assume 1d
+                # print name, then contents of the array,
+                # if an item's index is in ts[name][Op.WRITE] then highlight it
+                print("\t", name, ": ", end="")
+                print("\t[", end="")
+                for i in range(shape):
+                    if i in ts[name][Op.WRITE]:
+                        print(Fore.RED,
+                              f'{ts[name]["contents"][i]:>2.0f}',
+                              end="")
+                    elif i in ts[name][Op.HIGHLIGHT]:
+                        print(Fore.GREEN,
+                              f'{ts[name]["contents"][i]:>2.0f}',
+                              end="")
+                    elif i in ts[name][Op.READ]:
+                        print(Fore.YELLOW,
+                              f'{ts[name]["contents"][i]:>2.0f}',
+                              end="")
+                    elif ts[name]["contents"][i] is None:
+                        print("   ", end="")
+                    else:
+                        print(f'{ts[name]["contents"][i]:>3.0f}', end="")
+                    print(Style.RESET_ALL, end="")
+                    print(",", end="")
+                print("]")
 
     @property
     def logs(self):
