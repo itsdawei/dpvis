@@ -156,7 +156,9 @@ class DPArray:
         Returns:  
             self.dtype or np.ndarray: corresponding item
         """
-        # TODO: Check if idx is occupied
+        if not np.all(self._occupied_arr[idx]):
+            raise IndexError("Referenced undefined element.")
+
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
@@ -172,6 +174,7 @@ class DPArray:
         # TODO: match values to log_idx?
         self._logger.append(self._array_name, Op.WRITE, log_idx, value)
         self._arr[idx] = self.dtype(value)
+        self.occupied_arr[idx] = True
 
     def __eq__(self, other):
         """Equal to operator.
