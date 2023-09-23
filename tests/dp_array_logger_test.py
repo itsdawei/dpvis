@@ -1,4 +1,5 @@
 """Tests the interaction between DPArray and Logger."""
+import functools
 import numpy as np
 import pytest
 
@@ -45,6 +46,147 @@ def test_2d_read_write():
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0): 1}}}
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {(0, 0): None}}}
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {(3, 6): 1}}}
+
+
+def test_max_highlight():
+    dp = DPArray(5, "name")
+    dp[0] = 1
+    dp[1] = 3
+    dp[2] = 0
+    assert dp.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "name": {
+                0: 1,
+                1: 3,
+                2: 0
+            }
+        }
+    }
+
+    dp[3] = dp.max(refs=[0, 1, 2])
+    assert dp.arr[3] == 3
+    assert dp.logger.logs[1] == {
+        "op": Op.READ,
+        "idx": {
+            "name": {
+                0: None,
+                1: None,
+                2: None
+            }
+        }
+    }
+    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
+
+    dp[4] = dp.max(refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
+    assert dp.arr[4] == 0
+    assert dp.logger.logs[4] == {
+        "op": Op.READ,
+        "idx": {
+            "name": {
+                0: None,
+                1: None,
+                2: None,
+                3: None
+            }
+        }
+    }
+    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4: 0}}}
+
+
+def identity(x):
+    """
+    Identity function for max/min tests
+    """
+    return x
+
+
+def add_const(x, const):
+    """
+    Simple addition function
+    """
+    return x + const
+
+
+def test_min():
+    """
+    Test logger entries when using the DPArray min function.
+
+    Setting:
+    A city wants to place fire hydrants on a street.
+    In front of each house, they can choose to build a fire hydrant.
+    If the city builds a fire hydrant in front of house i, they incur
+    a cost of c[i] due to construction costs. Law states that every house
+    on the street must have a fire hydrant or be adjacent to a house with
+    a fire hydrant. Find an optimal placement of fire hydrants so that the
+    city spends as little as possible and the above law is satisfied.
+    """
+    c = [7, 6, 2, 9, 8, 10, 1, 3]
+    highlight_ans = [None, None, None, 1, 2, 2, 4, 5]
+    val_ans = [None, None, None, 8, 14, 14, 15, 15]
+    dp = DPArray(8, "name")
+
+    # pytest.set_trace()
+
+    dp[0] = c[0]
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
+
+    dp[1] = dp.min([0], const=c[1])
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
+
+    dp[2] = dp.min([0, 1], [lambda x: x + c[2], identity])
+    assert dp.logger.logs[3] == {
+        "op": Op.READ,
+        "idx": {
+            "name": {
+                0: None,
+                1: None
+            }
+        }
+    }
+    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
+
+    next_log = 6
+    funcs = [functools.partial(add_const, const=c[i]) for i in range(len(c))]
+    for i in range(3, 8):
+        # Three options
+        # Hydrant at i and then satisfy law for i - 2
+        # Hydrant at i - 1 and satisfy law for i - 2
+        # Hydrant at i - 1 and satisfy law for i - 3
+        dp[i] = dp.min(refs=[i - 2, i - 2, i - 3],
+                       preprocessing=[funcs[i], funcs[i - 1], funcs[i - 1]])
+
+        assert dp.logger.logs[next_log] == {
+            "op": Op.READ,
+            "idx": {
+                "name": {
+                    i - 2: None,
+                    i - 3: None
+                }
+            }
+        }
+        assert dp.logger.logs[next_log + 1] == {
+            "op": Op.HIGHLIGHT,
+            "idx": {
+                "name": {
+                    highlight_ans[i]: None
+                }
+            }
+        }
+        assert dp.logger.logs[next_log + 2] == {
+            "op": Op.WRITE,
+            "idx": {
+                "name": {
+                    i: val_ans[i]
+                }
+            }
+        }
+        assert dp.arr[i] == val_ans[i]
+        next_log = next_log + 3
 
 
 def test_multiple_arrays_logging():
