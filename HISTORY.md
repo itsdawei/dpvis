@@ -14,4 +14,5 @@
     - Reduce GitHub Action usage (#9)
 - Remove int support (#4)
 - Create ``DPArray`` class (#3)
+  - Added max/min functionality to dp class (#12)
 - Initial project setup (#1, #2)
