@@ -174,7 +174,9 @@ class Logger:
                 print("\t[", end="")
                 for i in range(shape):
                     if i in ts[name][Op.WRITE]:
-                        print(Fore.RED, f'{ts[name]["contents"][i]:>2.0f}', end="")
+                        print(Fore.RED,
+                              f'{ts[name]["contents"][i]:>2.0f}',
+                              end="")
                     elif i in ts[name][Op.HIGHLIGHT]:
                         print(Fore.GREEN,
                               f'{ts[name]["contents"][i]:>2.0f}',
