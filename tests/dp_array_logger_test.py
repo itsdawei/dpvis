@@ -242,13 +242,14 @@ def test_multiple_arrays_logging():
     assert len(dp1.logger.logs) == 3
 
 
-@pytest.mark.parametrize(
-    "op",
-    [Op.WRITE, Op.READ,
-     pytest.param(Op.HIGHLIGHT, marks=pytest.mark.xfail)],  # Expected to fail
-    ids=["w", "r", "h"])
+@pytest.mark.parametrize("op", [Op.WRITE, Op.READ], ids=["w", "r"])
 def test_same_op_and_index(op):
-    """Same operation with same index does not create additional log."""
+    """Same operation with same index does not create additional log.
+
+    Highlight not tested since highlight operations typically require
+    read operations before, which would split the logs into different 
+    operation groups. 
+    """
     dp = DPArray(10, "dp")
 
     if op == Op.WRITE:
@@ -257,9 +258,6 @@ def test_same_op_and_index(op):
     elif op == Op.READ:
         _ = dp[0]
         _ = dp[0]
-    elif op == Op.HIGHLIGHT:
-        # TODO: Perform highlight action
-        pass
     assert dp.logger.logs[0] == {
         "op": op,
         "idx": {
