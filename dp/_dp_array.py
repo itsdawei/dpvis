@@ -175,8 +175,14 @@ class DPArray:
         Args:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
+
+        Raises:
+            ValueError: If ``idx`` is a slice object.
         """
         log_idx = self._nd_slice_to_indices(idx)
+        if isinstance(idx, slice):
+            raise ValueError("Slice assignment not currently supported.")
+        # TODO: potentially support slice writes
         # TODO: match values to log_idx?
         converted_val = self.dtype(value)
         self._logger.append(self._array_name, Op.WRITE, log_idx, converted_val)
