@@ -42,7 +42,8 @@ def display(dp_arr, num_timesteps, recurrence=None, title=None):
 def _DPArray_to_Array(dp_obj, n):
     A = [[0 for i in range(n)] for j in range(n)]
     for i in range(n):
-        A[i][i:] = dp_obj[i]
+        for j in range(i, n):
+            A[j][i] = dp_obj[i]
     return A
 
 
@@ -56,9 +57,13 @@ def _display_dp(dp_arr, n, start=0):
         title (str): String for the title of the webpage. Optional.
     """
     arr = _DPArray_to_Array(dp_arr, n)
+    arr = np.array(arr).reshape(n, 1, n)
+    # arr = arr/89
     print(arr)
+    print(arr.shape)
+    print(arr[start])
     fig = go.Figure(
-        data=[go.Heatmap(z=arr[start])],
+        data=[go.Heatmap(z=arr[start], colorscale = 'solar')],
         layout=go.Layout(
             title="Frame 0",
             title_x=0.5,
@@ -75,36 +80,8 @@ def _display_dp(dp_arr, n, start=0):
                                     "transition": {"duration": 0}}],
                             )])]
         ),
-        frames=[go.Frame(data=[go.Heatmap(z=arr[i])],
+        frames=[go.Frame(data=[go.Heatmap(z=arr[i], colorscale = 'solar')],
                         layout=go.Layout(title_text=f"Frame {i}")) 
-                for i in range(1, n)]
+                for i in range(0, n)]
     )
     fig.show()
-
-    # # Base code
-    # N = 50
-    # M = np.random.random((N, 10, 10))
-    # fig = go.Figure(
-    #     data=[go.Heatmap(z=M[0])],
-    #     layout=go.Layout(
-    #         title="Frame 0",
-    #         title_x=0.5,
-    #         updatemenus=[dict(
-    #             type="buttons",
-    #             buttons=[dict(label="Play",
-    #                         method="animate",
-    #                         args=[None]),
-    #                     dict(label="Pause",
-    #                         method="animate",
-    #                         args=[None,
-    #                             {"frame": {"duration": 0, "redraw": False},
-    #                                 "mode": "immediate",
-    #                                 "transition": {"duration": 0}}],
-    #                         )])]
-    #     ),
-    #     frames=[go.Frame(data=[go.Heatmap(z=M[i])],
-    #                     layout=go.Layout(title_text=f"Frame {i}")) 
-    #             for i in range(1, N)]
-    # )
-
-    # fig.show()

@@ -12,5 +12,4 @@ def fib(n):
 
 dp_array = fib(n)
 
-import pdb; pdb.set_trace()
-_display_dp(dp_array, n, start=2)
+_display_dp(dp_array, n)
