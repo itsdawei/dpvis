@@ -50,7 +50,7 @@ def _display_dp(dp_arr, n, start=0, theme='solar'):
     arr = np.array(arr)
     arr = arr.reshape(len(arr), 1, n)
 
-    # Writing in the hovertext for each frame
+    # Writing in the hovertext for each frame -- this and the data values should be their own functions
     # Source: https://stackoverflow.com/questions/45569092/plotly-python-heatmap-change-hovertext-x-y-z
     # Hover for each cell should look like "val: {cell_value}" and "references: {cells referenced to obtain current value}"
     hovertext = np.full(arr.shape, None)
@@ -61,7 +61,7 @@ def _display_dp(dp_arr, n, start=0, theme='solar'):
             hovertext[timestep][0][written_cell] = 'Value: {}<br />Dependencies: {}'.format(arr[timestep][0][written_cell], changed_arrays[dp_arr._array_name][Op.READ])
 
     # Rendering all the frames for the animation
-    frames = [go.Frame(data=[go.Heatmap(z=arr[i], colorscale='solar', hoverinfo='text', text=hovertext[i])], name=f'Frame {i}') for i in range(len(arr))]
+    frames = [go.Frame(data=[go.Heatmap(z=arr[i], colorscale=theme, hoverinfo='text', text=hovertext[i], zmin=0, zmax=100)], name=f'Frame {i}') for i in range(len(arr))]
 
     # Create steps for the slider
     steps = []
@@ -89,7 +89,7 @@ def _display_dp(dp_arr, n, start=0, theme='solar'):
 
     # Create the figure
     fig = go.Figure(
-        data=[go.Heatmap(z=arr[0], colorscale=theme)],
+        data=[go.Heatmap(z=arr[0], colorscale=theme, hoverinfo='text', text=hovertext[i], zmin=0, zmax=100)],
         layout=go.Layout(
             title="Frame 0",
             title_x=0.5,
