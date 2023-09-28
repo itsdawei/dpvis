@@ -2,6 +2,7 @@ import numpy as np
 import streamlit as st
 from dp._logger import Logger, Op
 import copy
+import pdb
 import plotly.graph_objs as go
 
 def display(dp_arr, num_timesteps, recurrence=None, title=None):
@@ -31,23 +32,8 @@ def display(dp_arr, num_timesteps, recurrence=None, title=None):
     if (recurrence):    
         recurrence.markdown("Recurrence: " + recurrence)
 
-    # st.slider("Iteration #:",
-    #           0,
-    #           num_timesteps - 1,
-    #           key="now",
-    #           on_change=_change_options(arr, col_name))
 
-# Very suboptimal -- A private function that converts a DPArray object to an array suitable for inputting to the heatmap.
-# In the future, we should remove this function and just make the heatmap work with the original DPArray object.
-def _DPArray_to_Array(dp_obj, n):
-    A = [[0 for i in range(n)] for j in range(n)]
-    for i in range(n):
-        for j in range(i, n):
-            A[j][i] = dp_obj[i]
-    return A
-
-
-def _display_dp(dp_arr, n, start=0):
+def _display_dp(dp_arr, n, start=0, theme='solar'):
     """Plots the dp array as a plotly graph object animation.
 
     Args:
@@ -56,10 +42,26 @@ def _display_dp(dp_arr, n, start=0):
         recurrence (str): Markdown string of the recurrence relation of the DP. Optional.
         title (str): String for the title of the webpage. Optional.
     """
-    arr = _DPArray_to_Array(dp_arr, n)
-    arr = np.array(arr).reshape(n, 1, n)
+    # Obtaining the dp_array timesteps object
+    dp_arr_timesteps = dp_arr.get_timesteps()
 
-    frames = [go.Frame(data=[go.Heatmap(z=arr[i], colorscale='solar')], name=f'Frame {i}') for i in range(len(arr))]
+    # Getting the data values for each frame
+    arr = [timestep[dp_arr._array_name]['contents'] for timestep in dp_arr_timesteps]
+    arr = np.array(arr)
+    arr = arr.reshape(len(arr), 1, n)
+
+    # Writing in the hovertext for each frame
+    # Source: https://stackoverflow.com/questions/45569092/plotly-python-heatmap-change-hovertext-x-y-z
+    # Hover for each cell should look like "val: {cell_value}" and "references: {cells referenced to obtain current value}"
+    hovertext = np.full(arr.shape, None)
+    for timestep, changed_arrays in enumerate(dp_arr_timesteps):
+        for written_cell in changed_arrays[dp_arr._array_name][Op.WRITE]:
+            if timestep > 0:
+                hovertext[timestep][0][:written_cell] = hovertext[timestep-1][0][:written_cell]
+            hovertext[timestep][0][written_cell] = 'Value: {}<br />Dependencies: {}'.format(arr[timestep][0][written_cell], changed_arrays[dp_arr._array_name][Op.READ])
+
+    # Rendering all the frames for the animation
+    frames = [go.Frame(data=[go.Heatmap(z=arr[i], colorscale='solar', hoverinfo='text', text=hovertext[i])], name=f'Frame {i}') for i in range(len(arr))]
 
     # Create steps for the slider
     steps = []
@@ -85,8 +87,9 @@ def _display_dp(dp_arr, n, start=0):
         steps=steps
     )]
 
+    # Create the figure
     fig = go.Figure(
-        data=[go.Heatmap(z=arr[0], colorscale='solar')],
+        data=[go.Heatmap(z=arr[0], colorscale=theme)],
         layout=go.Layout(
             title="Frame 0",
             title_x=0.5,
@@ -105,28 +108,3 @@ def _display_dp(dp_arr, n, start=0):
     )
 
     fig.show()
-    # fig = go.Figure(
-    #     data=[go.Heatmap(z=arr[start], colorscale = 'solar')],
-    #     layout=go.Layout(
-    #         title="Frame 0",
-    #         title_x=0.5,
-    #         updatemenus=[dict(
-    #             type="buttons",
-    #             buttons=[dict(label="Play",
-    #                           method="animate",
-    #                           args=[None,
-    #                                 {"fromcurrent": True}]),
-    #                     dict(label="Pause",
-    #                          method="animate",
-    #                          args=[None,
-    #                                {"frame": {"duration": 0, "redraw": False},
-    #                                 "mode": "immediate",
-    #                                 "transition": {"duration": 0}}
-    #                                 ],
-    #                         )])]
-    #     ),
-    #     frames=[go.Frame(data=[go.Heatmap(z=arr[i], colorscale = 'solar')],
-    #                     layout=go.Layout(title_text=f"Frame {i}")) 
-    #             for i in range(0, n)]
-    # )
-    # fig.show()
