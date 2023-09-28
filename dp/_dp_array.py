@@ -147,6 +147,14 @@ class DPArray:
         """
         return self._logger.to_timesteps()
 
+    def print_timesteps(self):
+        """Prints the timesteps in color. Currently works for 1D arrays only.
+        
+        Raises:
+            ValueError: If the array shapes are not 1D.
+        """
+        self._logger.print_timesteps()
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
@@ -173,11 +181,18 @@ class DPArray:
         Args:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
+
+        Raises:
+            ValueError: If ``idx`` is a slice object.
         """
         log_idx = self._nd_slice_to_indices(idx)
+        if isinstance(idx, slice):
+            raise ValueError("Slice assignment not currently supported.")
+        # TODO: potentially support slice writes
         # TODO: match values to log_idx?
-        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
-        self._arr[idx] = self.dtype(value)
+        converted_val = self.dtype(value)
+        self._logger.append(self._array_name, Op.WRITE, log_idx, converted_val)
+        self._arr[idx] = self.dtype(converted_val)
         self._occupied_arr[idx] = True
 
     def __eq__(self, other):
