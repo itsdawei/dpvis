@@ -261,7 +261,7 @@ def test_same_op_and_index(op):
         dp[0] = 1
         _ = dp[0]
         _ = dp[0]
-    assert dp.logger.logs[0] == {
+    assert dp.logger.logs[0 if op == Op.WRITE else 1] == {
         "op": op,
         "idx": {
             "dp": {
@@ -270,29 +270,6 @@ def test_same_op_and_index(op):
         }
     }
     assert len(dp.logger.logs) == log_idx[op] + 1
-
-
-@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-                         ids=["a", "b", "c", "d", "e"])
-def test_slice_reading(s):
-    dp = DPArray(10)
-
-    for i in range(10):
-        dp[i] = i**2
-
-    _ = dp[s]
-    if isinstance(s, int):
-        s = np.s_[s:s + 1]
-    truth = {i: None for i in range(*s.indices(10))}
-    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
-
-
-def test_slice_assignment():
-    # currently do not support assignment through slices
-    dp = DPArray(10)
-
-    with pytest.raises(ValueError):
-        dp[:2] = 1
 
 
 @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
