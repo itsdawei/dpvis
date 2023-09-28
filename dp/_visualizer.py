@@ -42,7 +42,7 @@ def display(dp_arr, num_timesteps, recurrence=None, title=None):
 def _DPArray_to_Array(dp_obj, n):
     A = [[0 for i in range(n)] for j in range(n)]
     for i in range(n):
-        A[i:][i] = dp_obj[i]
+        A[i][i:] = dp_obj[i]
     return A
 
 
