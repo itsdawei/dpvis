@@ -58,30 +58,75 @@ def _display_dp(dp_arr, n, start=0):
     """
     arr = _DPArray_to_Array(dp_arr, n)
     arr = np.array(arr).reshape(n, 1, n)
-    # arr = arr/89
-    print(arr)
-    print(arr.shape)
-    print(arr[start])
+
+    frames = [go.Frame(data=[go.Heatmap(z=arr[i], colorscale='solar')], name=f'Frame {i}') for i in range(len(arr))]
+
+    # Create steps for the slider
+    steps = []
+    for i in range(len(arr)):
+        step = dict(
+            args=[[f'Frame {i}'], {"frame": {"duration": 300, "redraw": True}, "mode": "immediate", "transition": {"duration": 300}}],
+            label=str(i),
+            method="animate",
+        )
+        steps.append(step)
+
+    # Create the slider
+    sliders = [dict(
+        active=0,
+        yanchor="top",
+        xanchor="left",
+        currentvalue=dict(font=dict(size=20), prefix="Frame:", visible=True, xanchor="right"),
+        transition=dict(duration=300, easing="cubic-in-out"),
+        pad=dict(b=10, t=50),
+        len=0.9,
+        x=0.1,
+        y=0,
+        steps=steps
+    )]
+
     fig = go.Figure(
-        data=[go.Heatmap(z=arr[start], colorscale = 'solar')],
+        data=[go.Heatmap(z=arr[0], colorscale='solar')],
         layout=go.Layout(
             title="Frame 0",
             title_x=0.5,
             updatemenus=[dict(
                 type="buttons",
                 buttons=[dict(label="Play",
-                              method="animate",
-                              args=[None]),
+                            method="animate",
+                            args=[None, {"frame": {"duration": 500, "redraw": True}, "fromcurrent": True}]),
                         dict(label="Pause",
-                             method="animate",
-                             args=[None,
-                                   {"frame": {"duration": 0, "redraw": False},
-                                    "mode": "immediate",
-                                    "transition": {"duration": 0}}],
-                            )])]
+                            method="animate",
+                            args=[[None], {"frame": {"duration": 0, "redraw": False}, "mode": "immediate", "transition": {"duration": 0}}])
+                    ])],
+            sliders=sliders
         ),
-        frames=[go.Frame(data=[go.Heatmap(z=arr[i], colorscale = 'solar')],
-                        layout=go.Layout(title_text=f"Frame {i}")) 
-                for i in range(0, n)]
+        frames=frames
     )
+
     fig.show()
+    # fig = go.Figure(
+    #     data=[go.Heatmap(z=arr[start], colorscale = 'solar')],
+    #     layout=go.Layout(
+    #         title="Frame 0",
+    #         title_x=0.5,
+    #         updatemenus=[dict(
+    #             type="buttons",
+    #             buttons=[dict(label="Play",
+    #                           method="animate",
+    #                           args=[None,
+    #                                 {"fromcurrent": True}]),
+    #                     dict(label="Pause",
+    #                          method="animate",
+    #                          args=[None,
+    #                                {"frame": {"duration": 0, "redraw": False},
+    #                                 "mode": "immediate",
+    #                                 "transition": {"duration": 0}}
+    #                                 ],
+    #                         )])]
+    #     ),
+    #     frames=[go.Frame(data=[go.Heatmap(z=arr[i], colorscale = 'solar')],
+    #                     layout=go.Layout(title_text=f"Frame {i}")) 
+    #             for i in range(0, n)]
+    # )
+    # fig.show()
