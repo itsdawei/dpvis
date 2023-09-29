@@ -1,4 +1,4 @@
-from dp import DPArray, _display_dp
+from dp import DPArray, display
 
 n = 11
 
@@ -12,4 +12,4 @@ def fib(n):
 
 dp_array = fib(n)
 
-_display_dp(dp_array, n)
+display(dp_array, n)

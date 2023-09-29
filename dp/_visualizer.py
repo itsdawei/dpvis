@@ -1,13 +1,12 @@
 import numpy as np
 import streamlit as st
-from dp._logger import Logger, Op
-import copy
-import pdb
+from dp._logger import Op
 import plotly.graph_objs as go
 
-def display(dp_arr, num_timesteps, recurrence=None, title=None):
+def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
-    Using a slider and buttons for time travel.
+    Using a slider and buttons for time travel. This UI will have interactive 
+    testing as well as the figure.
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
@@ -15,32 +14,18 @@ def display(dp_arr, num_timesteps, recurrence=None, title=None):
         recurrence (str): Markdown string of the recurrence relation of the DP. Optional.
         title (str): String for the title of the webpage. Optional.
     """
-    #defining containers
-    header = st.container()
-    recurrence = st.container()
-    plot_spot = st.empty()
-    buttons = st.empty()
-    # Setting up streamlit session state with variable frame
-    if "now" not in st.session_state:
-        st.session_state.now = 0
-
-    # If there is a title create a container for it.
-    if (title):
-        header.title(title)
-        st.sidebar.markdown(title)
-
-    if (recurrence):    
-        recurrence.markdown("Recurrence: " + recurrence)
+    _display_dp(dp_arr,n, start=starting_timestep, theme=theme, show=show)
 
 
-def _display_dp(dp_arr, n, start=0, theme='solar'):
-    """Plots the dp array as a plotly graph object animation.
+def _display_dp(dp_arr, n, start=0, theme='solar', show=True):
+    """Plots the dp array as a plotly heatmap using plotly graph object animation.
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
-        max_timesteps (int): Maximum number of time steps to be visualized.
-        recurrence (str): Markdown string of the recurrence relation of the DP. Optional.
-        title (str): String for the title of the webpage. Optional.
+        n (int): Maximum number of time steps to be visualized.
+        start (int): Starting interation to be displayed. Defaults to 0.
+        theme (str): Theme of heatmap. Default.
+        show (bool): Boolean to control whether to show figure. Defaults to true.
     """
     # Obtaining the dp_array timesteps object
     dp_arr_timesteps = dp_arr.get_timesteps()
@@ -107,4 +92,9 @@ def _display_dp(dp_arr, n, start=0, theme='solar'):
         frames=frames
     )
 
-    fig.show()
+    # Display figure if show is true
+    if (show):
+        fig.show()
+
+    # Return figure
+    return fig
