@@ -1,7 +1,7 @@
 # HISTORY
 
 ## 0.0.0
-
+- Added a visualizer for DPArray (#15)
 - Documentation with mkdocs (#7)
 - Setup automated test-runners
     - mkdocs (#7)
