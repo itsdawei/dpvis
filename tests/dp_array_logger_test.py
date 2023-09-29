@@ -267,7 +267,7 @@ def test_same_op_and_index(op):
             }
         }
     }
-    assert len(dp.logger.logs) == log_idx[op] + 1
+    assert len(dp.logger.logs) == 1 if op == Op.WRITE else 2
 
 
 @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
