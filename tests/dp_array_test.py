@@ -273,16 +273,17 @@ def test_constructor_default_logger():
 
 
 def test_reference_undefined_element():
-    dp = DPArray(10)
+    dp = DPArray(10, array_name="arr1")
     dp[0] = 0
     dp[1] = 1
 
     dp[2] = dp[1] + dp[0]
 
-    with pytest.raises(IndexError, match="Referencing undefined element."):
-        dp[3] = dp[4] + dp[5]
+    with pytest.warns(RuntimeWarning):
+        assert np.isnan(dp[4])
 
-    dp[3] = dp[2] + dp[1]
+    dp[4] = dp[1] + dp[2]
+    assert dp[4] == 2
 
-    with pytest.raises(IndexError, match="Referencing undefined element."):
-        dp[4] = dp[9] + dp[1]
+    with pytest.warns(RuntimeWarning):
+        assert np.isnan(dp[5])
