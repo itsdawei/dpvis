@@ -27,15 +27,15 @@ def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
     return figure
 
 
-def _display_dp(dp_arr, n, start=0, theme='solar', show=True):
-    """Plots the dp array as a plotly heatmap using plotly graph object animation.
+def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
+    """Plots the dp array as an animated heatmap.
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
         n (int): Maximum number of time steps to be visualized.
         start (int): Starting interation to be displayed. Defaults to 0.
         theme (str): Theme of heatmap. Defaults to solar.
-        show (bool): Boolean to control whether to show figure. Defaults to true.
+        show (bool): Whether to show figure. Defaults to true.
     """
     # Obtaining the dp_array timesteps object
     dp_arr_timesteps = dp_arr.get_timesteps()
