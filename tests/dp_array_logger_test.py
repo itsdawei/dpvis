@@ -256,9 +256,10 @@ def test_same_op_and_index(op):
         dp[0] = 1
         dp[0] = 2
     elif op == Op.READ:
+        dp[0] = 1
         _ = dp[0]
         _ = dp[0]
-    assert dp.logger.logs[0] == {
+    assert dp.logger.logs[0 if op == Op.WRITE else 1] == {
         "op": op,
         "idx": {
             "dp": {
@@ -266,7 +267,7 @@ def test_same_op_and_index(op):
             }
         }
     }
-    assert len(dp.logger.logs) == 1
+    assert len(dp.logger.logs) == 1 if op == Op.WRITE else 2
 
 
 @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
