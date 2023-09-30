@@ -286,4 +286,5 @@ def test_reference_undefined_element():
     assert dp[4] == 2
 
     with pytest.warns(RuntimeWarning):
-        assert np.isnan(dp[5])
+        temp = dp[5:7]
+        assert np.all(np.isnan(temp))
