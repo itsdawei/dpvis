@@ -171,7 +171,8 @@ def _display_dp(dp_arr, n, start=0, theme='solar', show=True):
                        zmax=100)
         ],
         layout=layout,
-        frames=frames)
+        frames=frames,
+    )
 
     if show:
         fig.show()
