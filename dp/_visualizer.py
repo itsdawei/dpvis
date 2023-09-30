@@ -12,7 +12,8 @@ def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
     Args:
         dp_arr (DPArray): DParray to be visualized.
         n (int): Maximum number of time steps to be visualized.
-        starting_timestep (int): Starting iteration to be displayed. Defaults to 0.
+        starting_timestep (int): Starting iteration to be displayed. Defaults
+            to 0.
         theme (str): Colorscheme of heatmap. Defaults to solar.
         show (str): Boolean to control whether to show figure. Defaults to true.
 
@@ -53,13 +54,13 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
     # Hover for each cell should look like "val: {cell_value}" and "references:
     # {cells referenced to obtain current value}"
     hovertext = np.full(arr.shape, None)
+    # hovertext = []
     for t, changed_arrays in enumerate(dp_arr_timesteps):
-        for written_cell in changed_arrays[dp_arr.array_name][Op.WRITE]:
+        for write_idx in changed_arrays[dp_arr.array_name][Op.WRITE]:
             if t > 0:
-                hovertext[t][0][:written_cell] = (
-                    hovertext[t - 1][0][:written_cell])
-            hovertext[t][0][written_cell] = (
-                f"Value: {arr[t][0][written_cell]}<br />Dependencies:"
+                hovertext[t][0] = hovertext[t - 1][0]
+            hovertext[t][0][write_idx] = (
+                f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
                 f"{changed_arrays[dp_arr.array_name][Op.READ]}")
 
     # Rendering all the frames for the animation
