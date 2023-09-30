@@ -15,19 +15,19 @@ class Op(IntEnum):
 class Logger:
     """Logger class.
 
-    # TODO: add explanation of the format of the log
+    The log format is as follows:
+    {
+        "op": Op.READ/Op.WRITE/Op.HIGHLIGHT,
+        "idx": {
+            array_name_1: {idx1: value1, idx2: value2, ...},
+            array_name_2: {idx1: value1, idx2: value2, ...},
+            ...
+        },
+    }
+    note that values are None for READ and HIGHLIGHT.
 
     Attributes:
         _logs (list): Contains the logs.
-            where each log in the list looks like:
-            log: {
-                "op": Operation,
-                "idx": {
-                    array_name: {idx1: value1, idx2: value2, ...},
-                    ...
-                },
-            }
-            note that values are None for READ and HIGHLIGHT.
         _array_shapes (dict): The shapes of the arrays associated with 
             a logger instance. Key: Array name, Value: Array shape.
     """
@@ -176,20 +176,20 @@ class Logger:
                 for i in range(shape):
                     if i in ts[name][Op.WRITE]:
                         print(Fore.RED,
-                              f'{ts[name]["contents"][i]:>2.0f}',
+                              f"{ts[name]['contents'][i]:>2.0f}",
                               end="")
                     elif i in ts[name][Op.HIGHLIGHT]:
                         print(Fore.GREEN,
-                              f'{ts[name]["contents"][i]:>2.0f}',
+                              f"{ts[name]['contents'][i]:>2.0f}",
                               end="")
                     elif i in ts[name][Op.READ]:
                         print(Fore.YELLOW,
-                              f'{ts[name]["contents"][i]:>2.0f}',
+                              f"{ts[name]['contents'][i]:>2.0f}",
                               end="")
                     elif ts[name]["contents"][i] is None:
                         print("   ", end="")
                     else:
-                        print(f'{ts[name]["contents"][i]:>3.0f}', end="")
+                        print(f"{ts[name]['contents'][i]:>3.0f}", end="")
                     print(Style.RESET_ALL, end="")
                     print(",", end="")
                 print("]")
