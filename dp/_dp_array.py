@@ -1,5 +1,6 @@
 """This file provides the DPArray class."""
 from typing import Iterable
+import warnings
 import numpy as np
 from dp._logger import Logger, Op
 
@@ -32,7 +33,7 @@ class DPArray:
         """Initializes the DPArray."""
         self._dtype = self._parse_dtype(dtype)
 
-        self._arr = np.empty(shape, dtype=self._dtype)
+        self._arr = np.full(shape, dtype=self._dtype, fill_value=np.nan)
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         self._logger = Logger() if logger is None else logger
@@ -164,12 +165,18 @@ class DPArray:
         Returns:  
             self.dtype or np.ndarray: corresponding item
 
-        Raises:
-            IndexError: If element at idx is undefined.
-            idx must have an assigned value before bing referenced
+        Warning:
+            Warns if an undefined index is referenced.
         """
         if not np.all(self._occupied_arr[idx]):
-            raise IndexError("Referencing undefined element.")
+            read_indices = np.full(self._arr.shape, False)
+            read_indices[idx] = True
+            undef_read_indices = np.flatnonzero(
+                np.asarray(~self.occupied_arr & read_indices is True))
+            warnings.warn(
+                f'Referencing undefined elements in "{self._array_name}". \
+                          Undefined elements: {undef_read_indices}.',
+                category=RuntimeWarning)
 
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
