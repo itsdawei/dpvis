@@ -140,7 +140,8 @@ class Logger:
             if log["op"] == Op.WRITE:
                 for name, idx in log["idx"].items():
                     timesteps[-1][name][log["op"]] = set(idx.keys())
-                    array_contents[name][list(idx.keys())] = list(idx.values())
+                    for i, v in idx.items():
+                        array_contents[name][i] = v
                     timesteps[-1][name]["contents"] = \
                         array_contents[name].copy()
                 new_timestep = True
