@@ -151,15 +151,17 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
             }
         }]
     }]
-    layout = go.Layout(
-        title="Frame 0",
-        title_x=0.5,
-        updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
-        sliders=sliders,
-    )
 
     # Create the figure
-    fig = go.Figure(data=heatmaps[start], layout=layout, frames=frames)
+    fig = go.Figure(
+        data=heatmaps[start],
+        layout=go.Layout(
+            title="Frame 0",
+            title_x=0.5,
+            updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
+            sliders=sliders),
+        frames=frames,
+    )
 
     if show:
         fig.show()
