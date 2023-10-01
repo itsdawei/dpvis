@@ -65,16 +65,20 @@ def _display_dp(dp_arr,
                 f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
+    # NOTE: We should be using "customdata" for hovertext.
     heatmaps = [
         go.Heatmap(
             z=z,
-            colorscale=theme,
             text=hovertext[i],
             texttemplate="%{z}",
             textfont={"size": 20},
-            hoverinfo="text",
+            hovertemplate=
+            "<b>%{x} %{y}</b><br>" +
+            "%{text}" +
+            "<extra></extra>",
             zmin=0,
             zmax=100,
+            colorscale=theme,
         ) for i, z in enumerate(arr)
     ]
 
@@ -177,6 +181,7 @@ def _display_dp(dp_arr,
         ),
         frames=frames,
     )
+    fig.update_coloraxes(showscale=False)
 
     if show:
         fig.show()
