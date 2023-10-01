@@ -28,12 +28,18 @@ def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
     return figure
 
 
-def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
+def _display_dp(dp_arr,
+                n, # pylint: disable=unused-argument
+                fig_title="DP Array",
+                start=0,
+                theme="solar",
+                show=True):
     """Plots the dp array as an animated heatmap.
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
         n (int): Maximum number of time steps to be visualized.
+        fig_title (str): Title of the figure.
         start (int): Starting interation to be displayed. Defaults to 0.
         theme (str): Theme of heatmap. Defaults to solar.
         show (bool): Whether to show figure. Defaults to true.
@@ -156,10 +162,19 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
-            title="Frame 0",
+            title=fig_title,
             title_x=0.5,
             updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
-            sliders=sliders),
+            sliders=sliders,
+            xaxis={
+                "tickmode": "array",
+                "tickvals": np.arange(arr.shape[2]),
+            },
+            yaxis={
+                "tickmode": "array",
+                "tickvals": np.arange(arr.shape[1]),
+            },
+        ),
         frames=frames,
     )
 
