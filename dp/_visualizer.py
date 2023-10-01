@@ -38,66 +38,61 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
         theme (str): Theme of heatmap. Defaults to solar.
         show (bool): Whether to show figure. Defaults to true.
     """
-    # Obtaining the dp_array timesteps object
-    dp_arr_timesteps = dp_arr.get_timesteps()
+    # Obtaining the dp_array timesteps object.
+    timesteps = dp_arr.get_timesteps()
 
-    # Getting the data values for each frame - should be its own function
-    arr = [
-        timestep[dp_arr.array_name]["contents"] for timestep in dp_arr_timesteps
-    ]
-    arr = np.array(arr)
-    arr = arr.reshape((len(arr), 1, n))
+    # Getting the data values for each frame - should be its own function.
+    arr = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
 
-    # Writing in the hovertext for each frame -- this and the data values
-    # should be their own functions.
-    # https://stackoverflow.com/questions/45569092/plotly-python-heatmap-change-hovertext-x-y-z
-    # Hover for each cell should look like "val: {cell_value}" and "references:
-    # {cells referenced to obtain current value}"
-    hovertext = np.full(arr.shape, None)
-    # hovertext = []
-    for t, changed_arrays in enumerate(dp_arr_timesteps):
-        for write_idx in changed_arrays[dp_arr.array_name][Op.WRITE]:
-            if t > 0:
-                hovertext[t][0] = hovertext[t - 1][0]
-            hovertext[t][0][write_idx] = (
+    # Plotly heatmaps requires 2d input as data.
+    if arr.ndim == 2:
+        arr = np.expand_dims(arr, 1)
+
+    # TODO: @aditya add comment to explain step-by-step what this for loop
+    # does.
+    # What about HIGHLIGHT?
+    hovertext = np.full_like(arr, None)
+    for t, record in enumerate(timesteps):
+        for write_idx in record[dp_arr.array_name][Op.WRITE]:
+            hovertext[t:, 0, write_idx] = (
                 f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
-                f"{changed_arrays[dp_arr.array_name][Op.READ]}")
+                f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
-    # Rendering all the frames for the animation
+    # Create heatmaps.
+    heatmaps = [
+        go.Heatmap(
+            z=z,
+            colorscale=theme,
+            text=hovertext[i],
+            texttemplate="%{z}",
+            textfont={"size": 20},
+            hoverinfo="text",
+            zmin=0,
+            zmax=100,
+        ) for i, z in enumerate(arr)
+    ]
+
+    # Rendering all the frames for the animation.
     frames = [
-        go.Frame(
-            name=f"Frame {i}",
-            data=[
-                go.Heatmap(z=arr[i],
-                           colorscale=theme,
-                           hoverinfo="text",
-                           text=hovertext[i],
-                           texttemplate="%{z}",
-                           textfont={"size": 20},
-                           zmin=0,
-                           zmax=100)
-            ],
-        ) for i in range(len(arr))
+        go.Frame(name=f"Frame {i}", data=heatmap)
+        for i, heatmap in enumerate(heatmaps)
     ]
 
     # Create steps for the slider
-    steps = []
-    for i in range(len(arr)):
-        step = {
-            "args": [[f"Frame {i}"], {
-                "frame": {
-                    "duration": 300,
-                    "redraw": True
-                },
-                "mode": "immediate",
-                "transition": {
-                    "duration": 300
-                }
-            }],
-            "label": str(i),
-            "method": "animate",
-        }
-        steps.append(step)
+    steps = [{
+        "args": [[f"Frame {i}"], {
+            "frame": {
+                "duration": 300,
+                "redraw": True
+            },
+            "mode": "immediate",
+            "transition": {
+                "duration": 300
+            }
+        }],
+        "label": str(i),
+        "method": "animate",
+    } for i in range(len(arr))]
 
     # Create the slider
     sliders = [{
@@ -164,18 +159,7 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
     )
 
     # Create the figure
-    fig = go.Figure(
-        data=[
-            go.Heatmap(z=arr[0],
-                       colorscale=theme,
-                       hoverinfo="text",
-                       text=hovertext[i],
-                       zmin=0,
-                       zmax=100)
-        ],
-        layout=layout,
-        frames=frames,
-    )
+    fig = go.Figure(data=heatmaps[start], layout=layout, frames=frames)
 
     if show:
         fig.show()
