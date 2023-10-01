@@ -66,15 +66,17 @@ def _display_dp(dp_arr, n, start=0, theme="solar", show=True):
     # Rendering all the frames for the animation
     frames = [
         go.Frame(
+            name=f"Frame {i}",
             data=[
                 go.Heatmap(z=arr[i],
                            colorscale=theme,
-                           hoverinfo='text',
+                           hoverinfo="text",
                            text=hovertext[i],
+                           texttemplate="%{z}",
+                           textfont={"size": 20},
                            zmin=0,
                            zmax=100)
             ],
-            name=f"Frame {i}",
         ) for i in range(len(arr))
     ]
 
