@@ -1,10 +1,10 @@
 import numpy as np
 import plotly.graph_objs as go
-
+import pdb
 from dp._logger import Op
 
 
-def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
+def display(dp_arr, n, starting_timestep=0, theme="viridis", show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
@@ -14,7 +14,7 @@ def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
         n (int): Maximum number of time steps to be visualized.
         starting_timestep (int): Starting iteration to be displayed. Defaults
             to 0.
-        theme (str): Colorscheme of heatmap. Defaults to solar.
+        theme (str): Colorscheme of heatmap. Defaults to simple_white.
         show (str): Boolean to control whether to show figure. Defaults to true.
 
     Returns:
@@ -26,6 +26,44 @@ def display(dp_arr, n, starting_timestep=0, theme="solar", show=True):
                          theme=theme,
                          show=show)
     return figure
+
+def _parse_timestep_list(timestep_list, dp_array_name):
+    """Parses the timesteps list.
+    
+    Args:
+        timestep_list (list): The timestep list of a DPArray.
+        dp_array_name (str): [should probably be a list of strs in the future]. 
+        The array names being tracked that need to be graphed.
+
+    Returns:
+        tuple of array data and hovertext data
+    """
+
+   
+    # Getting the data values for each frame
+    arr = np.array([t[dp_array_name]["contents"] for t in timestep_list])
+    
+    # Plotly heatmaps requires 2d input as data.
+    if arr.ndim == 2:
+        arr = np.expand_dims(arr, 1)
+
+    # TODO: @aditya add comment to explain step-by-step what this for loop
+    # does.
+    # What about HIGHLIGHT?
+    hovertext = np.full_like(arr, None)
+    for t, record in enumerate(timestep_list):
+        for write_idx in record[dp_array_name][Op.WRITE]:
+            if isinstance(write_idx, int):
+                hovertext[t:, 0, write_idx] = (
+                f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
+                f"{record[dp_array_name][Op.READ] or '{}'}")
+            else:
+                hovertext[t:, *write_idx] = (
+                    f"Value: {arr[t, *write_idx]}<br />Dependencies: "
+                    f"{record[dp_array_name][Op.READ] or '{}'}")
+    # pdb.set_trace()
+
+    return arr, hovertext
 
 
 def _display_dp(dp_arr,
@@ -47,22 +85,8 @@ def _display_dp(dp_arr,
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
-    # Getting the data values for each frame - should be its own function.
-    arr = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
-
-    # Plotly heatmaps requires 2d input as data.
-    if arr.ndim == 2:
-        arr = np.expand_dims(arr, 1)
-
-    # TODO: @aditya add comment to explain step-by-step what this for loop
-    # does.
-    # What about HIGHLIGHT?
-    hovertext = np.full_like(arr, None)
-    for t, record in enumerate(timesteps):
-        for write_idx in record[dp_arr.array_name][Op.WRITE]:
-            hovertext[t:, 0, write_idx] = (
-                f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
-                f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+    # Parse the timesteps list to get the data values and hovertext data for each frame.
+    arr, hovertext = _parse_timestep_list(timesteps, dp_arr.array_name)
 
     # Create heatmaps.
     # NOTE: We should be using "customdata" for hovertext.
@@ -173,10 +197,14 @@ def _display_dp(dp_arr,
             xaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(arr.shape[2]),
+                "showgrid": False,
+                "zeroline": False,
             },
             yaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(arr.shape[1]),
+                "showgrid": False,
+                "zeroline": False
             },
         ),
         frames=frames,
