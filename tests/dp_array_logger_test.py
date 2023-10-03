@@ -128,8 +128,6 @@ def test_min():
     val_ans = [None, None, None, 8, 14, 14, 15, 15]
     dp = DPArray(8, "name")
 
-    # pytest.set_trace()
-
     dp[0] = c[0]
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
@@ -188,6 +186,8 @@ def test_min():
         assert dp.arr[i] == val_ans[i]
         next_log = next_log + 3
 
+    dp.print_timesteps()
+
 
 def test_multiple_arrays_logging():
     dp1 = DPArray(10, "dp_1")
@@ -242,25 +242,24 @@ def test_multiple_arrays_logging():
     assert len(dp1.logger.logs) == 3
 
 
-@pytest.mark.parametrize(
-    "op",
-    [Op.WRITE, Op.READ,
-     pytest.param(Op.HIGHLIGHT, marks=pytest.mark.xfail)],  # Expected to fail
-    ids=["w", "r", "h"])
+@pytest.mark.parametrize("op", [Op.WRITE, Op.READ], ids=["w", "r"])
 def test_same_op_and_index(op):
-    """Same operation with same index does not create additional log."""
+    """Same operation with same index does not create additional log.
+
+    Highlight not tested since highlight operations typically require
+    read operations before, which would split the logs into different 
+    operation groups. 
+    """
     dp = DPArray(10, "dp")
 
     if op == Op.WRITE:
         dp[0] = 1
         dp[0] = 2
     elif op == Op.READ:
+        dp[0] = 1
         _ = dp[0]
         _ = dp[0]
-    elif op == Op.HIGHLIGHT:
-        # TODO: Perform highlight action
-        pass
-    assert dp.logger.logs[0] == {
+    assert dp.logger.logs[0 if op == Op.WRITE else 1] == {
         "op": op,
         "idx": {
             "dp": {
@@ -268,7 +267,30 @@ def test_same_op_and_index(op):
             }
         }
     }
-    assert len(dp.logger.logs) == 1
+    assert len(dp.logger.logs) == 1 if op == Op.WRITE else 2
+
+
+@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+def test_slice_reading(s):
+    dp = DPArray(10)
+
+    for i in range(10):
+        dp[i] = i**2
+
+    _ = dp[s]
+    if isinstance(s, int):
+        s = np.s_[s:s + 1]
+    truth = {i: None for i in range(*s.indices(10))}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
+
+
+def test_slice_assignment():
+    # currently do not support assignment through slices
+    dp = DPArray(10)
+
+    with pytest.raises(ValueError):
+        dp[:2] = 1
 
 
 # @pytest.mark.parametrize("s",
@@ -279,8 +301,8 @@ def test_same_op_and_index(op):
 
 #     dp[s] = 1
 #     if isinstance(s, int):
-#         s = np.s_[s:s + 1]
-#     truth = set(i for i in range(*s.indices(10)))
+# s = np.s_[s:s + 1]
+#     truth = {i:1 for i in range(*s.indices(10))}
 #     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
 #     assert len(dp.logger.logs) == 1
 

@@ -1,5 +1,6 @@
 """This file provides the DPArray class."""
 from typing import Iterable
+import warnings
 import numpy as np
 from dp._logger import Logger, Op
 
@@ -32,7 +33,7 @@ class DPArray:
         """Initializes the DPArray."""
         self._dtype = self._parse_dtype(dtype)
 
-        self._arr = np.empty(shape, dtype=self._dtype)
+        self._arr = np.full(shape, dtype=self._dtype, fill_value=np.nan)
         self._occupied_arr = np.zeros_like(self._arr, dtype=bool)
 
         self._logger = Logger() if logger is None else logger
@@ -147,6 +148,14 @@ class DPArray:
         """
         return self._logger.to_timesteps()
 
+    def print_timesteps(self):
+        """Prints the timesteps in color. Currently works for 1D arrays only.
+        
+        Raises:
+            ValueError: If the array shapes are not 1D.
+        """
+        self._logger.print_timesteps()
+
     def __getitem__(self, idx):
         """Retrieve an item using [] operator.
 
@@ -155,8 +164,20 @@ class DPArray:
 
         Returns:  
             self.dtype or np.ndarray: corresponding item
+
+        Warning:
+            Warns if an undefined index is referenced.
         """
-        # TODO: Check if idx is occupied
+        if not np.all(self._occupied_arr[idx]):
+            read_indices = np.full(self._arr.shape, False)
+            read_indices[idx] = True
+            undef_read_indices = np.flatnonzero(
+                np.asarray(~self.occupied_arr & read_indices is True))
+            warnings.warn(
+                f'Referencing undefined elements in "{self._array_name}". \
+                          Undefined elements: {undef_read_indices}.',
+                category=RuntimeWarning)
+
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
@@ -167,11 +188,19 @@ class DPArray:
         Args:
             idx (int): The index of the array.
             value (self.dtype): The assigned value.
+
+        Raises:
+            ValueError: If ``idx`` is a slice object.
         """
         log_idx = self._nd_slice_to_indices(idx)
+        if isinstance(idx, slice):
+            raise ValueError("Slice assignment not currently supported.")
+        # TODO: potentially support slice writes
         # TODO: match values to log_idx?
-        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
-        self._arr[idx] = self.dtype(value)
+        converted_val = self.dtype(value)
+        self._logger.append(self._array_name, Op.WRITE, log_idx, converted_val)
+        self._arr[idx] = self.dtype(converted_val)
+        self._occupied_arr[idx] = True
 
     def __eq__(self, other):
         """Equal to operator.
@@ -216,7 +245,12 @@ class DPArray:
             const (float): A constant value to use in the min/max operation
                 
         Returns:
-            The max/min value of the references after applying preprocessing  
+            The max/min value of the references after applying preprocessing
+        
+        Raises:
+            ValueError: A ValueError will be thrown if refs is not a non-empty
+            iterable or if preprocessing is not callable or an iterable of
+            equal length to that of refs.
         """
         # Error handling
         if not isinstance(refs, Iterable) or len(refs) == 0:
@@ -263,11 +297,13 @@ class DPArray:
         Args:
             idx: The index to assign the calculated value to
             refs (iterable of indices): Indicies to retreive
-                values from to use in the max function
+                values from to use in the max function.
+                refs be an Iterable of length at least 1.
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to
+                If callable, preprocessing will be applied to
                 each refs value before applying the max function. 
-                If iterable of callables, then it is requried the
+                If preprocessing is an iterable of callables,
+                then it is requried the
                 len(refs) = len(preprocessing). preprocessing[i]
                 will be applied to refs[i] before applying the max
                 function.
@@ -287,9 +323,10 @@ class DPArray:
         Args:
             idx: The index to assign the calculated value to
             refs (iterable of indices): Indicies to retreive
-                values from to use in the min function
+                values from to use in the min function.
+                refs must be an Iterable of length at least 1.
             preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to
+                If callable ,preprocessing will be applied to
                 each refs value before applying the min function. 
                 If iterable of callables, then it is requried the
                 len(refs) = len(preprocessing). preprocessing[i]
