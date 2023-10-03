@@ -25,4 +25,4 @@ def fib(n):
 dp_array = fib(n)
 
 # Display the dp_array with maximum number of timesteps set to n
-display(dp_array, n)
+display(dp_array)

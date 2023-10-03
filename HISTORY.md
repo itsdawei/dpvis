@@ -1,6 +1,7 @@
 # HISTORY
 
 ## 0.0.0
+- Visualizer works for 2d DPArrays (#16)
 - Add a visualizer for DPArray (#15)
 - Documentation with mkdocs (#7)
 - Setup automated test-runners

@@ -1,10 +1,9 @@
 import numpy as np
 import plotly.graph_objs as go
-import pdb
 from dp._logger import Op
 
 
-def display(dp_arr, n, starting_timestep=0, theme="viridis", show=True):
+def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
@@ -21,7 +20,6 @@ def display(dp_arr, n, starting_timestep=0, theme="viridis", show=True):
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
     figure = _display_dp(dp_arr,
-                         n,
                          start=starting_timestep,
                          theme=theme,
                          show=show)
@@ -38,7 +36,6 @@ def _parse_timestep_list(timestep_list, dp_array_name):
     Returns:
         tuple of array data and hovertext data
     """
-
    
     # Getting the data values for each frame
     arr = np.array([t[dp_array_name]["contents"] for t in timestep_list])
@@ -61,13 +58,11 @@ def _parse_timestep_list(timestep_list, dp_array_name):
                 hovertext[t:, *write_idx] = (
                     f"Value: {arr[t, *write_idx]}<br />Dependencies: "
                     f"{record[dp_array_name][Op.READ] or '{}'}")
-    # pdb.set_trace()
 
     return arr, hovertext
 
 
 def _display_dp(dp_arr,
-                n, # pylint: disable=unused-argument
                 fig_title="DP Array",
                 start=0,
                 theme="solar",

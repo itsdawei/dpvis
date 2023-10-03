@@ -26,6 +26,7 @@ extras_require = {
         "pytest-cov==3.0.0",
         "pytest-benchmark==3.4.1",
         "pytest-xdist==2.5.0",
+        "fire>=0.5.0",
 
         # Documentation
         "mkdocs==1.5.2",
