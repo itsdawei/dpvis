@@ -57,12 +57,12 @@ def _parse_timestep_list(timestep_list, dp_array_name):
             # Have to add a dimension if arr is a 1D Array
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
-                    f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
+                    f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
                     f"{record[dp_array_name][Op.READ] or '{}'}")
             else:
-                s = (np.s_[t:], *write_idx)
-                hovertext[s] = (f"Value: {arr[s]}<br />Dependencies: "
-                                f"{record[dp_array_name][Op.READ] or '{}'}")
+                hovertext[(np.s_[t:], *write_idx)] = (
+                    f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
+                    f"{record[dp_array_name][Op.READ] or '{}'}")
 
     return arr, hovertext
 
