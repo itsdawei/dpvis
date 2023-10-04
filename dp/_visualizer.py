@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.graph_objs as go
+
 from dp._logger import Op
 
 
@@ -28,12 +29,12 @@ def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
 
 def _parse_timestep_list(timestep_list, dp_array_name):
     """Parses the timesteps list to create two lists containing the cells and the hovertext.
-    
+
     Args:
         timestep_list (list): The timestep list of a DPArray.
         dp_array_name (str): Name of array being tracked for graphing.
         TODO: dp_array_name should be a list of strs in the future.
-        
+
     Returns:
         tuple of value data and hovertext data for each frame
     """
@@ -59,9 +60,9 @@ def _parse_timestep_list(timestep_list, dp_array_name):
                     f"Value: {arr[t][0][write_idx]}<br />Dependencies: "
                     f"{record[dp_array_name][Op.READ] or '{}'}")
             else:
-                hovertext[t:, *write_idx] = (
-                    f"Value: {arr[t, *write_idx]}<br />Dependencies: "
-                    f"{record[dp_array_name][Op.READ] or '{}'}")
+                s = (np.s_[t:], *write_idx)
+                hovertext[s] = (f"Value: {arr[s]}<br />Dependencies: "
+                                f"{record[dp_array_name][Op.READ] or '{}'}")
 
     return arr, hovertext
 
