@@ -101,6 +101,8 @@ def _display_dp(dp_arr,
             zmin=0,
             zmax=100,
             colorscale=theme,
+            xgap=1,
+            ygap=1,
         ) for i, z in enumerate(arr)
     ]
 
