@@ -27,46 +27,6 @@ def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
     return figure
 
 
-def _parse_timestep_list(timestep_list, dp_array_name):
-    """Parses the timesteps list to create two lists containing the cells and the hovertext.
-
-    Args:
-        timestep_list (list): The timestep list of a DPArray.
-        dp_array_name (str): Name of array being tracked for graphing.
-        TODO: dp_array_name should be a list of strs in the future.
-
-    Returns:
-        tuple of value data and hovertext data for each frame
-    """
-
-    # Getting the data values for each frame
-    arr = np.array([t[dp_array_name]["contents"] for t in timestep_list])
-
-    # Plotly heatmaps requires 2d input as data.
-    if arr.ndim == 2:
-        arr = np.expand_dims(arr, 1)
-
-    # Creates a hovertext array with the same shape as arr.
-    # For each frame and cell in arr, populate the corresponding hovertext
-    # cell with its value and dependencies.
-    # TODO: Highlight will probably be handled here.
-    hovertext = np.full_like(arr, None)
-    for t, record in enumerate(timestep_list):
-        for write_idx in record[dp_array_name][Op.WRITE]:
-            # Fill in corresponding hovertext cell with value and dependencies
-            # Have to add a dimension if arr is a 1D Array
-            if isinstance(write_idx, int):
-                hovertext[t:, 0, write_idx] = (
-                    f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[dp_array_name][Op.READ] or '{}'}")
-            else:
-                hovertext[(np.s_[t:], *write_idx)] = (
-                    f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[dp_array_name][Op.READ] or '{}'}")
-
-    return arr, hovertext
-
-
 def _display_dp(dp_arr,
                 fig_title="DP Array",
                 start=0,
@@ -85,8 +45,30 @@ def _display_dp(dp_arr,
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
-    # Parse the timesteps list to get the data values and hovertext data for each frame.
-    arr, hovertext = _parse_timestep_list(timesteps, dp_arr.array_name)
+    # Getting the data values for each frame
+    arr = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
+
+    # Plotly heatmaps requires 2d input as data.
+    if arr.ndim == 2:
+        arr = np.expand_dims(arr, 1)
+
+    # Creates a hovertext array with the same shape as arr.
+    # For each frame and cell in arr, populate the corresponding hovertext
+    # cell with its value and dependencies.
+    # TODO: Highlight will probably be handled here.
+    hovertext = np.full_like(arr, None)
+    for t, record in enumerate(timesteps):
+        for write_idx in record[dp_arr.array_name][Op.WRITE]:
+            # Fill in corresponding hovertext cell with value and dependencies
+            # Have to add a dimension if arr is a 1D Array
+            if isinstance(write_idx, int):
+                hovertext[t:, 0, write_idx] = (
+                    f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
+                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+            else:
+                hovertext[(np.s_[t:], *write_idx)] = (
+                    f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
+                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
     # NOTE: We should be using "customdata" for hovertext.
@@ -96,7 +78,7 @@ def _display_dp(dp_arr,
             text=hovertext[i],
             texttemplate="%{z}",
             textfont={"size": 20},
-            hovertemplate="<b>%{x} %{y}</b><br>" + "%{text}" +
+            hovertemplate="<b>%{x} %{y}</b><br>%{text}" +
             "<extra></extra>",
             zmin=0,
             zmax=100,
