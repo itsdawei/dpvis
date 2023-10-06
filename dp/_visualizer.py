@@ -1,3 +1,4 @@
+"""This file provides the visualizer for the DPArray class."""
 import numpy as np
 import plotly.graph_objs as go
 
