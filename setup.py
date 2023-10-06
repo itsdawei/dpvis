@@ -12,7 +12,7 @@ with open("README.md", encoding="utf-8") as readme_file:
 # NOTE: Update pinned_reqs whenever install_requires or extras_require changes.
 install_requires = [
     "numpy>=1.17.0",
-    # TODO: Add visualization libraries
+    "plotly>=5.17.0",
 ]
 
 extras_require = {
@@ -26,6 +26,7 @@ extras_require = {
         "pytest-cov==3.0.0",
         "pytest-benchmark==3.4.1",
         "pytest-xdist==2.5.0",
+        "fire>=0.5.0",
 
         # Documentation
         "mkdocs==1.5.2",
