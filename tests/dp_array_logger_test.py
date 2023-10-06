@@ -435,3 +435,32 @@ def test_get_timesteps_two_arrays():
         Op.WRITE: {2},
         Op.HIGHLIGHT: set(),
     }.items()
+
+def test_to_timestep_2d():
+    dp = DPArray((3, 3), "dp")
+    dp[0, 0] = 1
+    dp[1, 1] = 2
+
+    timesteps = dp.get_timesteps()
+    assert len(timesteps) == 1
+    assert np.all(timesteps[0]["dp"]["contents"] == [[1, None, None],
+                                                     [None, 2, None],
+                                                     [None, None, None]])
+    assert timesteps[0]["dp"].items() >= {
+        Op.READ: set(),
+        Op.WRITE: {(0, 0), (1, 1)},
+        Op.HIGHLIGHT: set(),
+    }.items()
+
+    _ = dp[1, 1]
+    timesteps1 = dp.get_timesteps()
+    assert len(timesteps1) == 2
+    assert np.all(timesteps1[1]["dp"]["contents"] == [[1, None, None],
+                                                      [None, 2, None],
+                                                      [None, None, None]])
+    assert timesteps1[1]["dp"].items() >= {
+        Op.READ: {(1, 1)},
+        Op.WRITE: set(),
+        Op.HIGHLIGHT: set(),
+    }.items()
+    
