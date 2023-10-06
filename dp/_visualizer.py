@@ -1,3 +1,4 @@
+"""This file provides the visualizer for the DPArray class."""
 import numpy as np
 import plotly.graph_objs as go
 
@@ -78,8 +79,7 @@ def _display_dp(dp_arr,
             text=hovertext[i],
             texttemplate="%{z}",
             textfont={"size": 20},
-            hovertemplate="<b>%{x} %{y}</b><br>%{text}" +
-            "<extra></extra>",
+            hovertemplate="<b>%{x} %{y}</b><br>%{text}" + "<extra></extra>",
             zmin=0,
             zmax=100,
             colorscale=theme,
