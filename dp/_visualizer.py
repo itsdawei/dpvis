@@ -1,8 +1,30 @@
 """This file provides the visualizer for the DPArray class."""
+from enum import IntEnum
 import numpy as np
 import plotly.graph_objs as go
 
 from dp._logger import Op
+
+class CellType(IntEnum):
+    EMPTY = 0
+    FILLED = 1
+    HIGHLIGHT = 2
+    READ = 3
+    WRITE = 4
+
+MIN_CELL_TYPE = min([t for t in CellType])
+MAX_CELL_TYPE = max([t for t in CellType])
+
+# Have to normalize values.
+# See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2
+COLOR_SCALE = [
+    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'], #white
+    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(200, 200, 200)'], #grey
+    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'], #yellow
+    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'], #green
+    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'], #red
+]
+
 
 
 def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
@@ -27,6 +49,16 @@ def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
                          show=show)
     return figure
 
+def _index_set_to_numpy_index(indices):
+    # ignore if 1-d or no indicies
+    if len(indices) <= 0 or isinstance(list(indices)[0], int):
+        return list(indices)
+    
+    x, y = [], []
+    for i in indices:
+        x.append(i[0])
+        y.append(i[1])
+    return (x, y)
 
 def _display_dp(dp_arr,
                 fig_title="DP Array",
@@ -45,12 +77,26 @@ def _display_dp(dp_arr,
     """
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
+    print(dp_arr._arr.shape)
 
     # Getting the data values for each frame
+    colors = []
+    for t in timesteps:
+        arr_data = t[dp_arr.array_name]
+        contents = np.copy(t[dp_arr.array_name]["contents"])
+        contents[np.where(contents != None)] = CellType.FILLED
+        contents[np.where(contents == None)] = CellType.EMPTY
+        contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
+        contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
+        contents[_index_set_to_numpy_index(arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+        colors.append(contents)
+
+    colors = np.array(colors)
     arr = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
 
     # Plotly heatmaps requires 2d input as data.
     if arr.ndim == 2:
+        colors = np.expand_dims(colors, 1)
         arr = np.expand_dims(arr, 1)
 
     # Creates a hovertext array with the same shape as arr.
@@ -80,12 +126,12 @@ def _display_dp(dp_arr,
             texttemplate="%{z}",
             textfont={"size": 20},
             hovertemplate="<b>%{x} %{y}</b><br>%{text}" + "<extra></extra>",
-            zmin=0,
-            zmax=100,
-            colorscale=theme,
+            zmin=MIN_CELL_TYPE,
+            zmax=MAX_CELL_TYPE,
+            colorscale=COLOR_SCALE,
             xgap=1,
             ygap=1,
-        ) for i, z in enumerate(arr)
+        ) for i, z in enumerate(colors)
     ]
 
     # Rendering all the frames for the animation.
