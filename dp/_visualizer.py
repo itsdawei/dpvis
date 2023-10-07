@@ -91,29 +91,29 @@ def _display_dp(dp_arr,
         colors.append(contents)
 
     colors = np.array(colors)
-    arr = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
+    values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
 
     # Plotly heatmaps requires 2d input as data.
-    if arr.ndim == 2:
+    if values.ndim == 2:
         colors = np.expand_dims(colors, 1)
-        arr = np.expand_dims(arr, 1)
+        values = np.expand_dims(values, 1)
 
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
     # TODO: Highlight will probably be handled here.
-    hovertext = np.full_like(arr, None)
+    hovertext = np.full_like(values, None)
     for t, record in enumerate(timesteps):
         for write_idx in record[dp_arr.array_name][Op.WRITE]:
             # Fill in corresponding hovertext cell with value and dependencies
             # Have to add a dimension if arr is a 1D Array
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
-                    f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
+                    f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
                     f"{record[dp_arr.array_name][Op.READ] or '{}'}")
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
-                    f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
+                    f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
                     f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
@@ -130,7 +130,7 @@ def _display_dp(dp_arr,
             colorscale=COLOR_SCALE,
             xgap=1,
             ygap=1,
-        ) for i, (val, color) in enumerate(zip(arr, colors))
+        ) for i, (val, color) in enumerate(zip(values, colors))
     ]
 
     # Rendering all the frames for the animation.
@@ -153,7 +153,7 @@ def _display_dp(dp_arr,
         }],
         "label": str(i),
         "method": "animate",
-    } for i in range(len(arr))]
+    } for i in range(len(values))]
 
     # Create the slider
     sliders = [{
@@ -223,13 +223,13 @@ def _display_dp(dp_arr,
             sliders=sliders,
             xaxis={
                 "tickmode": "array",
-                "tickvals": np.arange(arr.shape[2]),
+                "tickvals": np.arange(values.shape[2]),
                 "showgrid": False,
                 "zeroline": False,
             },
             yaxis={
                 "tickmode": "array",
-                "tickvals": np.arange(arr.shape[1]),
+                "tickvals": np.arange(values.shape[1]),
                 "showgrid": False,
                 "zeroline": False
             },
