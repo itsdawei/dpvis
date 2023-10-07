@@ -1,6 +1,4 @@
 """Tests the methods in DPArray."""
-import functools
-
 import numpy as np
 import pytest
 
@@ -233,36 +231,6 @@ def test_max_min_2d(max_min, r, max_val, min_val):
 
     assert dp.arr[h - 1, w - 1] == truth
 
-
-# @pytest.mark.parametrize(
-#     "c, truth", [(np.array([[4, 3, 1], [5, 2, 1], [1, 2, 1]]), 10),
-#                  (np.array([[3, 4, 0, 0, 5], [4, 1, 2, 4, 4], [5, 1, 5, 5, 4],
-#                             [2, 1, 1, 1, 4], [0, 0, 4, 3, 5]]), 20)],
-#     ids=["a", "b"])
-# def test_min_2d(c, truth):
-#     """
-#     Given a cost matrix c, start at index (0, 0) (top left).
-#     Find the strategy yielding the lowest cost path from the top
-#     left of the matrix to the bottom left. Note that the user is
-#     constrained to moving only down and right
-#     The lowest cost achievable is given by truth
-#     """
-#     h, w = c.shape[0] + 1, c.shape[1] + 1
-#     dp = DPArray((h, w))
-
-#     # fill column and row with padding (Use a large number to pad)
-#     for i in range(w):
-#         dp[0, i] = 1000 * i
-#     for i in range(h):
-#         dp[i, 0] = 1000 * i
-#     dp[1, 1] = c[0, 0]
-
-#     # Note that dp and c indicies are off by one
-#     for i, j in [(i, j) for i in range(1, h) for j in range(1, w)]:
-#         func = functools.partial(add_const, const=c[i - 1, j - 1])
-#         dp[i, j] = dp.min(refs=[(i - 1, j), (i, j - 1)], preprocessing=func)
-
-#     assert dp.arr[h - 1, w - 1] - 1000 == truth
 
 # Logger related tests #
 

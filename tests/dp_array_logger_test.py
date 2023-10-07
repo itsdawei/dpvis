@@ -1,6 +1,4 @@
 """Tests the interaction between DPArray and Logger."""
-import functools
-
 import numpy as np
 import pytest
 
