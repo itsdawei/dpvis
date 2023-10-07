@@ -118,7 +118,6 @@ def _display_dp(dp_arr,
 
     # Create heatmaps.
     # NOTE: We should be using "customdata" for hovertext.
-    print(values.shape)
     heatmaps = [
         go.Heatmap(
             z=color,
