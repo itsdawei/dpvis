@@ -275,46 +275,68 @@ def test_slice_reading(s):
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
 
 
-def test_slice_assignment():
-    # currently do not support assignment through slices
+def test_slice_reading_list_of_indices():
+    dp = DPArray(10)
+    for i in range(10):
+        dp[i] = i**2
+
+    indices = [1, 2, 3]
+    _ = dp[indices]
+    truth = {i: None for i in indices}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
+
+
+@pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+def test_slice_logging(s):
+    dp = DPArray(10)
+    dp[s] = 1
+    if isinstance(s, int):
+        s = np.s_[s:s + 1]
+    truth = {i: 1 for i in range(*s.indices(10))}
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+    assert len(dp.logger.logs) == 1
+
+
+@pytest.mark.parametrize("slice_1",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
+                         ids=["a", "b", "c", "d", "e"])
+@pytest.mark.parametrize("slice_2",
+                         [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
+                         ids=["a", "b", "c", "d", "e"])
+def test_2d_slice_logging(slice_1, slice_2):
+    dp = DPArray((10, 10))
+
+    dp[slice_1, slice_2] = 1
+    if isinstance(slice_1, int):
+        slice_1 = np.s_[slice_1:slice_1 + 1]
+    if isinstance(slice_2, int):
+        slice_2 = np.s_[slice_2:slice_2 + 1]
+    truth = {
+        (i, j): 1 for i in range(*slice_1.indices(10))
+        for j in range(*slice_2.indices(10))
+    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
+    assert len(dp.logger.logs) == 1
+
+
+def test_list_assignment():
     dp = DPArray(10)
 
-    with pytest.raises(ValueError):
-        dp[:2] = 1
+    dp[::2] = [1, 1, 1, 1, 1]
 
-
-# @pytest.mark.parametrize("s",
-#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-#                          ids=["a", "b", "c", "d", "e"])
-# def test_slice_logging(s):
-#     dp = DPArray(10)
-
-#     dp[s] = 1
-#     if isinstance(s, int):
-# s = np.s_[s:s + 1]
-#     truth = {i:1 for i in range(*s.indices(10))}
-#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-#     assert len(dp.logger.logs) == 1
-
-# @pytest.mark.parametrize("slice_1",
-#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
-#                          ids=["a", "b", "c", "d", "e"])
-# @pytest.mark.parametrize("slice_2",
-#                          [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 1],
-#                          ids=["a", "b", "c", "d", "e"])
-# def test_2d_slice_logging(slice_1, slice_2):
-#     dp = DPArray((10, 10))
-
-#     dp[slice_1, slice_2] = 1
-#     if isinstance(slice_1, int):
-#         slice_1 = np.s_[slice_1:slice_1 + 1]
-#     if isinstance(slice_2, int):
-#         slice_2 = np.s_[slice_2:slice_2 + 1]
-#     truth = {(i, j)
-#              for i in range(*slice_1.indices(10))
-#              for j in range(*slice_2.indices(10))}
-#     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
-#     assert len(dp.logger.logs) == 1
+    assert dp.logger.logs[0] == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp_array": {
+                0: 1,
+                2: 1,
+                4: 1,
+                6: 1,
+                8: 1,
+            }
+        }
+    }
 
 
 def test_get_timesteps_one_array():

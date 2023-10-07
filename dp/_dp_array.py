@@ -79,7 +79,7 @@ class DPArray:
             nd_slice (slice/int, list/tuple of slice/int):
                 nd_slice can be anything used to index a numpy array. For
                 example:
-                - Direct indexing: (0, 0, ...)
+                - Direct indexing: (0, 1, ...) or [0, 1, ...]
                 - 1d slice: slice(0, 10, 2)
                 - nd slice: (slice(0, 10, 2), slice(1, 5, 1), ...)
                 - Mixture: (slice(0, 10, 2), 5, 1)
@@ -90,18 +90,20 @@ class DPArray:
                 then the list will contain integers instead.
 
         Raises:
-            ValueError: If ``nd_slice`` is not a slice object, a list of slice
+            ValueError: ``nd_slice`` is not a slice object, a list of slice
                 objects, or a list of tuples of integers.
-            ValueError: If any element in ``nd_slice`` is not a valid slice
+            ValueError: Some element in ``nd_slice`` is not a valid slice
                 object or integer.
         """
         if isinstance(nd_slice, (slice, int)):
             # Convert 1d slice to nd slice.
             nd_slice = (nd_slice,)
+        if isinstance(nd_slice, list):
+            return nd_slice
         if not isinstance(nd_slice, (list, tuple)):
             raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be "
                              f"a slice object, a list/tuple of slice objects,"
-                             f"or a list/tuple of integers.")
+                             f" or a list/tuple of integers.")
 
         slice_indices = []
         for dim, size in enumerate(self._arr.shape):
@@ -113,7 +115,7 @@ class DPArray:
                 # Handle tuple of integers for direct indexing.
                 slice_indices.append(s)
             else:
-                raise ValueError("Each element in 'nd_slice' must be a valid"
+                raise ValueError("Each element in 'nd_slice' must be a valid "
                                  "slice object or integer.")
 
         # Generate the meshgrid of indices and combine indices into
@@ -178,7 +180,6 @@ class DPArray:
                 f'Referencing undefined elements in "{self._array_name}". \
                           Undefined elements: {undef_read_indices}.',
                 category=RuntimeWarning)
-
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
@@ -188,20 +189,20 @@ class DPArray:
 
         Args:
             idx (int): The index of the array.
-            value (self.dtype): The assigned value.
+            value (self.dtype or array-like): The assigned value.
 
         Raises:
             ValueError: If ``idx`` is a slice object.
         """
         log_idx = self._nd_slice_to_indices(idx)
-        if isinstance(idx, slice):
-            raise ValueError("Slice assignment not currently supported.")
-        # TODO: potentially support slice writes
-        # TODO: match values to log_idx?
-        converted_val = self.dtype(value)
-        self._logger.append(self._array_name, Op.WRITE, log_idx, converted_val)
-        self._arr[idx] = self.dtype(converted_val)
+
+        value = self.dtype(value)
+        if isinstance(value, self.dtype):
+            value = np.full(len(log_idx), value)
+
+        self._arr[idx] = value.reshape(self._arr[idx].shape)
         self._occupied_arr[idx] = True
+        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
 
     def __eq__(self, other):
         """Equal to operator.
