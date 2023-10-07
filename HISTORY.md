@@ -16,7 +16,7 @@
     - Reduce GitHub Action usage (#9)
 - Remove int support (#4)
 - Create ``DPArray`` class (#3)
-  - Add max/min functionality to dp class (#12)
+  - Add max/min functionality to dp class (#12, #17)
   - Add error handling for __get_item__ (#15)
   - Enable reading with slices (#14), writing with slices (#18)
 - Initial project setup (#1, #2)

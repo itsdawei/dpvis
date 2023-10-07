@@ -1,7 +1,8 @@
 """This file provides the DPArray class."""
-from typing import Iterable
 import warnings
+
 import numpy as np
+
 from dp._logger import Logger, Op
 
 
@@ -132,7 +133,7 @@ class DPArray:
     def get_timesteps(self):
         """Retrieve the timesteps of all DPArrays associated with this array's 
             logger.
-        
+
         Returns:
             list of timesteps where each timestep is:
             timestep: {
@@ -152,7 +153,7 @@ class DPArray:
 
     def print_timesteps(self):
         """Prints the timesteps in color. Currently works for 1D arrays only.
-        
+
         Raises:
             ValueError: If the array shapes are not 1D.
         """
@@ -229,120 +230,95 @@ class DPArray:
             return self.arr != other.arr
         return self.arr != other
 
-    def _max_min(self, cmp, refs, preprocessing, const):
-        """
+    def _cmp(self, cmp, indices, elements):
+        """Helper function for comparing a list of elements.
+
+        Iterates through a list of element and outputs the "largest" element
+        according to the cmp function. The index corresponding to the final
+        output will be highlighted in the DP array. To use this function,
+        provide a list of elements and a list of indices for each element.
+        For example,
+        ```
+        cmp = lambda x, y: x > y
+        elements = [0, 1, 2, 3, 4]
+        indices = [None, 2, 4, 6, 8]
+        ```
+        The output of this function will be `4` and index `8` will be
+        highlighted.
+
         Args:
-            cmp (callable): Use x > y for max and x < y for min
-            idx: The index to assign the calculated value to
-            refs (iterable of indices): Indices to retreive values
-                from to use in the max/min function. Must be an
-                iterable even if the iterable is a singleton
-            preprocessing (callable or iterable of callables): 
-                If callable preprocessing will be applied to each
-                ref value before applying the max/min function. 
-                If iterable of callables, then it is requried the
-                len(refs) = len(preprocessing). preprocessing[i]
-                will be applied to refs[i] before applying the max function.
-            const (float): A constant value to use in the min/max operation
-                
+            cmp (callable): A callable that returns boolean. cmp(x, y) == True
+                if x is larger than y. For example, x > y for maximum and
+                x < y for minimum.
+            indices (array-like): An array of indices of the elements. This
+                array has the same shape as elements.
+            elements (array-like): An array of elements to be compared.
+                These can be elements directly from the array (i.e. arr[0]), or
+                modified elements (i.e. arr[0] + 1).
+
         Returns:
-            The max/min value of the references after applying preprocessing
-        
+            dtype: Final result of the comparisons
+
         Raises:
-            ValueError: A ValueError will be thrown if refs is not a non-empty
-            iterable or if preprocessing is not callable or an iterable of
-            equal length to that of refs.
+            ValueError: Indices and elements must have same length.
+            ValueError: Indices and elements cannot be empty.
         """
-        # Error handling
-        if not isinstance(refs, Iterable) or len(refs) == 0:
-            raise ValueError(
-                "Expecting reference to be Iterable of length " + \
-                "at least one."
-            )
-        if not callable(preprocessing) and len(preprocessing) != len(refs):
-            raise ValueError(
-                "Expected refs and preprocessing of same length or single " + \
-                "preprocessing callable."
-            )
+        # TODO shape check for slices.
+        if len(indices) != len(elements):
+            raise ValueError("indices and elements must have same length")
+        if len(elements) == 0 or len(indices) == 0:
+            raise ValueError("indices and elements cannot be empty")
 
-        # Make iterable to iterate over
-        if callable(preprocessing):
-            itr = [(ref, preprocessing) for ref in refs]
-        else:
-            itr = zip(refs, preprocessing)
+        best_index = indices[0]
+        best_element = elements[0]
+        for i, e in zip(indices, elements):
+            # Unravel when index is a slice.
+            if isinstance(i, slice) and isinstance(e, np.ndarray):
+                slice_indices = self._nd_slice_to_indices(i)
+                slice_max_idx = e.flatten().argmax()
+                e = e[slice_max_idx]
+                i = slice_indices[slice_max_idx]
 
-        # Find max/min value and corresponding idx
-        best_idx = None
-        best_val = const
-        for ref, func in itr:
-            val = func(self[ref])
+            if cmp(e, best_element):
+                best_index = i
+                best_element = e
 
-            if isinstance(val, np.ndarray):
-                slice_indices = self._nd_slice_to_indices(ref)
-                val = val.flatten()
-                slice_max_idx = val.argmax()
-                val = val[slice_max_idx]
-                ref = slice_indices[slice_max_idx]
+        # Highlight and write value.
+        if best_index is not None:
+            self.logger.append(self._array_name, Op.HIGHLIGHT, best_index)
+        return best_element
 
-            if best_val is None or cmp(val, best_val):
-                best_idx = ref
-                best_val = val
+    def max(self, indices, elements):
+        """Outputs the maximum value and highlight its corresponding index.
 
-        # Highlight and write value
-        if best_idx is not None:
-            self.logger.append(self._array_name, Op.HIGHLIGHT, best_idx)
-        return best_val
-
-    def max(self, refs, preprocessing=(lambda x: x), const=None):
-        """
         Args:
-            idx: The index to assign the calculated value to
-            refs (iterable of indices): Indicies to retreive
-                values from to use in the max function.
-                refs be an Iterable of length at least 1.
-            preprocessing (callable or iterable of callables): 
-                If callable, preprocessing will be applied to
-                each refs value before applying the max function. 
-                If preprocessing is an iterable of callables,
-                then it is requried the
-                len(refs) = len(preprocessing). preprocessing[i]
-                will be applied to refs[i] before applying the max
-                function.
-            const (float): A constant value to use in the min/max
-                operation
-                
-        Returns:
-            The maximum value after applying preprocessing to refs             
-        """
-        return self._max_min(cmp=lambda x, y: x > y,
-                             refs=refs,
-                             preprocessing=preprocessing,
-                             const=const)
+            elements (array-like): An array of elements to be compared.
+                These can be elements directly from the array (i.e. arr[0]), or
+                modified elements (i.e. arr[0] + 1).
+            indices (array-like): An array of indices of the elements.
+                indices[i] correspond to elements[i]. If elements[i] is not an
+                element of the DP array, item[i] should be None.
 
-    def min(self, refs, preprocessing=(lambda x: x), const=None):
-        """
-        Args:
-            idx: The index to assign the calculated value to
-            refs (iterable of indices): Indicies to retreive
-                values from to use in the min function.
-                refs must be an Iterable of length at least 1.
-            preprocessing (callable or iterable of callables): 
-                If callable ,preprocessing will be applied to
-                each refs value before applying the min function. 
-                If iterable of callables, then it is requried the
-                len(refs) = len(preprocessing). preprocessing[i]
-                will be applied to refs[i] before applying the min
-                function.
-            const (float): A constant value to use in the min/max
-                operation
-                
         Returns:
-            The minimum value after applying preprocessing to refs       
+            self.dtype: Maximum value of the elements.
         """
-        return self._max_min(cmp=lambda x, y: x < y,
-                             refs=refs,
-                             preprocessing=preprocessing,
-                             const=const)
+        return self._cmp(lambda x, y: x > y, indices, elements)
+
+    def min(self, indices, elements):
+        """Outputs the minimum value and highlight its corresponding index.
+
+        Args:
+            indices (array-like): An array of indices of the elements.
+                indices[i] correspond to elements[i]. If elements[i] is not an
+                element of the DP array, item[i] should be None.
+            elements (array-like): An array of elements to be compared.
+                These can be elements directly from the array (i.e. arr[0]), or
+                modified elements (i.e. arr[0] + 1).
+
+        Returns:
+            self.dtype: Minimum value of the elements.
+        """
+        return self._cmp(lambda x, y: x < y, indices, elements)
 
     @property
     def arr(self):
