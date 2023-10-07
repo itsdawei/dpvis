@@ -19,7 +19,7 @@ MAX_CELL_TYPE = max([t for t in CellType])
 # See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2
 COLOR_SCALE = [
     [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'], #white
-    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(200, 200, 200)'], #grey
+    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'], #grey
     [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'], #yellow
     [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'], #green
     [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'], #red
@@ -77,7 +77,6 @@ def _display_dp(dp_arr,
     """
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
-    print(dp_arr._arr.shape)
 
     # Getting the data values for each frame
     colors = []
@@ -121,7 +120,7 @@ def _display_dp(dp_arr,
     # NOTE: We should be using "customdata" for hovertext.
     heatmaps = [
         go.Heatmap(
-            z=z,
+            z=color,
             text=hovertext[i],
             texttemplate="%{z}",
             textfont={"size": 20},
@@ -131,7 +130,7 @@ def _display_dp(dp_arr,
             colorscale=COLOR_SCALE,
             xgap=1,
             ygap=1,
-        ) for i, z in enumerate(colors)
+        ) for i, (val, color) in enumerate(zip(arr, colors))
     ]
 
     # Rendering all the frames for the animation.
