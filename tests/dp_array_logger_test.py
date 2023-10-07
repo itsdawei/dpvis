@@ -1,5 +1,6 @@
 """Tests the interaction between DPArray and Logger."""
 import functools
+
 import numpy as np
 import pytest
 
@@ -64,7 +65,11 @@ def test_max_highlight():
         }
     }
 
-    dp[3] = dp.max(refs=[0, 1, 2])
+    indices = [0, 1, 2]
+    # BUG: Indexing with a list of indices only logs the first read.
+    # elements = dp[indices]
+    elements = [dp[i] for i in indices]
+    dp[3] = dp.max(indices, elements)
     assert dp.arr[3] == 3
     assert dp.logger.logs[1] == {
         "op": Op.READ,
@@ -79,7 +84,9 @@ def test_max_highlight():
     assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
     assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
 
-    dp[4] = dp.max(refs=[0, 1, 2, 3], preprocessing=lambda x: -(x - 1)**2)
+    indices = [0, 1, 2, 3]
+    elements = [-(dp[i] - 1)**2 for i in indices]
+    dp[4] = dp.max(indices, elements)
     assert dp.arr[4] == 0
     assert dp.logger.logs[4] == {
         "op": Op.READ,
@@ -94,20 +101,6 @@ def test_max_highlight():
     }
     assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0: None}}}
     assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4: 0}}}
-
-
-def identity(x):
-    """
-    Identity function for max/min tests
-    """
-    return x
-
-
-def add_const(x, const):
-    """
-    Simple addition function
-    """
-    return x + const
 
 
 def test_min():
@@ -131,11 +124,12 @@ def test_min():
     dp[0] = c[0]
     assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
-    dp[1] = dp.min([0], const=c[1])
+    # Comparing dp[0] with a constant.
+    dp[1] = dp.min([0, None], [dp[0], c[1]])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
     assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
-    dp[2] = dp.min([0, 1], [lambda x: x + c[2], identity])
+    dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
     assert dp.logger.logs[3] == {
         "op": Op.READ,
         "idx": {
@@ -149,14 +143,14 @@ def test_min():
     assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
     next_log = 6
-    funcs = [functools.partial(add_const, const=c[i]) for i in range(len(c))]
     for i in range(3, 8):
         # Three options
         # Hydrant at i and then satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 2
         # Hydrant at i - 1 and satisfy law for i - 3
-        dp[i] = dp.min(refs=[i - 2, i - 2, i - 3],
-                       preprocessing=[funcs[i], funcs[i - 1], funcs[i - 1]])
+        dp[i] = dp.min(
+            [i - 2, i - 2, i - 3],
+            [dp[i - 2] + c[i], dp[i - 2] + c[i - 1], dp[i - 3] + c[i - 1]])
 
         assert dp.logger.logs[next_log] == {
             "op": Op.READ,
@@ -184,9 +178,7 @@ def test_min():
             }
         }
         assert dp.arr[i] == val_ans[i]
-        next_log = next_log + 3
-
-    dp.print_timesteps()
+        next_log += 3
 
 
 def test_multiple_arrays_logging():
@@ -436,6 +428,7 @@ def test_get_timesteps_two_arrays():
         Op.HIGHLIGHT: set(),
     }.items()
 
+
 def test_to_timestep_2d():
     dp = DPArray((3, 3), "dp")
     dp[0, 0] = 1
@@ -443,9 +436,8 @@ def test_to_timestep_2d():
 
     timesteps = dp.get_timesteps()
     assert len(timesteps) == 1
-    assert np.all(timesteps[0]["dp"]["contents"] == [[1, None, None],
-                                                     [None, 2, None],
-                                                     [None, None, None]])
+    assert np.all(timesteps[0]["dp"]["contents"] ==
+                  [[1, None, None], [None, 2, None], [None, None, None]])
     assert timesteps[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {(0, 0), (1, 1)},
@@ -455,12 +447,10 @@ def test_to_timestep_2d():
     _ = dp[1, 1]
     timesteps1 = dp.get_timesteps()
     assert len(timesteps1) == 2
-    assert np.all(timesteps1[1]["dp"]["contents"] == [[1, None, None],
-                                                      [None, 2, None],
-                                                      [None, None, None]])
+    assert np.all(timesteps1[1]["dp"]["contents"] ==
+                  [[1, None, None], [None, 2, None], [None, None, None]])
     assert timesteps1[1]["dp"].items() >= {
         Op.READ: {(1, 1)},
         Op.WRITE: set(),
         Op.HIGHLIGHT: set(),
     }.items()
-    
