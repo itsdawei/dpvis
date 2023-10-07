@@ -259,7 +259,8 @@ class DPArray:
             dtype: Final result of the comparisons
 
         Raises:
-            ValueError: TODO
+            ValueError: Indices and elements must have same length.
+            ValueError: Indices and elements cannot be empty.
         """
         # TODO shape check for slices.
         if len(indices) != len(elements):
