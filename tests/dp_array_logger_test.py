@@ -284,6 +284,16 @@ def test_slice_reading(s):
     truth = {i: None for i in range(*s.indices(10))}
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
 
+def test_slice_reading_list_of_indices():
+    dp = DPArray(10)
+    for i in range(10):
+        dp[i] = i**2
+
+    indices = [1,2,3]
+    _ = dp[indices]
+    truth = {i: None for i in indices}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
+
 
 def test_slice_assignment():
     # currently do not support assignment through slices
