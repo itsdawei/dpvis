@@ -22,11 +22,13 @@ def knapsack(items=[(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)], capacity=14):
                 continue
             # Normal case: There is an item to add and space remaining
             if idx >= 1 and rem - item[0] >= 0:
-                OPT[idx, rem] = max(OPT[idx - 1, rem],
-                                    OPT[idx - 1, rem - item[0]] + item[1])
+                elements = [OPT[idx - 1, rem], OPT[idx - 1, rem - item[0]] + item[1]]
+                indices = [(idx - 1, rem), (idx - 1, rem - item[0])]
+                OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
             # Edge case: adding item is not possible
             elif idx >= 1 and rem - item[0] < 0:
-                OPT[idx, rem] = OPT[idx - 1, rem]
+                OPT[idx, rem] = OPT.max(indices=[(idx - 1, rem)], elements=[OPT[(idx - 1, rem)]])
+
     display(OPT)
 
 
