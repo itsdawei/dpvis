@@ -11,15 +11,12 @@ def knapsack(items=[(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)], capacity=14):
     # Initialize DPArray
     OPT = DPArray((len(items), capacity + 1))
 
-    OPT[0, :] = 0
-    OPT[:, 0] = 0
-
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val)
     for idx, item in enumerate(items):
         for rem in range(capacity + 1):
             # Base case: 0 value if there are no items left or if there is no space.
             if idx == 0 or rem == 0:
-                continue
+                OPT[idx, rem] = 0
             # Normal case: There is an item to add and space remaining
             if idx >= 1 and rem - item[0] >= 0:
                 elements = [OPT[idx - 1, rem], OPT[idx - 1, rem - item[0]] + item[1]]
