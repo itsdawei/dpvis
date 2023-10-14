@@ -5,29 +5,34 @@ import plotly.graph_objs as go
 
 from dp._logger import Op
 
+
 class CellType(IntEnum):
+    """
+    CellType determines the color of elements in the DP array.
+    See COLOR_SCALE variable for corresponding colors.
+    """
     EMPTY = 0
     FILLED = 1
     HIGHLIGHT = 2
     READ = 3
     WRITE = 4
 
-MIN_CELL_TYPE = min([t for t in CellType])
-MAX_CELL_TYPE = max([t for t in CellType])
+
+MIN_CELL_TYPE = min(list(CellType))
+MAX_CELL_TYPE = max(list(CellType))
 
 # Have to normalize values.
-# See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2
+# See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2  # pylint: disable=line-too-long
 COLOR_SCALE = [
-    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'], #white
-    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'], #grey
-    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'], #yellow
-    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'], #green
-    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'], #red
+    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'],  #white
+    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'],  #grey
+    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'],  #yellow
+    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'],  #green
+    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'],  #red
 ]
 
 
-
-def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
+def display(dp_arr, starting_timestep=0, show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
@@ -37,7 +42,6 @@ def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
         n (int): Maximum number of time steps to be visualized.
         starting_timestep (int): Starting iteration to be displayed. Defaults
             to 0.
-        theme (str): Colorscheme of heatmap. Defaults to simple_white.
         show (str): Boolean to control whether to show figure. Defaults to true.
 
     Returns:
@@ -45,25 +49,30 @@ def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
     """
     figure = _display_dp(dp_arr,
                          start=starting_timestep,
-                         theme=theme,
                          show=show)
     return figure
 
+
 def _index_set_to_numpy_index(indices):
+    """
+    Get a set of tuples representing indices and convert it into numpy indicies.
+    Example input: {(0, 1), (2, 3), (4, 5)}
+    Example output: {[0, 2, 4], [1, 3, 5]}
+    """
     # ignore if 1-d or no indicies
     if len(indices) <= 0 or isinstance(list(indices)[0], int):
         return list(indices)
-    
+
     x, y = [], []
     for i in indices:
         x.append(i[0])
         y.append(i[1])
     return (x, y)
 
+
 def _display_dp(dp_arr,
                 fig_title="DP Array",
                 start=0,
-                theme="solar",
                 show=True):
     """Plots the dp array as an animated heatmap.
 
@@ -72,7 +81,6 @@ def _display_dp(dp_arr,
         n (int): Maximum number of time steps to be visualized.
         fig_title (str): Title of the figure.
         start (int): Starting interation to be displayed. Defaults to 0.
-        theme (str): Theme of heatmap. Defaults to solar.
         show (bool): Whether to show figure. Defaults to true.
     """
     # Obtaining the dp_array timesteps object.
@@ -83,11 +91,12 @@ def _display_dp(dp_arr,
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
         contents = np.copy(t[dp_arr.array_name]["contents"])
-        contents[np.where(contents != None)] = CellType.FILLED
-        contents[np.where(contents == None)] = CellType.EMPTY
+        contents[np.where(contents != None)] = CellType.FILLED  # pylint: disable=singleton-comparison
+        contents[np.where(contents == None)] = CellType.EMPTY  # pylint: disable=singleton-comparison
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
         contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[_index_set_to_numpy_index(arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+        contents[_index_set_to_numpy_index(
+            arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
 
     colors = np.array(colors)
@@ -125,7 +134,8 @@ def _display_dp(dp_arr,
             texttemplate="%{text}",
             textfont={"size": 20},
             customdata=hovertext[i],
-            hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" + "<extra></extra>",
+            hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" +
+            "<extra></extra>",
             zmin=MIN_CELL_TYPE,
             zmax=MAX_CELL_TYPE,
             colorscale=COLOR_SCALE,

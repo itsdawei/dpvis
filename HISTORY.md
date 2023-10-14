@@ -1,8 +1,10 @@
 # HISTORY
 
 ## 0.0.0
-- Visualizer works for 2d DPArrays (#16)
 - Add a visualizer for DPArray (#15)
+    - Visualizer works for 2d DPArrays (#16)
+    - Elements of the DPArray are color coded (#17)
+    - excavation.py and matrix_traversal.py demos (#17)
 - Documentation with mkdocs (#7)
 - Setup automated test-runners
     - mkdocs (#7)
