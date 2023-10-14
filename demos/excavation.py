@@ -21,21 +21,24 @@ def excavate(v=np.array([[0, 0, 0, 0, 0, 0, 0, 0], [0, 5, 4, 2, 5, 4, 3, 4],
     # Define problem constants and height and width of OPT
     N = v.shape[0] - 1
     L = v.shape[1] - 1
-    w, h = (N + 1, min(N * L, M) + 1
+    # Make DPArray height and width
+    h, w = (N + 1, min(N * L, M) + 1
            )  # Note that padding is added so everything is one indexed
 
     # Initialize DPArray
     # OPT[i, m] is the maximum value the miner can get from mines {1,...,i} in no more than m months
-    OPT = DPArray((w, h))
+    row_labels = ["Padding" if i == 0 else f'Mine {i}' for i in range(h)]
+    column_labels = ["Padding" if i == 0 else f'Month {i}' for i in range(w)]
+    OPT = DPArray((h, w), row_labels=row_labels, column_labels=column_labels)
 
     # Add padding
     OPT[:, 0] = 0
     OPT[0, :] = 0
 
     # For each mining area
-    for i in range(1, w):
+    for i in range(1, h):
         # For each possible number of months
-        for m in range(1, h):
+        for m in range(1, w):
             indices = []
             elements = []
             # for each number of levels to dig in mining area i (digging l levels in i)

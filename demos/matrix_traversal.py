@@ -14,7 +14,9 @@ def excavate(c=np.array([[0, 0, 0, 0, 0, 0, 0, 0], [0, 5, 4, 2, 5, 4, 3, 4],
                          [0, 1, 4, 3, 4, 2, 0, 1], [0, 3, 5, 0, 2, 4, 3, 4],
                          [0, 2, 4, 4, 4, 1, 3, 0], [0, 4, 2, 5, 0, 5, 0, 5]])):
 
-    OPT = DPArray(shape=c.shape)
+    row_labels = ['Padding' if i == 0 else str(i) for i in range(c.shape[0])]
+    column_labels = ['Padding' if j == 0 else str(j) for j in range(c.shape[1])]
+    OPT = DPArray(shape=c.shape, row_labels=row_labels, column_labels=column_labels)
 
     # Add padding
     OPT[:, 0] = np.inf

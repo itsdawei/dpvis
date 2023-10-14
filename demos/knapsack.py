@@ -9,7 +9,9 @@ def knapsack(items=[(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)], capacity=14):
     items.insert(0, (0, -1))
 
     # Initialize DPArray
-    OPT = DPArray((len(items), capacity + 1))
+    row_labels = ["Padding" if i == 0 else f'Item {i}: {item}' for i, item in enumerate(items)]
+    column_labels = [f'Capacity {i}' for i in range(capacity + 1)]
+    OPT = DPArray((len(items), capacity + 1), row_labels=row_labels, column_labels=column_labels)
 
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val)
     for idx, item in enumerate(items):

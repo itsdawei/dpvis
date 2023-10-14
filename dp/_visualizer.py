@@ -130,11 +130,13 @@ def _display_dp(dp_arr,
     heatmaps = [
         go.Heatmap(
             z=color,
+            x=dp_arr._column_labels,
+            y=dp_arr._row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
             customdata=hovertext[i],
-            hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" +
+            hovertemplate="<b>%{y}, %{x}</b><br>%{customdata}" +
             "<extra></extra>",
             zmin=MIN_CELL_TYPE,
             zmax=MAX_CELL_TYPE,
