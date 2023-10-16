@@ -1,13 +1,8 @@
 """This file provides the visualizer for the DPArray class."""
 import numpy as np
 import plotly.graph_objs as go
-
+from dash import Dash, html, dcc,Output, Input, State
 from dp._logger import Op
-from dash import Dash, html, dcc, callback, Output, Input, State
-import plotly.express as px
-import pandas as pd
-
-
 
 def display(dp_arr, starting_timestep=0, theme="viridis", show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
@@ -202,47 +197,39 @@ def _display_dp(dp_arr,
 
     #Creates layout for dash app, including slider
     app.layout = html.Div([
-        dcc.Graph(
-            id ="graph",
-            figure=fig),
-        dcc.Slider(min = 0,
-                   max = len(arr) - 1,
-                   step = 1,
-                   value = 0,
+        dcc.Graph(id="graph", figure=fig),
+        dcc.Slider(min=0,
+                   max=len(arr) - 1,
+                   step=1,
+                   value=0,
                    updatemode="drag",
-                   id ="my_slider"),
+                   id="my_slider"),
         dcc.Store(id='store-keypress', data=0)
     ])
 
     #Callback to change current heatmap based on slider value
-    @app.callback(
-        Output('graph', 'figure'),
-        [Input('my_slider', 'value')],
-        [State('graph', 'figure')]
-    )
+    @app.callback(Output('graph', 'figure'), [Input('my_slider', 'value')],
+                  [State('graph', 'figure')])
     def update_figure(value, existing_figure):
         # Get the heatmap for the current slider value
         current_heatmap = heatmaps[value]
-        
+
         # Update the figure data
         existing_figure['data'] = [current_heatmap]
-        
+
         return existing_figure
-    
+
     #Callback to change slider value based on value of store (changed in javascript)
-    @app.callback(
-        Output('my_slider', 'value'),
-        Input('store-keypress', 'data'),
-        State('my_slider', 'value')
-    )
+    @app.callback(Output('my_slider', 'value'), Input('store-keypress', 'data'),
+                  State('my_slider', 'value'))
     def update_slider(key_data, current_value):
         if key_data == 37:  # left arrow
             current_value = max(current_value - 1, 0)
         elif key_data == 39:  # right arrow
             current_value = min(current_value + 1, len(arr) - 1)
         return current_value
-    
+
     if show:
-        app.run_server(debug=True, use_reloader = True)
+        app.run_server(debug=True, use_reloader=True)
 
     return fig
