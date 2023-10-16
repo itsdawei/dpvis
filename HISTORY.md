@@ -20,3 +20,5 @@
   - Add error handling for __get_item__ (#15)
   - Enable reading with slices (#14), writing with slices (#18)
 - Initial project setup (#1, #2)
+- Changed application to run with Dash (#20)
+	- Added arrow keys for time travel (#20)
