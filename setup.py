@@ -13,6 +13,7 @@ with open("README.md", encoding="utf-8") as readme_file:
 install_requires = [
     "numpy>=1.17.0",
     "plotly>=5.17.0",
+    "dash>=2.13.0",
 ]
 
 extras_require = {
