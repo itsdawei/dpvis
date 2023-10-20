@@ -175,10 +175,11 @@ class DPArray:
             read_indices = np.full(self._arr.shape, False)
             read_indices[idx] = True
             undef_read_indices = np.flatnonzero(
-                np.asarray(~self.occupied_arr & read_indices is True))
+                np.asarray(~self.occupied_arr & read_indices))
             warnings.warn(
-                f'Referencing undefined elements in "{self._array_name}". \
-                          Undefined elements: {undef_read_indices}.',
+                f"Referencing undefined elements in"
+                f" '{self._array_name}'. Undefined elements:"
+                " {undef_read_indices}.",
                 category=RuntimeWarning)
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
@@ -247,6 +248,7 @@ class DPArray:
         highlighted.
 
         Args:
+<<<<<<< HEAD
             cmp (callable): A callable that returns boolean. cmp(x, y) == True
                 if x is larger than y. For example, x > y for maximum and
                 x < y for minimum.
@@ -258,6 +260,23 @@ class DPArray:
 
         Returns:
             dtype: Final result of the comparisons
+=======
+            cmp (callable): Use x > y for max and x < y for min
+            idx: The index to assign the calculated value to
+            refs (iterable of indices): Indices to retreive values
+                from to use in the max/min function. Must be an
+                iterable even if the iterable is a singleton
+            preprocessing (callable or iterable of callables): 
+                If callable preprocessing will be applied to each
+                ref value before applying the max/min function. 
+                If iterable of callables, then it is requried the
+                len(refs) = len(preprocessing). preprocessing[i]
+                will be applied to refs[i] before applying the max function.
+            const (float): A constant value to use in the min/max operation
+
+        Returns:
+            The max/min value of the references after applying preprocessing
+>>>>>>> documentation-enhancement
 
         Raises:
             ValueError: Indices and elements must have same length.
@@ -298,7 +317,6 @@ class DPArray:
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
                 element of the DP array, item[i] should be None.
-
         Returns:
             self.dtype: Maximum value of the elements.
         """
