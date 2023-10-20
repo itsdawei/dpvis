@@ -82,7 +82,7 @@ class Logger:
                 values = [values]
             if len(idx_list) != len(values):
                 raise ValueError(f"Length of idx {idx_list} and values {values}"
-                                 f"do not match.")
+                                 f" do not match.")
         elif values is None and operation == Op.WRITE:
             raise ValueError(f"Values must be provided for {operation}.")
 
