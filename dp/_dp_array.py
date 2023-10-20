@@ -1,7 +1,9 @@
 """This file provides the DPArray class."""
-from typing import Iterable
 import warnings
+from typing import Iterable
+
 import numpy as np
+
 from dp._logger import Logger, Op
 
 
@@ -130,7 +132,7 @@ class DPArray:
     def get_timesteps(self):
         """Retrieve the timesteps of all DPArrays associated with this array's 
             logger.
-        
+
         Returns:
             list of timesteps where each timestep is:
             timestep: {
@@ -150,7 +152,7 @@ class DPArray:
 
     def print_timesteps(self):
         """Prints the timesteps in color. Currently works for 1D arrays only.
-        
+
         Raises:
             ValueError: If the array shapes are not 1D.
         """
@@ -172,10 +174,11 @@ class DPArray:
             read_indices = np.full(self._arr.shape, False)
             read_indices[idx] = True
             undef_read_indices = np.flatnonzero(
-                np.asarray(~self.occupied_arr & read_indices is True))
+                np.asarray(~self.occupied_arr & read_indices))
             warnings.warn(
-                f'Referencing undefined elements in "{self._array_name}". \
-                          Undefined elements: {undef_read_indices}.',
+                f"Referencing undefined elements in"
+                f" '{self._array_name}'. Undefined elements:"
+                " {undef_read_indices}.",
                 category=RuntimeWarning)
 
         log_idx = self._nd_slice_to_indices(idx)
@@ -243,10 +246,10 @@ class DPArray:
                 len(refs) = len(preprocessing). preprocessing[i]
                 will be applied to refs[i] before applying the max function.
             const (float): A constant value to use in the min/max operation
-                
+
         Returns:
             The max/min value of the references after applying preprocessing
-        
+
         Raises:
             ValueError: A ValueError will be thrown if refs is not a non-empty
             iterable or if preprocessing is not callable or an iterable of
@@ -254,15 +257,12 @@ class DPArray:
         """
         # Error handling
         if not isinstance(refs, Iterable) or len(refs) == 0:
-            raise ValueError(
-                "Expecting reference to be Iterable of length " + \
-                "at least one."
-            )
+            raise ValueError("Expecting reference to be Iterable of length " +
+                             "at least one.")
         if not callable(preprocessing) and len(preprocessing) != len(refs):
             raise ValueError(
-                "Expected refs and preprocessing of same length or single " + \
-                "preprocessing callable."
-            )
+                "Expected refs and preprocessing of same length or single " +
+                "preprocessing callable.")
 
         # Make iterable to iterate over
         if callable(preprocessing):
@@ -309,7 +309,7 @@ class DPArray:
                 function.
             const (float): A constant value to use in the min/max
                 operation
-                
+
         Returns:
             The maximum value after applying preprocessing to refs             
         """
@@ -334,7 +334,7 @@ class DPArray:
                 function.
             const (float): A constant value to use in the min/max
                 operation
-                
+
         Returns:
             The minimum value after applying preprocessing to refs       
         """
