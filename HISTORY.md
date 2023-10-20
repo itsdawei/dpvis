@@ -1,6 +1,8 @@
 # HISTORY
 
 ## 0.0.0
+
+- Implement highlighting for visualizer (#19)
 - Add a visualizer for DPArray (#15)
     - Visualizer works for 2d DPArrays (#16)
     - Elements of the DPArray are color coded (#17)
