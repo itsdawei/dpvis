@@ -170,7 +170,7 @@ def _display_dp(dp_arr,
         html.Div(id="comparison-result")
     ])
 
-    #Callback to change current heatmap based on slider value
+    # Callback to change current heatmap based on slider value
     @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
                   [State("graph", "figure")])
     def update_figure(value, existing_figure):
