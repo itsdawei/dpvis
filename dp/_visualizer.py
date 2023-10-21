@@ -27,6 +27,13 @@ def _index_set_to_numpy_index(indices):
 
     Example input: {(0, 1), (2, 3), (4, 5)}
     Example output: {[0, 2, 4], [1, 3, 5]}
+    
+    Args:
+        indices(set): Set of indices. It is expected that the indices are
+        integers for 1D arrays and tuples of to integers for 2D arrays.
+
+    Returns:
+        formatted_indices: 
     """
     # ignore if 1-d or no indicies
     if len(indices) <= 0 or isinstance(list(indices)[0], int):

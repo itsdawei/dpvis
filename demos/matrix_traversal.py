@@ -6,7 +6,7 @@ from dp import DPArray, display
 def matrix_traversal(M):
     """Dynamic program that solves the Matrix Traversal problem.
 
-    Given a matrix M of shape (n + 1, m + 1), where c[x, y] is the cost of
+    Given a matrix M of shape (n + 1, m + 1), where M[x, y] is the cost of
     traveling to (x, y). An agent begins at index (0, 0), and find a least-cost
     path to (n, m). The agent is only able to move South or Eest from its
     current position. 
