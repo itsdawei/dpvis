@@ -12,12 +12,11 @@ class DPArray:
     Args:
         shape (array-like): The dimensions of the array.
         array_name (str): Name of the array, this is used by ``dp.Logger`` when
-            the DP algorithm interacts with multiple arrays.
+            the DP algorithm interacts with multiple arrays. The array name is
+            displayed as the figure title when the array is visualized.
         logger (dp.Logger): Logger object that tracks the actions performed on
             this array, including READ, WRITE, and HIGHLIGHT. This object is
             used to reproduce frame-by-frame animation of the DP algorithm.
-        description_string (string): TODO
-        colors ():
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
 
@@ -32,8 +31,6 @@ class DPArray:
         array_name="dp_array",
         *,
         logger=None,
-        description_string=None,
-        colors=None,
         dtype=np.float64,
     ):
         """Initializes the DPArray."""
@@ -46,8 +43,6 @@ class DPArray:
         self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
-        self._description_string = description_string
-        self._colors = colors
 
     @staticmethod
     def _parse_dtype(dtype):

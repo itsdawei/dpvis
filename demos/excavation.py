@@ -1,6 +1,6 @@
 import numpy as np
 
-from dp import DPArray, display, backtrack
+from dp import DPArray, display
 
 
 def excavate(v, M):
