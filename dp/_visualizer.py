@@ -1,14 +1,14 @@
 """This file provides the visualizer for the DPArray class."""
+import json
 from enum import IntEnum
 
+import dash
 import numpy as np
 import plotly.graph_objs as go
-import dash
-from dash import Dash, html, dcc, Output, Input, State
+from dash import Dash, Input, Output, State, dcc, html
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
-import json
 
 
 class CellType(IntEnum):
@@ -30,7 +30,7 @@ def _index_set_to_numpy_index(indices):
 
     Example input: {(0, 1), (2, 3), (4, 5)}
     Example output: {[0, 2, 4], [1, 3, 5]}
-    
+
     Args:
         indices(set): Set of indices. It is expected that the indices are
         integers for 1D arrays and tuples of to integers for 2D arrays.
@@ -281,7 +281,7 @@ def display(dp_arr,
             current_value = min(current_value + 1, len(values) - 1)
         return current_value
 
-    # Starts and stop interval from running 
+    # Starts and stop interval from running
     @app.callback(Output("interval", "max_intervals"),
                   [Input("play", "n_clicks"),
                    Input("stop", "n_clicks")], State("interval",
@@ -291,9 +291,9 @@ def display(dp_arr,
         if not ctx.triggered_id:
             return dash.no_update
         if "play" in ctx.triggered_id:
-            return -1  #Runs interval indefinitely
+            return -1  # Runs interval indefinitely
         elif "stop" in ctx.triggered_id:
-            return 0  #Stops interval from running
+            return 0  # Stops interval from running
 
     # Changes value of slider based on state of play/stop button
     @app.callback(Output("my_slider", "value", allow_duplicate=True),
@@ -342,10 +342,8 @@ def display(dp_arr,
             return f"Incorrect. The clicked z-value is {z_value}."
         except ValueError:
             return ""
-    
-    @app.callback(
-        Output('click-data', 'children'),
-        Input('graph', 'clickData'))
+
+    @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
     def display_click_data(clickData):
         return json.dumps(clickData, indent=2)
 
