@@ -37,4 +37,4 @@ def knapsack(items, capacity):
 if __name__ == "__main__":
     items = [(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)]
     capacity = 14
-    knapscak(items, capacity)
+    knapsack(items, capacity)
