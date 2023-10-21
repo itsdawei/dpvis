@@ -245,16 +245,16 @@ class DPArray:
         """Helper function for comparing a list of elements.
 
         Iterates through a list of element and outputs the "largest" element
-        according to the cmp function. The index corresponding to the final
+        according to the cmp function. The indices corresponding to the final
         output will be highlighted in the DP array. To use this function,
         provide a list of elements and a list of indices for each element.
         For example,
         ```
         cmp = lambda x, y: x > y
-        elements = [0, 1, 2, 3, 4]
-        indices = [None, 2, 4, 6, 8]
+        elements = [0, 1, 2, 3, 4, 4]
+        indices = [None, 2, 4, 6, 8, 1]
         ```
-        The output of this function will be `4` and index `8` will be
+        The output of this function will be `4` and indices `8`, `1` will be
         highlighted.
 
         Args:
