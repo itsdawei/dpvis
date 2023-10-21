@@ -66,11 +66,11 @@ def _display_dp(dp_arr,
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{record[dp_arr.array_name][Op.READ] or "{}"}")
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
                     f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{record[dp_arr.array_name][Op.READ] or "{}"}")
 
     # Create heatmaps.
     # NOTE: We should be using "customdata" for hovertext.
@@ -133,9 +133,9 @@ def _display_dp(dp_arr,
         frames=frames,
     )
     fig.update_coloraxes(showscale=False)
-    fig.update_layout(clickmode='event+select')
+    fig.update_layout(clickmode="event+select")
 
-    styles = {'pre': {'border': 'thin lightgrey solid', 'overflowX': 'scroll'}}
+    styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
     # Create Dash App
     app = Dash()
@@ -149,8 +149,8 @@ def _display_dp(dp_arr,
                    value=0,
                    updatemode="drag",
                    id="my_slider"),
-        dcc.Store(id='store-keypress', data=0),
-        dcc.Interval(id='interval',
+        dcc.Store(id="store-keypress", data=0),
+        dcc.Interval(id="interval",
                      interval=1000,
                      n_intervals=0,
                      max_intervals=0),
@@ -160,9 +160,9 @@ def _display_dp(dp_arr,
             dcc.Markdown("""
                 **SELF-TESTING**
             """),
-            html.Pre(id='click-data', style=styles["pre"]),
+            html.Pre(id="click-data", style=styles["pre"]),
         ],
-                 className='three columns'),
+                 className="three columns"),
         dcc.Input(id="user_input", type="number", placeholder="",
                   debounce=True),
         html.Div(id="user_output"),
@@ -171,21 +171,21 @@ def _display_dp(dp_arr,
     ])
 
     #Callback to change current heatmap based on slider value
-    @app.callback(Output('graph', 'figure'), [Input('my_slider', 'value')],
-                  [State('graph', 'figure')])
+    @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
+                  [State("graph", "figure")])
     def update_figure(value, existing_figure):
         # Get the heatmap for the current slider value
         current_heatmap = heatmaps[value]
 
         # Update the figure data
-        existing_figure['data'] = [current_heatmap]
+        existing_figure["data"] = [current_heatmap]
 
         return existing_figure
 
     # Update slider value baed on store-keypress.
     # Store-keypress is changed in assets/custom.js
-    @app.callback(Output('my_slider', 'value'), Input('store-keypress', 'data'),
-                  State('my_slider', 'value'))
+    @app.callback(Output("my_slider", "value"), Input("store-keypress", "data"),
+                  State("my_slider", "value"))
     def update_slider(key_data, current_value):
         if key_data == 37:  # left arrow
             current_value = max(current_value - 1, 0)
@@ -194,23 +194,23 @@ def _display_dp(dp_arr,
         return current_value
 
     # Starts and stop interval from running 
-    @app.callback(Output('interval', 'max_intervals'),
-                  [Input('play', 'n_clicks'),
-                   Input('stop', 'n_clicks')], State('interval',
-                                                     'max_intervals'))
+    @app.callback(Output("interval", "max_intervals"),
+                  [Input("play", "n_clicks"),
+                   Input("stop", "n_clicks")], State("interval",
+                                                     "max_intervals"))
     def control_interval(start_clicks, stop_clicks, max_intervals):
         ctx = dash.callback_context
         if not ctx.triggered_id:
             return dash.no_update
-        if 'play' in ctx.triggered_id:
+        if "play" in ctx.triggered_id:
             return -1  #Runs interval indefinitely
-        elif 'stop' in ctx.triggered_id:
+        elif "stop" in ctx.triggered_id:
             return 0  #Stops interval from running
 
     # Changes value of slider based on state of play/stop button
-    @app.callback(Output('my_slider', 'value', allow_duplicate=True),
-                  Input('interval', 'n_intervals'),
-                  State('my_slider', 'value'),
+    @app.callback(Output("my_slider", "value", allow_duplicate=True),
+                  Input("interval", "n_intervals"),
+                  State("my_slider", "value"),
                   prevent_initial_call=True)
     def button_iterate_slider(n_intervals, value):
         new_value = (value + 1) % (len(arr))
@@ -222,16 +222,16 @@ def _display_dp(dp_arr,
         Input("user_input", "value"),
     )
     def update_output(user_input):
-        return f'User Input: {user_input}'
+        return f"User Input: {user_input}"
 
     # Saves data of clicked element inside of store-clicked-z
     @app.callback(
-        [Output('store-clicked-z', 'data'),
-         Output('user_input', 'value')], Input('graph', 'clickData'))
+        [Output("store-clicked-z", "data"),
+         Output("user_input", "value")], Input("graph", "clickData"))
     def save_click_data(click_data):
         if click_data is not None:
-            z_value = click_data['points'][0]['z']
-            return {'z_value': z_value}, ""
+            z_value = click_data["points"][0]["z"]
+            return {"z_value": z_value}, ""
         return dash.no_update, dash.no_update
 
     # Tests if user input is correct
@@ -243,7 +243,7 @@ def _display_dp(dp_arr,
     def compare_input_and_click(user_input, click_data):
         if user_input is None or click_data is None:
             return dash.no_update
-        z_value = click_data.get('z_value', None)
+        z_value = click_data.get("z_value", None)
         if z_value is None:
             return "No point clicked yet."
 
