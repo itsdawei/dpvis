@@ -1,29 +1,39 @@
 # HISTORY
 
-## 0.0.0
+## 0.1.0
+
+### API
+
 - Self-testing by clicking on most recent cell (#20)
-- Changed application to run with Dash (#20)
-- Added arrow keys for time travel (#20)
-- Visualizer works for 2d DPArrays (#16)
+- Migrate from graph objects to Dash (#20)
+- Enable arrow keys for time travel (#20)
+- Remove "null" text in empty cells (#21)
+- Make heatmap colorbar a legend for the colors (#21)
+- Enable plotly builtin colorscales for visualizer (#21)
 - Implement highlighting for visualizer (#19)
-- Add a visualizer for DPArray (#15)
-    - Visualizer works for 2d DPArrays (#16)
-    - Elements of the DPArray are color coded (#17)
-    - excavation.py and matrix_traversal.py demos (#17)
-- Documentation with mkdocs (#7)
-- Setup automated test-runners
-    - mkdocs (#7)
-    - pytest (#5)
+- Enable writing with slices (#18)
+- Implement ``visualize`` module for 1D and 2D arrays (#16)
+- Raises warning when accessing array out-of-bounds (#15)
+- Enable reading with slices (#14)
+- Implement method to print timesteps of the logger (#13)
+- Add max/min method in ``DPArray``(#12, #17)
+- Implement method to convert ``Logger`` object to a timestep action on the
+  array (#11)
+- Add ``Value`` field to Logger class for tracking (#10)
 - Add Logger to DPArray class (#4)
-- Create ``Logger`` class (#4)  
-  - Add Value field to Logger class for tracking (#10)
-  - Add to_timestep method to Logger class (#11)
-  - Add print_timesteps method to Logger class (#13)
+- Create ``Logger`` class (#4)
+- Remove integer support in ``DPArray``(#6)
+- Create ``DPArray`` class (#3)
+- Initial project setup (#1, #2)
+
+### Documentation
+- Excavation and Matrix Traversal examples (#19, #21)
+- Documentation with mkdocs (#7)
+
+### Improvements
+- Migrate to poetry (#21)
+>>>>>>> main
 - Setup automated test-runners (#5)
     - Reduce GitHub Action usage (#9)
-- Remove int support (#4)
-- Create ``DPArray`` class (#3)
-  - Add max/min functionality to dp class (#12, #17)
-  - Add error handling for __get_item__ (#15)
-  - Enable reading with slices (#14), writing with slices (#18)
-- Initial project setup (#1, #2)
+    - mkdocs (#7)
+    - pytest (#5)

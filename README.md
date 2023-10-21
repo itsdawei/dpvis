@@ -25,7 +25,9 @@ The library has three major features:
 
 ## Installation
 
-1. Clone the fork locally:
+**NOTE: This instruction should be updated after we release to PyPI.**
+
+1. Clone the fork locally and change directory:
 
    ```bash
    # With SSH:
@@ -33,18 +35,32 @@ The library has three major features:
 
    # Without SSH:
    git clone https://github.com/itsdawei/dynamically_programmed.git
+
+   cd dynamically_programmed
    ```
 
-1. Install the local copy into an environment. For instance, with
-   [Conda](https://docs.conda.io/projects/miniconda/en/latest/), run the
-   following commands:
+1. (Optional) Create a virtual environment
+   ([Conda](https://docs.conda.io/projects/miniconda/en/latest/)) and install
+   poetry:
 
    ```bash
-   cd dynamically_programmed
-   conda create --name=dp python=3.8 # 3.8 is the minimum version we support.
-   conda activate dp
-   conda install pip
-   pip install .
+   conda create -n dynvis
+   conda activate dynvis
+   conda install poetry
+   ```
+
+1. Install library with poetry:
+
+   ```bash
+   poetry install
+   ```
+
+1. (Optional) Run knapsack demo to verify installation:
+
+   ```bash
+   poetry shell
+   python demo/knapsack.py
+   exit
    ```
 
 ## Documentation
@@ -54,8 +70,10 @@ The documentation is compiled with
 [mkdocstrings](https://mkdocstrings.github.io/)
 
 To serve the documentation locally, run
+
 ```bash
-make servedocs
+poetry install --with docs
+poetry run make servedocs
 ```
 
 ## Contributors

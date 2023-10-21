@@ -7,10 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: "3.8"
-      - name: Install deps
-        run: pip install .[dev]
+      - uses: snok/install-poetry@v1.3.4
+      - name: Install library
+        run: poetry install --no-interaction --with docs
       - name: Build docs
-        run: make docs
+        run: poetry run make docs

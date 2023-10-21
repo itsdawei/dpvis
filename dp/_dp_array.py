@@ -11,6 +11,12 @@ class DPArray:
 
     Args:
         shape (array-like): The dimensions of the array.
+        array_name (str): Name of the array, this is used by ``dp.Logger`` when
+            the DP algorithm interacts with multiple arrays. The array name is
+            displayed as the figure title when the array is visualized.
+        logger (dp.Logger): Logger object that tracks the actions performed on
+            this array, including READ, WRITE, and HIGHLIGHT. This object is
+            used to reproduce frame-by-frame animation of the DP algorithm.
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
 
@@ -25,10 +31,6 @@ class DPArray:
         array_name="dp_array",
         *,
         logger=None,
-        description_string=None,
-        row_labels=None,
-        column_labels=None,
-        colors=None,
         dtype=np.float64,
     ):
         """Initializes the DPArray."""
@@ -41,10 +43,6 @@ class DPArray:
         self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
-        self._description_string = description_string
-        self._row_labels = row_labels
-        self._column_labels = column_labels
-        self._colors = colors
 
     @staticmethod
     def _parse_dtype(dtype):
@@ -65,7 +63,8 @@ class DPArray:
         if dtype == np.float64:
             return np.float64
 
-        raise ValueError("Unsupported dtype. Must be np.float32 and np.float64")
+        raise ValueError("Unsupported dtype. Must be np.float32 or"
+                         "np.float64")
 
     def _nd_slice_to_indices(self, nd_slice):
         """Converts a nd-slice to indices.
@@ -168,17 +167,18 @@ class DPArray:
         Returns:  
             self.dtype or np.ndarray: corresponding item
 
-        Warning:
-            Warns if an undefined index is referenced.
+        Warnings:
+            Raises an warning when an undefined index is referenced.
         """
         if not np.all(self._occupied_arr[idx]):
             read_indices = np.full(self._arr.shape, False)
             read_indices[idx] = True
             undef_read_indices = np.flatnonzero(
-                np.asarray(~self.occupied_arr & read_indices is True))
+                np.asarray(~self.occupied_arr & read_indices))
             warnings.warn(
-                f'Referencing undefined elements in "{self._array_name}". \
-                          Undefined elements: {undef_read_indices}.',
+                f"Referencing undefined elements in "
+                f"'{self._array_name}'. Undefined elements: "
+                f"{undef_read_indices}.",
                 category=RuntimeWarning)
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
@@ -298,7 +298,7 @@ class DPArray:
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
                 element of the DP array, item[i] should be None.
-
+                
         Returns:
             self.dtype: Maximum value of the elements.
         """
@@ -324,6 +324,11 @@ class DPArray:
     def arr(self):
         """Returns the np.ndarray that contains the DP array."""
         return np.array(self._arr, copy=True)
+
+    @property
+    def shape(self):
+        """Returns the shape of the DP array."""
+        return self._arr.shape
 
     @property
     def occupied_arr(self):
