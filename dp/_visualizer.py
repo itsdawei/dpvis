@@ -103,7 +103,7 @@ def display(dp_arr, starting_timestep=0, show=True, colorscale_name="Sunset"):
     figure = _display_dp(dp_arr,
                          start=starting_timestep,
                          show=show,
-                         colorscale_name="Sunset")
+                         colorscale_name=colorscale_name)
     return figure
 
 
