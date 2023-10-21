@@ -20,7 +20,7 @@
 - Documentation with mkdocs (#7)
 - Add Logger to DPArray class (#4)
 - Create ``Logger`` class (#4)
-- Remove integer support in ``DPArray``(#4)
+- Remove integer support in ``DPArray``(#6)
 - Create ``DPArray`` class (#3)
 - Initial project setup (#1, #2)
 

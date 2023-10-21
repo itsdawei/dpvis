@@ -11,11 +11,7 @@ def matrix_traversal(M):
     path to (n, m). The agent is only able to move South or Eest from its
     current position. 
     """
-    row_labels = ['Padding' if i == 0 else str(i) for i in range(M.shape[0])]
-    column_labels = ['Padding' if j == 0 else str(j) for j in range(M.shape[1])]
-    OPT = DPArray(shape=M.shape,
-                  row_labels=row_labels,
-                  column_labels=column_labels)
+    OPT = DPArray(shape=M.shape)
 
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
@@ -41,10 +37,29 @@ def matrix_traversal(M):
             # (i, j-1).
             OPT[i, j] = M[i, j] + OPT.min(indices=indices, elements=elements)
 
-    display(OPT)
+    # TODO: OPT.backtrack_mode()
+    current = (M.shape[0] - 1, M.shape[1] - 1)
+    solution_set = [current]
+    while current != (0, 0):
+        if (current[1] < 1 or OPT[current[0] - 1, current[1]]
+                <= OPT[current[0], current[1] - 1]):
+            current = (current[0] - 1, current[1])
+        else:
+            current = (current[0], current[1] - 1)
+        solution_set.append(current)
+    solution_set.append((0, 0))
+    print(solution_set)
+
+    # TODO:
+    # import verify_solution_set from verifaction
+    # verify_solution_set(OPT, index_of_final_solution, proposed_path)
+    # Print info on command line.
+
+    row_labels = [str(i) for i in range(M.shape[0])]
+    column_labels = [str(j) for j in range(M.shape[1])]
+    display(OPT, row_labels=row_labels, column_labels=column_labels)
 
     # TODO: Implement backtracking.
-
     return OPT[M.shape[0] - 1, M.shape[1] - 1]
 
 
