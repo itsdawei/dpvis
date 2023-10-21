@@ -36,7 +36,7 @@ def _index_set_to_numpy_index(indices):
     for i in indices:
         x.append(i[0])
         y.append(i[1])
-    return (x, y)
+    return x, y
 
 
 def _get_colorbar_kwargs(name):
