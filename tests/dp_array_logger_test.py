@@ -115,7 +115,7 @@ def test_min():
     city spends as little as possible and the above law is satisfied.
     """
     c = [7, 6, 2, 9, 8, 10, 1, 3]
-    highlight_ans = [None, None, None, 1, 2, 2, 4, 5]
+    highlight_ans = [None, None, None, 1, 2, 2, 4, [4, 5]]
     val_ans = [None, None, None, 8, 14, 14, 15, 15]
     dp = DPArray(8, "name")
 
@@ -125,10 +125,11 @@ def test_min():
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
-    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
+    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {None: None}}}
+    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
-    assert dp.logger.logs[3] == {
+    assert dp.logger.logs[4] == {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -137,10 +138,10 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
-    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
+    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
-    next_log = 6
+    next_log = 7
     for i in range(3, 8):
         # Three options
         # Hydrant at i and then satisfy law for i - 2
@@ -159,12 +160,16 @@ def test_min():
                 }
             }
         }
+
+        # Construct argmin set
+        if isinstance(highlight_ans[i], list):
+            name = { j: None for j in highlight_ans[i]}
+        else:
+            name = { highlight_ans[i]: None}
         assert dp.logger.logs[next_log + 1] == {
             "op": Op.HIGHLIGHT,
             "idx": {
-                "name": {
-                    highlight_ans[i]: None
-                }
+                "name": name
             }
         }
         assert dp.logger.logs[next_log + 2] == {
