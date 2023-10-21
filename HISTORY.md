@@ -32,7 +32,6 @@
 
 ### Improvements
 - Migrate to poetry (#21)
->>>>>>> main
 - Setup automated test-runners (#5)
     - Reduce GitHub Action usage (#9)
     - mkdocs (#7)
