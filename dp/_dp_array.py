@@ -285,7 +285,7 @@ class DPArray:
 
         # Highlight and write value.
         if best_index is not None:
-            self.logger.append(self._array_name, Op.HIGHLIGHT, best_index)
+            self.logger.append(self._array_name, Op.HIGHLIGHT, [best_index])
         return best_element
 
     def max(self, indices, elements):

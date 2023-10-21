@@ -5,7 +5,11 @@
 - Changed application to run with Dash (#20)
 - Added arrow keys for time travel (#20)
 - Visualizer works for 2d DPArrays (#16)
+- Implement highlighting for visualizer (#19)
 - Add a visualizer for DPArray (#15)
+    - Visualizer works for 2d DPArrays (#16)
+    - Elements of the DPArray are color coded (#17)
+    - excavation.py and matrix_traversal.py demos (#17)
 - Documentation with mkdocs (#7)
 - Setup automated test-runners
     - mkdocs (#7)
