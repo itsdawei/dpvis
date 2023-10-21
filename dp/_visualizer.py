@@ -167,6 +167,7 @@ def _display_dp(dp_arr,
                     f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
+    values = np.where(np.isnan(values.astype(float)), "", values)
     heatmaps = [
         go.Heatmap(
             z=color,

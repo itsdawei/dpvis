@@ -4,6 +4,7 @@
 
 ### API
 
+- Remove "null" text in empty cells (#21)
 - Make heatmap colorbar a legend for the colors (#21)
 - Enable plotly builtin colorscales for visualizer (#21)
 - Implement highlighting for visualizer (#19)
