@@ -8,14 +8,7 @@ def knapsack(items, capacity):
     items.insert(0, (0, -1))
 
     # Initialize DPArray
-    row_labels = [
-        "Padding" if i == 0 else f'Item {i}: {item}'
-        for i, item in enumerate(items)
-    ]
-    column_labels = [f'Capacity {i}' for i in range(capacity + 1)]
-    OPT = DPArray((len(items), capacity + 1),
-                  row_labels=row_labels,
-                  column_labels=column_labels)
+    OPT = DPArray((len(items), capacity + 1))
 
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val)
     for idx, item in enumerate(items):
@@ -38,7 +31,9 @@ def knapsack(items, capacity):
             elif idx >= 1 and rem - item[0] < 0:
                 OPT[idx, rem] = OPT[idx - 1, rem]
 
-    display(OPT)
+    row_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
+    display(OPT, row_labels=row_labels, column_labels=column_labels)
 
 
 if __name__ == "__main__":
