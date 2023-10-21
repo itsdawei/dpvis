@@ -17,12 +17,10 @@ def fib(n):
     for i in range(2, n):
         arr[i] = arr[i - 1] + arr[i - 2]
 
-    # Return the entire array
+    # Return the dp array
     return arr
 
-
-# dp_array is the fully filled out DPArray after running Fibonacci
 dp_array = fib(n)
 
-# Display the dp_array with maximum number of timesteps set to n
+# Visualize.
 display(dp_array)

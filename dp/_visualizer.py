@@ -1,15 +1,18 @@
 """This file provides the visualizer for the DPArray class."""
 from enum import IntEnum
+
 import numpy as np
 import plotly.graph_objs as go
+from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
 
 
 class CellType(IntEnum):
-    """
-    CellType determines the color of elements in the DP array.
-    See COLOR_SCALE variable for corresponding colors.
+    """CellType determines the color of elements in the DP array.
+
+    EMPTY and FILLED are always white and grey, respectively. The other colors
+    are defined by a builtin colorscale of plotly (defaults to Sunset).
     """
     EMPTY = 0
     FILLED = 1
@@ -18,46 +21,19 @@ class CellType(IntEnum):
     WRITE = 4
 
 
-MIN_CELL_TYPE = min(list(CellType))
-MAX_CELL_TYPE = max(list(CellType))
-
-# Have to normalize values.
-# See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2  # pylint: disable=line-too-long
-COLOR_SCALE = [
-    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'],  #white
-    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'],  #grey
-    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'],  #yellow
-    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'],  #green
-    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'],  #red
-]
-
-
-def display(dp_arr, starting_timestep=0, show=True):
-    """Creates an interactive display the given DPArray in a streamlit webpage.
-    Using a slider and buttons for time travel. This UI will have interactive
-    testing as well as the figure.
-
-    Args:
-        dp_arr (DPArray): DParray to be visualized.
-        n (int): Maximum number of time steps to be visualized.
-        starting_timestep (int): Starting iteration to be displayed. Defaults
-            to 0.
-        show (str): Boolean to control whether to show figure. Defaults to true.
-
-    Returns:
-        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
-    """
-    figure = _display_dp(dp_arr,
-                         start=starting_timestep,
-                         show=show)
-    return figure
-
-
 def _index_set_to_numpy_index(indices):
-    """
-    Get a set of tuples representing indices and convert it into numpy indicies.
+    """Get a set of tuples representing indices and convert it into numpy
+    indicies.
+
     Example input: {(0, 1), (2, 3), (4, 5)}
     Example output: {[0, 2, 4], [1, 3, 5]}
+    
+    Args:
+        indices(set): Set of indices. It is expected that the indices are
+        integers for 1D arrays and tuples of to integers for 2D arrays.
+
+    Returns:
+        formatted_indices: 
     """
     # ignore if 1-d or no indicies
     if len(indices) <= 0 or isinstance(list(indices)[0], int):
@@ -67,21 +43,75 @@ def _index_set_to_numpy_index(indices):
     for i in indices:
         x.append(i[0])
         y.append(i[1])
-    return (x, y)
+    return x, y
 
 
-def _display_dp(dp_arr,
-                fig_title="DP Array",
-                start=0,
-                show=True):
-    """Plots the dp array as an animated heatmap.
+def _get_colorbar_kwargs(name):
+    """Get colorscale for the DP array visualization.
+
+    Args:
+        name (str): Name of built-in colorscales in plotly. See
+            named_colorscales for the built-in colorscales.
+
+    Returns:
+        dict: kwargs for the colorbar.
+    """
+    n = len(CellType)
+    x = np.linspace(0, 1, n + 1)
+
+    # Round the linspace to account for Python FP error.
+    x = np.round(x, decimals=5)
+
+    val = np.repeat(x, 2)[1:-1]
+
+    # Assign colors for each cell type.
+    color = sample_colorscale(get_colorscale(name), samplepoints=n)
+    color[0] = "rgb(255,255,255)"  # white
+    color[1] = "rgb(220,220,220)"  # grey
+
+    # colorscale for the colorbar
+    color = np.repeat(color, 2)
+
+    return {
+        "zmin": 0,
+        "zmax": n,
+        "colorscale": list(zip(val, color)),
+        "colorbar": {
+            "orientation": "h",
+            "ticklabelposition": "inside",
+            "tickvals": np.array(list(CellType)) + 0.5,
+            "ticktext": [c.name for c in CellType],
+            "tickfont": {
+                "color": "black",
+                "size": 20,
+            },
+            "thickness": 20,
+        }
+    }
+
+
+def display(dp_arr,
+            start=0,
+            show=True,
+            colorscale_name="Sunset",
+            row_labels=None,
+            column_labels=None):
+    """Creates an interactive display of the given DPArray in a webpage.
+
+    Using a slider and buttons for time travel. This UI will have interactive
+    testing as well as the figure.
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
-        n (int): Maximum number of time steps to be visualized.
-        fig_title (str): Title of the figure.
         start (int): Starting interation to be displayed. Defaults to 0.
         show (bool): Whether to show figure. Defaults to true.
+        colorscale_name (str): Name of built-in colorscales in plotly. See
+            plotly.colors.named_colorscales for the built-in colorscales.
+        row_labels (list of str): Row labels of the DP array.
+        column_labels (list of str): Column labels of the DP array.
+
+    Returns:
+        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
@@ -91,8 +121,9 @@ def _display_dp(dp_arr,
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
         contents = np.copy(t[dp_arr.array_name]["contents"])
-        contents[np.where(contents != None)] = CellType.FILLED  # pylint: disable=singleton-comparison
-        contents[np.where(contents == None)] = CellType.EMPTY  # pylint: disable=singleton-comparison
+        mask = np.isnan(contents.astype(float))
+        contents[np.where(mask)] = CellType.EMPTY
+        contents[np.where(~mask)] = CellType.FILLED
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
         contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
         contents[_index_set_to_numpy_index(
@@ -110,7 +141,6 @@ def _display_dp(dp_arr,
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
-    # TODO: Highlight will probably be handled here.
     hovertext = np.full_like(values, None)
     for t, record in enumerate(timesteps):
         for write_idx in record[dp_arr.array_name][Op.WRITE]:
@@ -126,19 +156,19 @@ def _display_dp(dp_arr,
                     f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
-    # NOTE: We should be using "customdata" for hovertext.
+    values = np.where(np.isnan(values.astype(float)), "", values)
     heatmaps = [
         go.Heatmap(
             z=color,
+            x=column_labels,
+            y=row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
             customdata=hovertext[i],
-            hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" +
+            hovertemplate="<b>%{y} %{x}</b><br>%{customdata}" +
             "<extra></extra>",
-            zmin=MIN_CELL_TYPE,
-            zmax=MAX_CELL_TYPE,
-            colorscale=COLOR_SCALE,
+            **_get_colorbar_kwargs(colorscale_name),
             xgap=1,
             ygap=1,
         ) for i, (val, color) in enumerate(zip(values, colors))
@@ -150,7 +180,7 @@ def _display_dp(dp_arr,
         for i, heatmap in enumerate(heatmaps)
     ]
 
-    # Create steps for the slider
+    # Create steps for the slider.
     steps = [{
         "args": [[f"Frame {i}"], {
             "frame": {
@@ -166,7 +196,7 @@ def _display_dp(dp_arr,
         "method": "animate",
     } for i in range(len(values))]
 
-    # Create the slider
+    # Create the slider.
     sliders = [{
         "active": 0,
         "yanchor": "top",
@@ -224,11 +254,11 @@ def _display_dp(dp_arr,
         }]
     }]
 
-    # Create the figure
-    fig = go.Figure(
+    # Create the figure.
+    figure = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
-            title=fig_title,
+            title=dp_arr.array_name,
             title_x=0.5,
             updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
             sliders=sliders,
@@ -247,9 +277,21 @@ def _display_dp(dp_arr,
         ),
         frames=frames,
     )
-    fig.update_coloraxes(showscale=False)
+    figure.update_coloraxes(showscale=False)
 
     if show:
-        fig.show()
+        figure.show()
 
-    return fig
+    return figure
+
+
+# TODO:
+# def backtrack(dp_arr, indices, direction="forward"):
+#     pass
+# Backtracking:
+# backtrack(OPT, indices_in_order, function)
+# indices_in_order = [(5, 10), (4, 9), ...]
+# indices_in_order = [(4, 9), (5, 10), ...]
+# function = lambda x,y: return x-y
+# function((5, 10), (4,9)) months
+# template = "{} months"
