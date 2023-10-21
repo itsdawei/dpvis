@@ -111,7 +111,6 @@ def _display_dp(dp_arr,
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
-    # TODO: Highlight will probably be handled here.
     hovertext = np.full_like(values, None)
     for t, record in enumerate(timesteps):
         for write_idx in record[dp_arr.array_name][Op.WRITE]:
