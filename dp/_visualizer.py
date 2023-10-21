@@ -183,22 +183,6 @@ def display(dp_arr,
         for i, heatmap in enumerate(heatmaps)
     ]
 
-    # Create steps for the slider.
-    steps = [{
-        "args": [[f"Frame {i}"], {
-            "frame": {
-                "duration": 300,
-                "redraw": True
-            },
-            "mode": "immediate",
-            "transition": {
-                "duration": 300
-            }
-        }],
-        "label": str(i),
-        "method": "animate",
-    } for i in range(len(values))]
-
     # Create the figure
     fig = go.Figure(
         data=heatmaps[start],
@@ -292,7 +276,7 @@ def display(dp_arr,
             return dash.no_update
         if "play" in ctx.triggered_id:
             return -1  # Runs interval indefinitely
-        elif "stop" in ctx.triggered_id:
+        if "stop" in ctx.triggered_id:
             return 0  # Stops interval from running
 
     # Changes value of slider based on state of play/stop button
