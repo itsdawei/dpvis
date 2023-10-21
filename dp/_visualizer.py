@@ -5,6 +5,7 @@ import plotly.graph_objs as go
 import dash
 from dash import Dash, html, dcc, Output, Input, State
 from dp._logger import Op
+import json
 
 
 class CellType(IntEnum):
@@ -286,7 +287,7 @@ def _display_dp(dp_arr,
          Output("user_input", "value")], Input("graph", "clickData"))
     def save_click_data(click_data):
         if click_data is not None:
-            z_value = click_data["points"][0]["z"]
+            z_value = click_data["points"][0]["text"]
             return {"z_value": z_value}, ""
         return dash.no_update, dash.no_update
 
@@ -310,6 +311,12 @@ def _display_dp(dp_arr,
             return f"Incorrect. The clicked z-value is {z_value}."
         except ValueError:
             return ""
+    
+    @app.callback(
+        Output('click-data', 'children'),
+        Input('graph', 'clickData'))
+    def display_click_data(clickData):
+        return json.dumps(clickData, indent=2)
 
     if show:
         app.run_server(debug=True, use_reloader=True)
