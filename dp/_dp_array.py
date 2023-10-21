@@ -280,23 +280,32 @@ class DPArray:
         if len(elements) == 0 or len(indices) == 0:
             raise ValueError("indices and elements cannot be empty")
 
-        best_index = indices[0]
+        best_indices = [indices[0]]
         best_element = elements[0]
         for i, e in zip(indices, elements):
             # Unravel when index is a slice.
             if isinstance(i, slice) and isinstance(e, np.ndarray):
-                slice_indices = self._nd_slice_to_indices(i)
+                # get argmax indices
                 slice_max_idx = e.flatten().argmax()
-                e = e[slice_max_idx]
+                slice_indices = self._nd_slice_to_indices(i)
                 i = slice_indices[slice_max_idx]
+                # get max element
+                e = np.max(e)
+            else:
+                # make index into a singleton
+                i = [i]
 
+            # If new best index/element is found
             if cmp(e, best_element):
-                best_index = i
+                best_indices = i
                 best_element = e
 
+            # If index has equivalent element to the best element
+            elif e == best_element:
+                best_indices.extend(i)
+
         # Highlight and write value.
-        if best_index is not None:
-            self.logger.append(self._array_name, Op.HIGHLIGHT, [best_index])
+        self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
         return best_element
 
     def max(self, indices, elements):
