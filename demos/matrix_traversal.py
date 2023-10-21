@@ -20,7 +20,7 @@ def matrix_traversal(M):
                 OPT[0, 0] = M[0, 0]
                 continue
 
-            # Assume the agent have arrived at cell (i, j). The agent
+            # Assume that the agent have arrived at cell (i, j). The agent
             # must have arrived here from cell (i-1, j) or (i, j-1), since the
             # agent can only travel from South or East.
 
