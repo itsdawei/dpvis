@@ -1,53 +1,82 @@
-from dp import DPArray, display
 import numpy as np
-import fire
 
-# Problem
-# There are N different mining areas: {1,...,n}
-# Each mining areas has L different layers
-# Level l of mining area i provides the miner value v[i, l]
-# It takes the miner one month to mine one level of one mining area
-# Before the miner mines level l-1 they must have mined level l
-# Goal: find the maximum value that the miner can achieve if they have M months
+from dp import DPArray, display
 
 
-# v has an added row and column of zeroes so 1-indexing can be used
-# M is the number of months available to the miner
-def excavate(v=np.array([[0, 0, 0, 0, 0, 0, 0, 0], [0, 5, 4, 2, 5, 4, 3, 4],
-                         [0, 1, 4, 3, 4, 2, 0, 1], [0, 3, 5, 0, 2, 4, 3, 4],
-                         [0, 2, 4, 4, 4, 1, 3, 0], [0, 4, 2, 5, 0, 5, 0, 5]]),
-             M=10):
+def excavate(v, M):
+    """Dynamic program that solves the Excavate problem.
 
-    # Define problem constants and height and width of OPT
-    N = v.shape[0] - 1
-    L = v.shape[1] - 1
-    w, h = (N + 1, min(N * L, M) + 1
-           )  # Note that padding is added so everything is one indexed
+    There are N mining sites, where each site has L layers. Excavating level
+    l of site i returns a value of v[i][l]. It takes one month to excavate one
+    level from one mining site. The layers of the site must be excavated in
+    order, i.e., you must excavate level l-1 before excavating level l. Find
+    the maximum value that can be obtained from excavating if you had M months.
 
-    # Initialize DPArray
-    # OPT[i, m] is the maximum value the miner can get from mines {1,...,i} in no more than m months
-    OPT = DPArray((w, h))
+    Args:
+        v (array-like): v[i][l] represent the value gained from ecavating level
+            l of site i.
+        M (int): Number of months allowed.
 
-    # Add padding
-    OPT[:, 0] = 0
-    OPT[0, :] = 0
+    Returns:
+        int: Maximum value that can be attained from v given M months.
+    """
 
-    # For each mining area
-    for i in range(1, w):
-        # For each possible number of months
-        for m in range(1, h):
+    # We have enough months to excavate everything, so DP is not needed.
+    if v.shape[0] * v.shape[1] < M:
+        return np.sum(v)
+
+    # OPT[i, m] is the maximum value that can be obtained by spending m months
+    # on mining sites up to the ith site.
+    OPT = DPArray((v.shape[0] + 1, M + 1), array_name="Excavation")
+
+    # Base case:
+    OPT[0, :] = 0  # Given no mining sites.
+    OPT[:, 0] = 0  # Given zero months.
+
+    for i in range(1, v.shape[0] + 1):  # For the ith mining site.
+        for m in range(1, M + 1):  # Consider a budget of m <= M months.
             indices = []
             elements = []
-            # for each number of levels to dig in mining area i (digging l levels in i)
-            for l in range(0, m):
+            # Consider the maximum value obtained if we had decided to dig
+            # l <= m layers on the ith site.
+            for l in range(m + 1):
                 indices.append((i - 1, m - l))
-                # np.sum(v[i, 1:(l + 2)]) is the value the miner gets from digging l levels in mine i
-                # OPT[i - i, m - l] is the value the miner gets from digging in the mines 1,...,i-1 for no more than m - l months
-                elements.append(OPT[i - 1, m - l] + np.sum(v[i, 1:(l + 2)]))
+
+                # Assume that we have dug l layers from the ith site, and
+                # obtained value of np.sum(v[i-1, :l]). Since we have dug
+                # l layers from the ith site, we only have m-l months left for
+                # the rest of the sites. We have already computed the maximum
+                # value given m-l months and up to the (i-1)st site as 
+                # OPT[i - 1, m-l]. Hence, we can simply add these values together as follows:
+                elements.append(OPT[i - 1, m - l] + np.sum(v[i - 1, :l]))
+            # After considering all possible choices of digging l layers from
+            # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
 
-    display(OPT)
+    display(OPT) # Visualize.
 
+    return OPT[v.shape[0] + 1, M + 1]
 
 if __name__ == "__main__":
-    fire.Fire(excavate)
+    # v = np.array([
+    #     [0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 5, 4, 2, 5, 4, 3, 4],
+    #     [0, 1, 4, 3, 4, 2, 0, 1],
+    #     [0, 3, 5, 0, 2, 4, 3, 4],
+    #     [0, 2, 4, 4, 4, 1, 3, 0],
+    #     [0, 4, 2, 5, 0, 5, 0, 5],
+    # ])
+    v = np.array([
+        [5, 4, 2, 5, 4, 3, 4],
+        [1, 4, 3, 4, 2, 0, 1],
+        [3, 5, 0, 2, 4, 3, 4],
+        [2, 4, 4, 4, 1, 3, 0],
+        [4, 2, 5, 0, 5, 0, 5],
+    ])
+    M = 10
+    # v = np.array([
+    #     [4, 1],
+    #     [3, 2],
+    # ])
+    # M = 2
+    excavate(v, M)
