@@ -4,7 +4,6 @@
 
 ### API
 
-- Self-testing by clicking on most recent cell (#20)
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)
 - Remove "null" text in empty cells (#21)
