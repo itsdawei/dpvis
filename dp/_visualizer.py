@@ -3,6 +3,7 @@ from enum import IntEnum
 
 import numpy as np
 import plotly.graph_objs as go
+from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
 
@@ -19,18 +20,53 @@ class CellType(IntEnum):
     WRITE = 4
 
 
-MIN_CELL_TYPE = min(list(CellType))
-MAX_CELL_TYPE = max(list(CellType))
 
-# Have to normalize values.
-# See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2  # pylint: disable=line-too-long
-COLOR_SCALE = [
-    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'],  # white
-    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'],  # grey
-    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'],  # yellow
-    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'],  # green
-    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'],  # red
-]
+
+def _get_colorbar_kwargs(name):
+    """Get colorscale for the DP array visualization.
+
+    Args:
+        name (str): Name of built-in colorscales in plotly. See
+            named_colorscales for the built-in colorscales.
+
+    Returns:
+        list: a colorscale that can be passed to colorscale argument in plotly
+            heatmap.
+        dict: the colorbar.
+    """
+    n = len(CellType)
+
+    x = np.linspace(0, 1, n + 1)
+
+    # Round the linspace to account for Python FP error.
+    x = np.round(x, decimals=5)
+
+    val = np.repeat(x, 2)[1:-1]
+
+    color = sample_colorscale(get_colorscale(name), samplepoints=n)
+    color[0] = "rgb(255,255,255)"
+    color[1] = "rgb(220,220,220)"
+
+    color = np.repeat(color, 2)
+
+    colorbar = {
+        "orientation": "h",
+        "ticklabelposition": "inside",
+        "tickvals": np.array(list(CellType)) + 0.5,
+        "ticktext": [c.name for c in CellType],
+        "tickfont": {
+            "color": "black",
+            "size": 20,
+        },
+        "thickness": 20,
+    }
+
+    return {
+        "zmin": 0,
+        "zmax": len(CellType),
+        "colorscale": list(zip(val, color)),
+        "colorbar": colorbar,
+    }
 
 
 def display(dp_arr, starting_timestep=0, show=True):
@@ -88,8 +124,9 @@ def _display_dp(dp_arr, fig_title="DP Array", start=0, show=True):
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
         contents = np.copy(t[dp_arr.array_name]["contents"])
-        contents[np.where(contents != None)] = CellType.FILLED  # pylint: disable=singleton-comparison
-        contents[np.where(contents == None)] = CellType.EMPTY  # pylint: disable=singleton-comparison
+        mask = np.isnan(contents.astype(float))
+        contents[np.where(mask)] = CellType.EMPTY
+        contents[np.where(~mask)] = CellType.FILLED
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
         contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
         contents[_index_set_to_numpy_index(
@@ -107,7 +144,6 @@ def _display_dp(dp_arr, fig_title="DP Array", start=0, show=True):
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
-    # TODO: Highlight will probably be handled here.
     hovertext = np.full_like(values, None)
     for t, record in enumerate(timesteps):
         for write_idx in record[dp_arr.array_name][Op.WRITE]:
@@ -123,7 +159,6 @@ def _display_dp(dp_arr, fig_title="DP Array", start=0, show=True):
                     f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
-    # NOTE: We should be using "customdata" for hovertext.
     heatmaps = [
         go.Heatmap(
             z=color,
@@ -133,9 +168,7 @@ def _display_dp(dp_arr, fig_title="DP Array", start=0, show=True):
             customdata=hovertext[i],
             hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" +
             "<extra></extra>",
-            zmin=MIN_CELL_TYPE,
-            zmax=MAX_CELL_TYPE,
-            colorscale=COLOR_SCALE,
+            **_get_colorbar_kwargs("Sunset"),
             xgap=1,
             ygap=1,
         ) for i, (val, color) in enumerate(zip(values, colors))
