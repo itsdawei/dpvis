@@ -13,7 +13,7 @@ def excavate(v, M):
     the maximum value that can be obtained from excavating if you have M months to mine.
 
     Args:
-        v (array-like): v[i][l] represent the value gained from ecavating level
+        v (array-like): v[i][l] represent the value gained from excavating level
             l of site i.
         M (int): Number of months allowed.
 

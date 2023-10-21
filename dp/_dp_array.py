@@ -180,9 +180,11 @@ class DPArray:
             read_indices[idx] = True
             undef_read_indices = np.flatnonzero(
                 np.asarray(~self.occupied_arr & read_indices))
-            warnings.warn(f"Referencing undefined elements in "
-                          f"'{self._array_name}'. Undefined elements: "
-                          f"{undef_read_indices}.", category=RuntimeWarning)
+            warnings.warn(
+                f"Referencing undefined elements in "
+                f"'{self._array_name}'. Undefined elements: "
+                f"{undef_read_indices}.",
+                category=RuntimeWarning)
         log_idx = self._nd_slice_to_indices(idx)
         self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
@@ -301,6 +303,7 @@ class DPArray:
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
                 element of the DP array, item[i] should be None.
+                
         Returns:
             self.dtype: Maximum value of the elements.
         """

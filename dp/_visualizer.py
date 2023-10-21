@@ -89,7 +89,7 @@ def display(dp_arr,
             colorscale_name="Sunset",
             row_labels=None,
             column_labels=None):
-    """Creates an interactive display the given DPArray in a streamlit webpage.
+    """Creates an interactive display of the given DPArray in a webpage.
 
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
@@ -277,13 +277,14 @@ def display(dp_arr,
 
     return figure
 
+
 # TODO:
 # def backtrack(dp_arr, indices, direction="forward"):
 #     pass
-    # Backtracking: 
-    # backtrack(OPT, indices_in_order, function)
-    # indices_in_order = [(5, 10), (4, 9), ...]
-    # indices_in_order = [(4, 9), (5, 10), ...]
-    # function = lambda x,y: return x-y
-    # function((5, 10), (4,9)) months 
-    # template = "{} months"
+# Backtracking:
+# backtrack(OPT, indices_in_order, function)
+# indices_in_order = [(5, 10), (4, 9), ...]
+# indices_in_order = [(4, 9), (5, 10), ...]
+# function = lambda x,y: return x-y
+# function((5, 10), (4,9)) months
+# template = "{} months"
