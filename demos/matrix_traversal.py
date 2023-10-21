@@ -11,7 +11,11 @@ def matrix_traversal(M):
     path to (n, m). The agent is only able to move South or Eest from its
     current position. 
     """
-    OPT = DPArray(M.shape)
+    row_labels = ['Padding' if i == 0 else str(i) for i in range(M.shape[0])]
+    column_labels = ['Padding' if j == 0 else str(j) for j in range(M.shape[1])]
+    OPT = DPArray(shape=M.shape,
+                  row_labels=row_labels,
+                  column_labels=column_labels)
 
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):

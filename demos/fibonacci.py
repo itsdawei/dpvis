@@ -7,7 +7,7 @@ n = 10
 # Fibonacci DP function
 def fib(n):
     # Initialize a DPArray instead of an array/list
-    arr = DPArray(n)
+    arr = DPArray(n, column_labels=[f'fib {i + 1}' for i in range(n)])
 
     # Base cases
     arr[0] = 1

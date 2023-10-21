@@ -108,6 +108,23 @@ def display(dp_arr, starting_timestep=0, show=True, colorscale_name="Sunset"):
     return figure
 
 
+def _index_set_to_numpy_index(indices):
+    """
+    Get a set of tuples representing indices and convert it into numpy indicies.
+    Example input: {(0, 1), (2, 3), (4, 5)}
+    Example output: {[0, 2, 4], [1, 3, 5]}
+    """
+    # ignore if 1-d or no indicies
+    if len(indices) <= 0 or isinstance(list(indices)[0], int):
+        return list(indices)
+
+    x, y = [], []
+    for i in indices:
+        x.append(i[0])
+        y.append(i[1])
+    return (x, y)
+
+
 def _display_dp(dp_arr,
                 fig_title="DP Array",
                 start=0,
@@ -171,11 +188,13 @@ def _display_dp(dp_arr,
     heatmaps = [
         go.Heatmap(
             z=color,
+            x=dp_arr._column_labels,
+            y=dp_arr._row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
             customdata=hovertext[i],
-            hovertemplate="<b>%{x} %{y}</b><br>%{customdata}" +
+            hovertemplate="<b>%{y} %{x}</b><br>%{customdata}" +
             "<extra></extra>",
             **_get_colorbar_kwargs(colorscale_name),
             xgap=1,

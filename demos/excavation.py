@@ -27,7 +27,16 @@ def excavate(v, M):
 
     # OPT[i, m] is the maximum value that can be obtained by spending m months
     # on mining sites up to the ith site.
-    OPT = DPArray((v.shape[0] + 1, M + 1), array_name="Excavation")
+    row_labels = [
+        "Padding" if i == 0 else f'Mine {i}' for i in range(v.shape[0] + 1)
+    ]
+    column_labels = [
+        "Padding" if i == 0 else f'Month {i}' for i in range(M + 1)
+    ]
+    OPT = DPArray((v.shape[0] + 1, M + 1),
+                  array_name="Excavation",
+                  row_labels=row_labels,
+                  column_labels=column_labels)
 
     # Base case:
     OPT[0, :] = 0  # Given no mining sites.
@@ -46,18 +55,19 @@ def excavate(v, M):
                 # obtained value of np.sum(v[i-1, :l]). Since we have dug
                 # l layers from the ith site, we only have m-l months left for
                 # the rest of the sites. We have already computed the maximum
-                # value given m-l months and up to the (i-1)st site as 
+                # value given m-l months and up to the (i-1)st site as
                 # OPT[i - 1, m-l]. Hence, we can simply add these values together as follows:
                 elements.append(OPT[i - 1, m - l] + np.sum(v[i - 1, :l]))
             # After considering all possible choices of digging l layers from
             # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
 
-    display(OPT) # Visualize.
+    display(OPT)  # Visualize.
 
     # TODO: Implement backtracking.
 
     return OPT[v.shape[0], M]
+
 
 if __name__ == "__main__":
     v = np.array([
