@@ -55,17 +55,11 @@ def excavate(v, M):
 
     display(OPT) # Visualize.
 
-    return OPT[v.shape[0] + 1, M + 1]
+    # TODO: Implement backtracking.
+
+    return OPT[v.shape[0], M]
 
 if __name__ == "__main__":
-    # v = np.array([
-    #     [0, 0, 0, 0, 0, 0, 0, 0],
-    #     [0, 5, 4, 2, 5, 4, 3, 4],
-    #     [0, 1, 4, 3, 4, 2, 0, 1],
-    #     [0, 3, 5, 0, 2, 4, 3, 4],
-    #     [0, 2, 4, 4, 4, 1, 3, 0],
-    #     [0, 4, 2, 5, 0, 5, 0, 5],
-    # ])
     v = np.array([
         [5, 4, 2, 5, 4, 3, 4],
         [1, 4, 3, 4, 2, 0, 1],
@@ -74,9 +68,4 @@ if __name__ == "__main__":
         [4, 2, 5, 0, 5, 0, 5],
     ])
     M = 10
-    # v = np.array([
-    #     [4, 1],
-    #     [3, 2],
-    # ])
-    # M = 2
     excavate(v, M)

@@ -1,5 +1,6 @@
 """This file provides the visualizer for the DPArray class."""
 from enum import IntEnum
+
 import numpy as np
 import plotly.graph_objs as go
 
@@ -7,8 +8,8 @@ from dp._logger import Op
 
 
 class CellType(IntEnum):
-    """
-    CellType determines the color of elements in the DP array.
+    """CellType determines the color of elements in the DP array.
+
     See COLOR_SCALE variable for corresponding colors.
     """
     EMPTY = 0
@@ -24,16 +25,17 @@ MAX_CELL_TYPE = max(list(CellType))
 # Have to normalize values.
 # See https://community.plotly.com/t/colors-for-discrete-ranges-in-heatmaps/7780/2  # pylint: disable=line-too-long
 COLOR_SCALE = [
-    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'],  #white
-    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'],  #grey
-    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'],  #yellow
-    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'],  #green
-    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'],  #red
+    [CellType.EMPTY / MAX_CELL_TYPE, 'rgb(255,255,255)'],  # white
+    [CellType.FILLED / MAX_CELL_TYPE, 'rgb(220, 220, 220)'],  # grey
+    [CellType.HIGHLIGHT / MAX_CELL_TYPE, 'rgb(255,255,0)'],  # yellow
+    [CellType.READ / MAX_CELL_TYPE, 'rgb(34,139,34)'],  # green
+    [CellType.WRITE / MAX_CELL_TYPE, 'rgb(255,0,0)'],  # red
 ]
 
 
 def display(dp_arr, starting_timestep=0, show=True):
     """Creates an interactive display the given DPArray in a streamlit webpage.
+
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
 
@@ -47,15 +49,13 @@ def display(dp_arr, starting_timestep=0, show=True):
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
-    figure = _display_dp(dp_arr,
-                         start=starting_timestep,
-                         show=show)
+    figure = _display_dp(dp_arr, start=starting_timestep, show=show)
     return figure
 
 
 def _index_set_to_numpy_index(indices):
-    """
-    Get a set of tuples representing indices and convert it into numpy indicies.
+    """Get a set of tuples representing indices and convert it into numpy indicies.
+
     Example input: {(0, 1), (2, 3), (4, 5)}
     Example output: {[0, 2, 4], [1, 3, 5]}
     """
@@ -70,10 +70,7 @@ def _index_set_to_numpy_index(indices):
     return (x, y)
 
 
-def _display_dp(dp_arr,
-                fig_title="DP Array",
-                start=0,
-                show=True):
+def _display_dp(dp_arr, fig_title="DP Array", start=0, show=True):
     """Plots the dp array as an animated heatmap.
 
     Args:
