@@ -66,11 +66,11 @@ def _display_dp(dp_arr,
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {arr[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or "{}"}")
+                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
                     f"Value: {arr[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or "{}"}")
+                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
     # NOTE: We should be using "customdata" for hovertext.
