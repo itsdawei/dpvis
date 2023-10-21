@@ -1,6 +1,6 @@
 import numpy as np
 
-from dp import DPArray, display
+from dp import DPArray, display, backtrack
 
 
 def excavate(v, M):
@@ -27,16 +27,7 @@ def excavate(v, M):
 
     # OPT[i, m] is the maximum value that can be obtained by spending m months
     # on mining sites up to the ith site.
-    row_labels = [
-        "Padding" if i == 0 else f'Mine {i}' for i in range(v.shape[0] + 1)
-    ]
-    column_labels = [
-        "Padding" if i == 0 else f'Month {i}' for i in range(M + 1)
-    ]
-    OPT = DPArray((v.shape[0] + 1, M + 1),
-                  array_name="Excavation",
-                  row_labels=row_labels,
-                  column_labels=column_labels)
+    OPT = DPArray((v.shape[0] + 1, M + 1), array_name="Excavation")
 
     # Base case:
     OPT[0, :] = 0  # Given no mining sites.
@@ -56,15 +47,27 @@ def excavate(v, M):
                 # l layers from the ith site, we only have m-l months left for
                 # the rest of the sites. We have already computed the maximum
                 # value given m-l months and up to the (i-1)st site as
-                # OPT[i - 1, m-l]. Hence, we can simply add these values together as follows:
+                # OPT[i - 1, m-l]. Hence, we can simply add these values
+                # together as follows:
                 elements.append(OPT[i - 1, m - l] + np.sum(v[i - 1, :l]))
             # After considering all possible choices of digging l layers from
             # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
 
-    display(OPT)  # Visualize.
-
     # TODO: Implement backtracking.
+    # backtrack(OPT, indices)
+
+    row_labels = [f"{i}th Mine" for i in range(v.shape[0] + 1)]
+    if len(row_labels) > 0:
+        row_labels[0] = "0th Mine"
+    if len(row_labels) > 1:
+        row_labels[1] = "1st Mine"
+    if len(row_labels) > 2:
+        row_labels[2] = "2nd Mine"
+    if len(row_labels) > 3:
+        row_labels[3] = "3rd Mine"
+    column_labels = [f"{i} Months" for i in range(M + 1)]
+    display(OPT, row_labels=row_labels, column_labels=column_labels)
 
     return OPT[v.shape[0], M]
 

@@ -83,7 +83,12 @@ def _get_colorbar_kwargs(name):
     }
 
 
-def display(dp_arr, starting_timestep=0, show=True, colorscale_name="Sunset"):
+def display(dp_arr,
+            start=0,
+            show=True,
+            colorscale_name="Sunset",
+            row_labels=None,
+            column_labels=None):
     """Creates an interactive display the given DPArray in a streamlit webpage.
 
     Using a slider and buttons for time travel. This UI will have interactive
@@ -91,55 +96,15 @@ def display(dp_arr, starting_timestep=0, show=True, colorscale_name="Sunset"):
 
     Args:
         dp_arr (DPArray): DParray to be visualized.
-        n (int): Maximum number of time steps to be visualized.
-        starting_timestep (int): Starting iteration to be displayed. Defaults
-            to 0.
-        show (str): Boolean to control whether to show figure. Defaults to true.
-        colorscale_name (str): Name of built-in colorscales in plotly. See
-            plotly.colors.named_colorscales for the built-in colorscales.
-
-    Returns:
-        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
-    """
-    figure = _display_dp(dp_arr,
-                         start=starting_timestep,
-                         show=show,
-                         colorscale_name=colorscale_name)
-    return figure
-
-
-def _index_set_to_numpy_index(indices):
-    """
-    Get a set of tuples representing indices and convert it into numpy indicies.
-    Example input: {(0, 1), (2, 3), (4, 5)}
-    Example output: {[0, 2, 4], [1, 3, 5]}
-    """
-    # ignore if 1-d or no indicies
-    if len(indices) <= 0 or isinstance(list(indices)[0], int):
-        return list(indices)
-
-    x, y = [], []
-    for i in indices:
-        x.append(i[0])
-        y.append(i[1])
-    return (x, y)
-
-
-def _display_dp(dp_arr,
-                fig_title="DP Array",
-                start=0,
-                show=True,
-                colorscale_name="Sunset"):
-    """Plots the dp array as an animated heatmap.
-
-    Args:
-        dp_arr (DPArray): DParray to be visualized.
-        n (int): Maximum number of time steps to be visualized.
-        fig_title (str): Title of the figure.
         start (int): Starting interation to be displayed. Defaults to 0.
         show (bool): Whether to show figure. Defaults to true.
         colorscale_name (str): Name of built-in colorscales in plotly. See
             plotly.colors.named_colorscales for the built-in colorscales.
+        row_labels (list of str): Row labels of the DP array.
+        column_labels (list of str): Column labels of the DP array.
+
+    Returns:
+        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
@@ -188,8 +153,8 @@ def _display_dp(dp_arr,
     heatmaps = [
         go.Heatmap(
             z=color,
-            x=dp_arr._column_labels,
-            y=dp_arr._row_labels,
+            x=column_labels,
+            y=row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
@@ -283,10 +248,10 @@ def _display_dp(dp_arr,
     }]
 
     # Create the figure.
-    fig = go.Figure(
+    figure = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
-            title=fig_title,
+            title=dp_arr.array_name,
             title_x=0.5,
             updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
             sliders=sliders,
@@ -305,9 +270,20 @@ def _display_dp(dp_arr,
         ),
         frames=frames,
     )
-    fig.update_coloraxes(showscale=False)
+    figure.update_coloraxes(showscale=False)
 
     if show:
-        fig.show()
+        figure.show()
 
-    return fig
+    return figure
+
+# TODO:
+# def backtrack(dp_arr, indices, direction="forward"):
+#     pass
+    # Backtracking: 
+    # backtrack(OPT, indices_in_order, function)
+    # indices_in_order = [(5, 10), (4, 9), ...]
+    # indices_in_order = [(4, 9), (5, 10), ...]
+    # function = lambda x,y: return x-y
+    # function((5, 10), (4,9)) months 
+    # template = "{} months"

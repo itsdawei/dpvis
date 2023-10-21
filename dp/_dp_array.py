@@ -17,8 +17,6 @@ class DPArray:
             this array, including READ, WRITE, and HIGHLIGHT. This object is
             used to reproduce frame-by-frame animation of the DP algorithm.
         description_string (string): TODO
-        row_labels ():
-        column_labels ():
         colors ():
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
@@ -35,8 +33,6 @@ class DPArray:
         *,
         logger=None,
         description_string=None,
-        row_labels=None,
-        column_labels=None,
         colors=None,
         dtype=np.float64,
     ):
@@ -51,8 +47,6 @@ class DPArray:
 
         self._array_name = array_name
         self._description_string = description_string
-        self._row_labels = row_labels
-        self._column_labels = column_labels
         self._colors = colors
 
     @staticmethod
@@ -332,6 +326,11 @@ class DPArray:
     def arr(self):
         """Returns the np.ndarray that contains the DP array."""
         return np.array(self._arr, copy=True)
+
+    @property
+    def shape(self):
+        """Returns the shape of the DP array."""
+        return self._arr.shape
 
     @property
     def occupied_arr(self):
