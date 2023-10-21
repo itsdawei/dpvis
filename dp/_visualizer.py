@@ -91,7 +91,7 @@ def _get_colorbar_kwargs(name):
 
 
 def display(dp_arr, starting_timestep=0, show=True, colorscale_name="Sunset"):
-    """Creates an interactive display the given DPArray in a streamlit webpage.
+    """Creates an interactive display of the given DPArray in a webpage.
 
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
