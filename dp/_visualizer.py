@@ -200,7 +200,7 @@ def _display_dp(dp_arr,
     app.layout = html.Div([
         dcc.Graph(id="graph", figure=fig),
         dcc.Slider(min=0,
-                   max=len(arr) - 1,
+                   max=len(values) - 1,
                    step=1,
                    value=0,
                    updatemode="drag",
@@ -246,7 +246,7 @@ def _display_dp(dp_arr,
         if key_data == 37:  # left arrow
             current_value = max(current_value - 1, 0)
         elif key_data == 39:  # right arrow
-            current_value = min(current_value + 1, len(arr) - 1)
+            current_value = min(current_value + 1, len(values) - 1)
         return current_value
 
     # Starts and stop interval from running 
@@ -269,7 +269,7 @@ def _display_dp(dp_arr,
                   State("my_slider", "value"),
                   prevent_initial_call=True)
     def button_iterate_slider(n_intervals, value):
-        new_value = (value + 1) % (len(arr))
+        new_value = (value + 1) % (len(values))
         return new_value
 
     # Displays user input after pressing enter
