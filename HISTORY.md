@@ -1,6 +1,9 @@
 # HISTORY
 
 ## 0.0.0
+- Self-testing by clicking on most recent cell (#20)
+- Changed application to run with Dash (#20)
+- Added arrow keys for time travel (#20)
 - Visualizer works for 2d DPArrays (#16)
 - Add a visualizer for DPArray (#15)
 - Documentation with mkdocs (#7)
@@ -8,7 +11,7 @@
     - mkdocs (#7)
     - pytest (#5)
 - Add Logger to DPArray class (#4)
-- Create ``Logger`` class (#4)
+- Create ``Logger`` class (#4)  
   - Add Value field to Logger class for tracking (#10)
   - Add to_timestep method to Logger class (#11)
   - Add print_timesteps method to Logger class (#13)
@@ -20,5 +23,3 @@
   - Add error handling for __get_item__ (#15)
   - Enable reading with slices (#14), writing with slices (#18)
 - Initial project setup (#1, #2)
-- Changed application to run with Dash (#20)
-	- Added arrow keys for time travel (#20)
