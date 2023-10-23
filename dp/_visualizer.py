@@ -1,8 +1,11 @@
 """This file provides the visualizer for the DPArray class."""
+import json
 from enum import IntEnum
 
+import dash
 import numpy as np
 import plotly.graph_objs as go
+from dash import Dash, Input, Output, State, dcc, html
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
@@ -27,7 +30,7 @@ def _index_set_to_numpy_index(indices):
 
     Example input: {(0, 1), (2, 3), (4, 5)}
     Example output: {[0, 2, 4], [1, 3, 5]}
-    
+
     Args:
         indices(set): Set of indices. It is expected that the indices are
         integers for 1D arrays and tuples of to integers for 2D arrays.
@@ -180,88 +183,12 @@ def display(dp_arr,
         for i, heatmap in enumerate(heatmaps)
     ]
 
-    # Create steps for the slider.
-    steps = [{
-        "args": [[f"Frame {i}"], {
-            "frame": {
-                "duration": 300,
-                "redraw": True
-            },
-            "mode": "immediate",
-            "transition": {
-                "duration": 300
-            }
-        }],
-        "label": str(i),
-        "method": "animate",
-    } for i in range(len(values))]
-
-    # Create the slider.
-    sliders = [{
-        "active": 0,
-        "yanchor": "top",
-        "xanchor": "left",
-        "currentvalue": {
-            "font": {
-                "size": 20
-            },
-            "prefix": "Frame:",
-            "visible": True,
-            "xanchor": "right"
-        },
-        "transition": {
-            "duration": 300,
-            "easing": "cubic-in-out"
-        },
-        "pad": {
-            "b": 10,
-            "t": 50
-        },
-        "len": 0.9,
-        "x": 0.1,
-        "y": 0,
-        "steps": steps
-    }]
-
-    buttons = [{
-        "label":
-            "Play",
-        "method":
-            "animate",
-        "args": [
-            None, {
-                "frame": {
-                    "duration": 500,
-                    "redraw": True
-                },
-                "fromcurrent": True
-            }
-        ]
-    }, {
-        "label":
-            "Pause",
-        "method":
-            "animate",
-        "args": [[None], {
-            "frame": {
-                "duration": 0,
-                "redraw": False
-            },
-            "mode": "immediate",
-            "transition": {
-                "duration": 0
-            }
-        }]
-    }]
-
-    # Create the figure.
-    figure = go.Figure(
+    # Create the figure
+    fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
             title=dp_arr.array_name,
             title_x=0.5,
-            updatemenus=[go.layout.Updatemenu(type="buttons", buttons=buttons)],
-            sliders=sliders,
             xaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[2]),
@@ -277,10 +204,135 @@ def display(dp_arr,
         ),
         frames=frames,
     )
-    figure.update_coloraxes(showscale=False)
+    fig.update_coloraxes(showscale=False)
+    fig.update_layout(clickmode="event+select")
+
+    styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
+
+    # Create Dash App
+    app = Dash()
+
+    # Creates layout for dash app
+    app.layout = html.Div([
+        dcc.Graph(id="graph", figure=fig),
+        dcc.Slider(min=0,
+                   max=len(values) - 1,
+                   step=1,
+                   value=0,
+                   updatemode="drag",
+                   id="my_slider"),
+        dcc.Store(id="store-keypress", data=0),
+        dcc.Interval(id="interval",
+                     interval=1000,
+                     n_intervals=0,
+                     max_intervals=0),
+        html.Button("Dash_Play", id="play"),
+        html.Button("Dash_Stop", id="stop"),
+        html.Div([
+            dcc.Markdown("""
+                **SELF-TESTING**
+            """),
+            html.Pre(id="click-data", style=styles["pre"]),
+        ],
+                 className="three columns"),
+        dcc.Input(id="user_input", type="number", placeholder="",
+                  debounce=True),
+        html.Div(id="user_output"),
+        dcc.Store(id="store-clicked-z"),
+        html.Div(id="comparison-result")
+    ])
+
+    # Callback to change current heatmap based on slider value
+    @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
+                  [State("graph", "figure")])
+    def update_figure(value, existing_figure):
+        # Get the heatmap for the current slider value
+        current_heatmap = heatmaps[value]
+
+        # Update the figure data
+        existing_figure["data"] = [current_heatmap]
+
+        return existing_figure
+
+    # Update slider value baed on store-keypress.
+    # Store-keypress is changed in assets/custom.js
+    @app.callback(Output("my_slider", "value"), Input("store-keypress", "data"),
+                  State("my_slider", "value"))
+    def update_slider(key_data, current_value):
+        if key_data == 37:  # left arrow
+            current_value = max(current_value - 1, 0)
+        elif key_data == 39:  # right arrow
+            current_value = min(current_value + 1, len(values) - 1)
+        return current_value
+
+    # Starts and stop interval from running
+    @app.callback(Output("interval", "max_intervals"),
+                  [Input("play", "n_clicks"),
+                   Input("stop", "n_clicks")], State("interval",
+                                                     "max_intervals"))
+    def control_interval(start_clicks, stop_clicks, max_intervals):
+        ctx = dash.callback_context
+        if not ctx.triggered_id:
+            return dash.no_update
+        if "play" in ctx.triggered_id:
+            return -1  # Runs interval indefinitely
+        if "stop" in ctx.triggered_id:
+            return 0  # Stops interval from running
+
+    # Changes value of slider based on state of play/stop button
+    @app.callback(Output("my_slider", "value", allow_duplicate=True),
+                  Input("interval", "n_intervals"),
+                  State("my_slider", "value"),
+                  prevent_initial_call=True)
+    def button_iterate_slider(n_intervals, value):
+        new_value = (value + 1) % (len(values))
+        return new_value
+
+    # Displays user input after pressing enter
+    @app.callback(
+        Output("user_output", "children"),
+        Input("user_input", "value"),
+    )
+    def update_output(user_input):
+        return f"User Input: {user_input}"
+
+    # Saves data of clicked element inside of store-clicked-z
+    @app.callback(
+        [Output("store-clicked-z", "data"),
+         Output("user_input", "value")], Input("graph", "clickData"))
+    def save_click_data(click_data):
+        if click_data is not None:
+            z_value = click_data["points"][0]["text"]
+            return {"z_value": z_value}, ""
+        return dash.no_update, dash.no_update
+
+    # Tests if user input is correct
+    # TODO: Change what it compares the user input to
+    @app.callback(
+        Output("comparison-result", "children"),
+        [Input("user_input", "value"),
+         Input("store-clicked-z", "data")])
+    def compare_input_and_click(user_input, click_data):
+        if user_input is None or click_data is None:
+            return dash.no_update
+        z_value = click_data.get("z_value", None)
+        if z_value is None:
+            return "No point clicked yet."
+
+        # Converting to integers before comparison
+        try:
+            if int(user_input) == int(z_value):
+                return "Correct!"
+            return f"Incorrect. The clicked z-value is {z_value}."
+        except ValueError:
+            return ""
+
+    @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
+    def display_click_data(clickData):
+        return json.dumps(clickData, indent=2)
 
     if show:
-        figure.show()
+        app.run_server(debug=True, use_reloader=True)
 
     return figure
 
