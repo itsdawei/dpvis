@@ -39,16 +39,19 @@ def matrix_traversal(M):
 
     # TODO: OPT.backtrack_mode()
     current = (M.shape[0] - 1, M.shape[1] - 1)
-    solution_set = [current]
+    solution = [current]
     while current != (0, 0):
         if (current[1] < 1 or OPT[current[0] - 1, current[1]]
                 <= OPT[current[0], current[1] - 1]):
             current = (current[0] - 1, current[1])
         else:
             current = (current[0], current[1] - 1)
-        solution_set.append(current)
-    solution_set.append((0, 0))
-    print(solution_set)
+        solution.append(current)
+    solution.append((0, 0))
+    
+    
+    print(f'Solution is correct {OPT.is_backtrack(solution)}')
+    print(solution)
 
     # TODO:
     # import verify_solution_set from verifaction
