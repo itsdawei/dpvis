@@ -47,8 +47,6 @@ def matrix_traversal(M):
         else:
             current = (current[0], current[1] - 1)
         solution_set.append(current)
-    print(solution_set)
-    
     OPT.add_backtrack_solution(solution_set)
 
     # TODO:
@@ -60,7 +58,6 @@ def matrix_traversal(M):
     column_labels = [str(j) for j in range(M.shape[1])]
     display(OPT, row_labels=row_labels, column_labels=column_labels)
 
-    # TODO: Implement backtracking.
     return OPT[M.shape[0] - 1, M.shape[1] - 1]
 
 
