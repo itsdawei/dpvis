@@ -4,6 +4,8 @@
 
 ### API
 
+- Migrate from graph objects to Dash (#20)
+- Enable arrow keys for time travel (#20)
 - Remove "null" text in empty cells (#21)
 - Make heatmap colorbar a legend for the colors (#21)
 - Enable plotly builtin colorscales for visualizer (#21)
@@ -17,7 +19,6 @@
 - Implement method to convert ``Logger`` object to a timestep action on the
   array (#11)
 - Add ``Value`` field to Logger class for tracking (#10)
-- Documentation with mkdocs (#7)
 - Add Logger to DPArray class (#4)
 - Create ``Logger`` class (#4)
 - Remove integer support in ``DPArray``(#6)
@@ -26,6 +27,7 @@
 
 ### Documentation
 - Excavation and Matrix Traversal examples (#19, #21)
+- Documentation with mkdocs (#7)
 
 ### Improvements
 - Migrate to poetry (#21)
