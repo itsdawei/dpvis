@@ -301,6 +301,7 @@ def display(dp_arr,
         [Output("store-clicked-z", "data"),
          Output("user_input", "value")], Input("graph", "clickData"))
     def save_click_data(click_data):
+        # TODO: Change what gets stored on click
         if click_data is not None:
             z_value = click_data["points"][0]["text"]
             return {"z_value": z_value}, ""
