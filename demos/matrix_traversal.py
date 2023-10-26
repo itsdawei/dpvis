@@ -37,7 +37,7 @@ def matrix_traversal(M):
             # (i, j-1).
             OPT[i, j] = M[i, j] + OPT.min(indices=indices, elements=elements)
 
-    # TODO: OPT.backtrack_mode()
+    OPT.enable_logger(False)
     current = (M.shape[0] - 1, M.shape[1] - 1)
     solution_set = [current]
     while current != (0, 0):
@@ -47,8 +47,9 @@ def matrix_traversal(M):
         else:
             current = (current[0], current[1] - 1)
         solution_set.append(current)
-    solution_set.append((0, 0))
     print(solution_set)
+    
+    OPT.add_backtrack_solution(solution_set)
 
     # TODO:
     # import verify_solution_set from verifaction
