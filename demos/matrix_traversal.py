@@ -46,8 +46,8 @@ def matrix_traversal(M):
             current = (current[0] - 1, current[1])
         else:
             current = (current[0], current[1] - 1)
-        solution_set.append(current)
-    OPT.add_backtrack_solution(solution_set)
+        solution.append(current)
+    OPT.add_backtrack_solution(solution)
 
     # TODO:
     # import verify_solution_set from verifaction
