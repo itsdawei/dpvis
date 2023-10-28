@@ -226,8 +226,8 @@ def display(dp_arr,
                      interval=1000,
                      n_intervals=0,
                      max_intervals=0),
-        html.Button("Dash_Play", id="play"),
-        html.Button("Dash_Stop", id="stop"),
+        html.Button("Play", id="play"),
+        html.Button("Stop", id="stop"),
         html.Div([
             dcc.Markdown("""
                 **SELF-TESTING**
@@ -239,7 +239,12 @@ def display(dp_arr,
                   debounce=True),
         html.Div(id="user_output"),
         dcc.Store(id="store-clicked-z"),
-        html.Div(id="comparison-result")
+        html.Div(id="comparison-result"),
+        html.Button("Test Myself!", id="self_test_button"),
+        html.Div(id="next_prompt"),
+        dcc.Store(id="self_testing_mode", data=False),
+        html.Div(id="toggle_text", children="Self-Testing Mode: OFF")
+
     ])
 
     # Callback to change current heatmap based on slider value
@@ -296,46 +301,55 @@ def display(dp_arr,
     def update_output(user_input):
         return f"User Input: {user_input}"
 
-    # Saves data of clicked element inside of store-clicked-z
-    @app.callback(
-        [Output("store-clicked-z", "data"),
-         Output("user_input", "value")], Input("graph", "clickData"))
-    def save_click_data(click_data):
-        # TODO: Change what gets stored on click
-        if click_data is not None:
-            z_value = click_data["points"][0]["text"]
-            return {"z_value": z_value}, ""
-        return dash.no_update, dash.no_update
-
-    # Tests if user input is correct
-    # TODO: Change what it compares the user input to
-    @app.callback(
-        Output("comparison-result", "children"),
-        [Input("user_input", "value"),
-         Input("store-clicked-z", "data")])
-    def compare_input_and_click(user_input, click_data):
-        if user_input is None or click_data is None:
-            return dash.no_update
-        z_value = click_data.get("z_value", None)
-        if z_value is None:
-            return "No point clicked yet."
-
-        # Converting to integers before comparison
-        try:
-            if int(user_input) == int(z_value):
-                return "Correct!"
-            return f"Incorrect. The clicked z-value is {z_value}."
-        except ValueError:
-            return ""
-
     @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
     def display_click_data(clickData):
         return json.dumps(clickData, indent=2)
+    
+    # Define callback to toggle self_testing_mode
+    @app.callback(
+        Output('self_testing_mode', 'data'),
+        Input('self_test_button', 'n_clicks'),
+        State('self_testing_mode', 'data')
+    )
+    def toggle_self_testing_mode(n_clicks, self_testing_mode):
+        if n_clicks is None:
+            return dash.no_update  # Do not update if the button wasn't clicked
+        return not self_testing_mode  # Toggle the state
+    
+    # Define another callback that uses self_testing_mode
+    @app.callback(
+        Output('toggle_text', 'children'),
+        Input('self_testing_mode', 'data')
+    )
+    def update_output(self_testing_mode):
+        if self_testing_mode:
+            return "Self-Testing Mode: ON"
+        else:
+            return "Self-Testing Mode: OFF"
+        
+    @app.callback(
+        Output("comparison-result", "children"),
+        [Input("user_input", "value"),
+        Input("self_testing_mode", "data"),
+        State("my_slider", "value")]
+    )
+    def compare_input_and_frame(user_input, is_self_testing, current_frame):
+        if is_self_testing and user_input != None:
+            next_frame = (current_frame + 1) % len(values)
+            numberFilled = np.count_nonzero(values[next_frame][0])
+            test = values[next_frame][0][numberFilled - 1]
+            if int(user_input) == int(test):
+                return "Correct!"
+            else:
+                return "Incorrect!"
 
     if show:
         app.run_server(debug=True, use_reloader=True)
 
-    return figure
+    return 
+
+
+
 
 
 # TODO:
