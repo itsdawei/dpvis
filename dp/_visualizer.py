@@ -246,7 +246,8 @@ def display(dp_arr,
         html.Button("Test Myself!", id="self_test_button"),
         html.Div(id="next_prompt"),
         dcc.Store(id="self_testing_mode", data=False),
-        html.Div(id="toggle_text", children="Self-Testing Mode: OFF")
+        html.Div(id="toggle_text", children="Self-Testing Mode: OFF"),
+        dcc.Store(id="current_write",data=0)
 
     ])
 
@@ -332,19 +333,27 @@ def display(dp_arr,
         
     @app.callback(
         Output("comparison-result", "children"),
+        Output("current_write", "data"),
         [Input("user_input", "value"),
         Input("self_testing_mode", "data"),
-        State("my_slider", "value")]
+        State("my_slider", "value"),
+        State("current_write", "data")]
     )
-    def compare_input_and_frame(user_input, is_self_testing, current_frame):
+    def compare_input_and_frame(user_input, is_self_testing, current_frame, current_write):
         if is_self_testing and user_input != None:
             next_frame = (current_frame + 1) % len(values)
-            numberFilled = np.count_nonzero(values[next_frame][0])
-            test = values[next_frame][0][numberFilled - 1]
+            x,y = modded[next_frame][current_write]
+            test = values[next_frame][x][y]
+            next_write = (current_write + 1) % len(modded[next_frame])
+            # for x,y in modded[next_frame]:
+            #     test = values[next_frame][y][x]
+            # numberFilled = np.count_nonzero(values[next_frame][0])
+            # test = values[next_frame][0][numberFilled - 1]
             if int(user_input) == int(test):
-                return "Correct!"
+                return "Correct!", (next_write)
             else:
-                return "Incorrect!"
+                return "Incorrect!", (current_write)
+        return None, current_write
 
     if show:
         app.run_server(debug=True, use_reloader=True)
