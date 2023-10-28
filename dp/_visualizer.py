@@ -120,7 +120,9 @@ def display(dp_arr,
     timesteps = dp_arr.get_timesteps()
 
     # Getting the data values for each frame
+    cellsModded = []
     colors = []
+    # import pdb; pdb.set_trace()
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
         contents = np.copy(t[dp_arr.array_name]["contents"])
@@ -132,6 +134,8 @@ def display(dp_arr,
         contents[_index_set_to_numpy_index(
             arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
+        cellsModded.append(t[dp_arr.array_name][Op.WRITE])
+    import pdb; pdb.set_trace()
 
     colors = np.array(colors)
     values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
