@@ -23,4 +23,4 @@ def fib(n):
 dp_array = fib(n)
 
 # Visualize.
-display(dp_array, column_labels=[f'fib {i + 1}' for i in range(n)])
+display([dp_array])

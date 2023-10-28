@@ -6,7 +6,7 @@ from enum import IntEnum
 import dash
 import numpy as np
 import plotly.graph_objs as go
-from dash import Dash, Input, Output, State, dcc, html, ctx
+from dash import Dash, Input, Output, State, ctx, dcc, html
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
@@ -314,7 +314,7 @@ def display(arrays,
         triggered_id = ctx.triggered_id
         if triggered_id == "play":
             return -1  # Runs interval indefinitely
-        if triggered_id == "stop" :
+        if triggered_id == "stop":
             return 0  # Stops interval from running
 
     # Changes value of slider based on state of play/stop button
@@ -334,18 +334,9 @@ def display(arrays,
     def update_output(user_input):
         return f"User Input: {user_input}"
 
-    # Saves data of clicked element inside of store-clicked-z
-    @app.callback(
-        [Output("store-clicked-z", "data"),
-         Output("user_input", "value")], Input("graph_1", "clickData"))
-    def save_click_data(click_data):
-        if click_data is not None:
-            z_value = click_data["points"][0]["text"]
-            return {"z_value": z_value}, ""
-        return dash.no_update, dash.no_update
-
     # Tests if user input is correct
     # TODO: Change what it compares the user input to
+
     @app.callback(
         Output("comparison-result", "children"),
         [Input("user_input", "value"),
@@ -365,10 +356,13 @@ def display(arrays,
         except ValueError:
             return ""
 
+    input_callback = [Input(g.id, "clickData") for g in graphs]
+
     @app.callback(Output('click-data', 'children'),
-                  Input('graph_1', 'clickData'))
-    def display_click_data(clickData):
-        return json.dumps(clickData, indent=2)
+                  input_callback,
+                  prevent_initial_call=True)
+    def display_click_data(*click_datum):
+        return json.dumps(click_datum, indent=2)
 
     if show:
         app.run_server(debug=True, use_reloader=True)
