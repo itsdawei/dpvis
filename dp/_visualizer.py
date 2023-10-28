@@ -116,6 +116,9 @@ def display(dp_arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
+    # height and width of the array.
+    h, w = dp_arr.shape
+
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
@@ -144,27 +147,31 @@ def display(dp_arr,
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
-    hovertext = np.full_like(values, None)
-    for t, record in enumerate(timesteps):
-        for write_idx in record[dp_arr.array_name][Op.WRITE]:
+    hovertext = np.full_like(values, "")
+    dependency_matrix = np.full_like(values, "")
+    highlight_matrix = np.full_like(values, "")
+    for t, timestep in enumerate(timesteps):
+        for write_idx in timestep[dp_arr.array_name][Op.WRITE]:
             # Fill in corresponding hovertext cell with value and dependencies
             # Have to add a dimension if arr is a 1D Array
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}")
+                dependency_matrix[t:, 0, write_idx] = timestep[dp_arr.array_name][Op.READ]
+                highlight_matrix[t:, 0, write_idx] = timestep[dp_arr.array_name][Op.HIGHLIGHT]
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
                     f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}")
+                dependency_matrix[(np.s_[t:], *write_idx)] = timestep[dp_arr.array_name][Op.READ]
+                highlight_matrix[(np.s_[t:], *write_idx)] = timestep[dp_arr.array_name][Op.HIGHLIGHT]
 
     # Create heatmaps.
     values = np.where(np.isnan(values.astype(float)), "", values)
     heatmaps = [
         go.Heatmap(
             z=color,
-            x=column_labels,
-            y=row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
@@ -184,6 +191,8 @@ def display(dp_arr,
     ]
 
     # Create the figure
+    column_alias = {i: column_labels[i] for i in range(w)}
+    row_alias = {i: row_labels[i] for i in range(h)}
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
@@ -192,12 +201,14 @@ def display(dp_arr,
             xaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[2]),
+                "labelalias": column_alias,
                 "showgrid": False,
                 "zeroline": False,
             },
             yaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[1]),
+                "labelalias": row_alias,
                 "showgrid": False,
                 "zeroline": False
             },
@@ -214,7 +225,7 @@ def display(dp_arr,
 
     # Creates layout for dash app
     app.layout = html.Div([
-        dcc.Graph(id="graph", figure=fig),
+        dcc.Graph(id="graph", figure=fig, clear_on_unhover=True),
         dcc.Slider(min=0,
                    max=len(values) - 1,
                    step=1,
@@ -330,6 +341,36 @@ def display(dp_arr,
     @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
     def display_click_data(clickData):
         return json.dumps(clickData, indent=2)
+
+    @app.callback(
+        [Output('graph', 'figure', allow_duplicate=True)],
+        [Input('graph', 'clickData')],
+        [State('my_slider', 'value'),
+         State("graph", "figure")],
+        prevent_initial_call=True
+        )
+    def display_hover_data(hoverData, value, figure):
+        # if selected cell is empty, do nothing
+        if figure["data"][0]['z'][hoverData["points"][0]['y']][hoverData["points"][0]['x']] == CellType.EMPTY:
+            return figure
+
+        # clear all highlight, read, and write cells to filled
+        figure['data'][0]['z'] = list(map(lambda x: list(map(lambda y: CellType.FILLED if y != CellType.EMPTY else y, x)), figure['data'][0]['z']))
+
+        # highlight selected cell
+        figure["data"][0]['z'][hoverData["points"][0]['y']][hoverData["points"][0]['x']] = CellType.WRITE
+
+        # highlight dependencies
+        dependencies = dependency_matrix[value][hoverData["points"][0]['y']][hoverData["points"][0]['x']]
+        for dy, dx in dependencies:
+            figure["data"][0]['z'][dy][dx] = CellType.READ
+
+        # highlight highlights
+        highlights = highlight_matrix[value][hoverData["points"][0]['y']][hoverData["points"][0]['x']]
+        for hy, hx in highlights:
+            figure["data"][0]['z'][hy][hx] = CellType.HIGHLIGHT
+
+        return figure
 
     if show:
         app.run_server(debug=True, use_reloader=True)
