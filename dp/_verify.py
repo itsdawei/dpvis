@@ -1,5 +1,6 @@
 import numpy as np
 from dp._logger import Op
+from dp._index_converter import _indices_to_np_indices
 
 @staticmethod
 def is_traceback(dp, solution):
@@ -25,7 +26,7 @@ def is_traceback(dp, solution):
         return True
     
     # Ensure each index in the solution is initialized
-    if not np.all(dp._occupied_arr[solution]):
+    if not np.all(dp._occupied_arr[_indices_to_np_indices(solution)]):
         return False
 
     # Go through time steps and check predecessors
