@@ -348,7 +348,7 @@ def display(dp_arr,
     def display_click_data(click_data):
         return json.dumps(click_data, indent=2)
 
-    @app.callback([Output('graph', 'figure', allow_duplicate=True)],
+    @app.callback(Output('graph', 'figure', allow_duplicate=True),
                   [Input('graph', 'clickData')],
                   [State('my_slider', 'value'),
                    State("graph", "figure")],
@@ -386,7 +386,7 @@ def display(dp_arr,
         return figure
 
     if show:
-        app.run_server(debug=True, use_reloader=True)
+        app.run_server(debug=True, use_reloader=False)
 
 
 # TODO:
