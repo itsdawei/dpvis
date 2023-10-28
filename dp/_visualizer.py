@@ -231,7 +231,7 @@ def display(dp_arr,
 
     # Creates layout for dash app
     app.layout = html.Div([
-        dcc.Graph(id="graph", figure=fig, clear_on_unhover=True),
+        dcc.Graph(id="graph", figure=fig),
         dcc.Slider(min=0,
                    max=len(values) - 1,
                    step=1,
