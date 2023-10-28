@@ -148,8 +148,8 @@ def display(dp_arr,
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
     hovertext = np.full_like(values, "")
-    dependency_matrix = np.full_like(values, "")
-    highlight_matrix = np.full_like(values, "")
+    dependency_matrix = np.empty_like(values)
+    highlight_matrix = np.empty_like(values)
     for t, timestep in enumerate(timesteps):
         for write_idx in timestep[dp_arr.array_name][Op.WRITE]:
             # Fill in corresponding hovertext cell with value and dependencies.
