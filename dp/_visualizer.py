@@ -358,7 +358,7 @@ def display(arrays,
 
     input_callback = [Input(g.id, "clickData") for g in graphs]
 
-    @app.callback(Output('click-data', 'children'),
+    @app.callback(Output("click-data", "children"),
                   input_callback,
                   prevent_initial_call=True)
     def display_click_data(*click_datum):

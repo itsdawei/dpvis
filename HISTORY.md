@@ -4,6 +4,7 @@
 
 ### API
 
+- Add support for displaying multiple arrays(#23)
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)
 - Remove "null" text in empty cells (#21)
