@@ -357,7 +357,7 @@ def display(dp_arr,
         # If selected cell is empty, do nothing.
         if figure["data"][0]['z'][click_data["points"][0]['y']][
                 click_data["points"][0]['x']] == CellType.EMPTY:
-            return figure
+            return dash.no_update
 
         # Clear all highlight, read, and write cells to filled.
         figure['data'][0]['z'] = list(
