@@ -38,7 +38,7 @@ def _index_set_to_numpy_index(indices):
     Returns:
         formatted_indices: 
     """
-    # ignore if 1-d or no indicies
+    # Ignore if 1-d or no indicies.
     if len(indices) <= 0 or isinstance(list(indices)[0], int):
         return list(indices)
 
@@ -72,7 +72,7 @@ def _get_colorbar_kwargs(name):
     color[0] = "rgb(255,255,255)"  # white
     color[1] = "rgb(220,220,220)"  # grey
 
-    # colorscale for the colorbar
+    # Colorscale for the colorbar.
     color = np.repeat(color, 2)
 
     return {
@@ -116,13 +116,13 @@ def display(dp_arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
-    # height and width of the array.
+    # Height and width of the array.
     h, w = dp_arr.shape
 
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
-    # Getting the data values for each frame
+    # Getting the data values for each frame.
     colors = []
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
@@ -152,8 +152,8 @@ def display(dp_arr,
     highlight_matrix = np.full_like(values, "")
     for t, timestep in enumerate(timesteps):
         for write_idx in timestep[dp_arr.array_name][Op.WRITE]:
-            # Fill in corresponding hovertext cell with value and dependencies
-            # Have to add a dimension if arr is a 1D Array
+            # Fill in corresponding hovertext cell with value and dependencies.
+            # An added dimension is needed if arr is a 1D Array.
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
@@ -196,7 +196,7 @@ def display(dp_arr,
         for i, heatmap in enumerate(heatmaps)
     ]
 
-    # Create the figure
+    # Create the figure.
     column_alias = {i: column_labels[i] for i in range(w)}
     row_alias = {i: row_labels[i] for i in range(h)}
     fig = go.Figure(
@@ -226,10 +226,10 @@ def display(dp_arr,
 
     styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
-    # Create Dash App
+    # Create Dash App.
     app = Dash()
 
-    # Creates layout for dash app
+    # Creates layout for dash app.
     app.layout = html.Div([
         dcc.Graph(id="graph", figure=fig),
         dcc.Slider(min=0,
@@ -259,30 +259,30 @@ def display(dp_arr,
         html.Div(id="comparison-result")
     ])
 
-    # Callback to change current heatmap based on slider value
+    # Callback to change current heatmap based on slider value.
     @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
                   [State("graph", "figure")])
     def update_figure(value, existing_figure):
-        # Get the heatmap for the current slider value
+        # Get the heatmap for the current slider value.
         current_heatmap = heatmaps[value]
 
-        # Update the figure data
+        # Update the figure data.
         existing_figure["data"] = [current_heatmap]
 
         return existing_figure
 
     # Update slider value baed on store-keypress.
-    # Store-keypress is changed in assets/custom.js
+    # Store-keypress is changed in assets/custom.js.
     @app.callback(Output("my_slider", "value"), Input("store-keypress", "data"),
                   State("my_slider", "value"))
     def update_slider(key_data, current_value):
-        if key_data == 37:  # left arrow
+        if key_data == 37:  # Left arrow
             current_value = max(current_value - 1, 0)
-        elif key_data == 39:  # right arrow
+        elif key_data == 39:  # Right arrow
             current_value = min(current_value + 1, len(values) - 1)
         return current_value
 
-    # Starts and stop interval from running
+    # Starts and stop interval from running.
     @app.callback(Output("interval", "max_intervals"),
                   [Input("play", "n_clicks"),
                    Input("stop", "n_clicks")], State("interval",
@@ -292,11 +292,11 @@ def display(dp_arr,
         if not ctx.triggered_id:
             return dash.no_update
         if "play" in ctx.triggered_id:
-            return -1  # Runs interval indefinitely
+            return -1  # Runs interval indefinitely.
         if "stop" in ctx.triggered_id:
-            return 0  # Stops interval from running
+            return 0  # Stops interval from running.
 
-    # Changes value of slider based on state of play/stop button
+    # Changes value of slider based on state of play/stop button.
     @app.callback(Output("my_slider", "value", allow_duplicate=True),
                   Input("interval", "n_intervals"),
                   State("my_slider", "value"),
@@ -305,7 +305,7 @@ def display(dp_arr,
         new_value = (value + 1) % (len(values))
         return new_value
 
-    # Displays user input after pressing enter
+    # Displays user input after pressing enter.
     @app.callback(
         Output("user_output", "children"),
         Input("user_input", "value"),
@@ -313,7 +313,7 @@ def display(dp_arr,
     def update_output(user_input):
         return f"User Input: {user_input}"
 
-    # Saves data of clicked element inside of store-clicked-z
+    # Saves data of clicked element inside of store-clicked-z.
     @app.callback(
         [Output("store-clicked-z", "data"),
          Output("user_input", "value")], Input("graph", "clickData"))
@@ -323,7 +323,7 @@ def display(dp_arr,
             return {"z_value": z_value}, ""
         return dash.no_update, dash.no_update
 
-    # Tests if user input is correct
+    # Tests if user input is correct.
     # TODO: Change what it compares the user input to
     @app.callback(
         Output("comparison-result", "children"),
@@ -336,7 +336,7 @@ def display(dp_arr,
         if z_value is None:
             return "No point clicked yet."
 
-        # Converting to integers before comparison
+        # Converting to integers before comparison.
         try:
             if int(user_input) == int(z_value):
                 return "Correct!"
@@ -354,12 +354,12 @@ def display(dp_arr,
                    State("graph", "figure")],
                   prevent_initial_call=True)
     def display_dependencies(click_data, value, figure):
-        # if selected cell is empty, do nothing
+        # If selected cell is empty, do nothing.
         if figure["data"][0]['z'][click_data["points"][0]['y']][
                 click_data["points"][0]['x']] == CellType.EMPTY:
             return figure
 
-        # clear all highlight, read, and write cells to filled
+        # Clear all highlight, read, and write cells to filled.
         figure['data'][0]['z'] = list(
             map(
                 lambda x: list(
@@ -367,17 +367,17 @@ def display(dp_arr,
                         if y != CellType.EMPTY else y, x)),
                 figure['data'][0]['z']))
 
-        # highlight selected cell
+        # Highlight selected cell.
         figure["data"][0]['z'][click_data["points"][0]['y']][
             click_data["points"][0]['x']] = CellType.WRITE
 
-        # highlight dependencies
+        # Highlight dependencies.
         dependencies = dependency_matrix[value][click_data["points"][0]['y']][
             click_data["points"][0]['x']]
         for dy, dx in dependencies:
             figure["data"][0]['z'][dy][dx] = CellType.READ
 
-        # highlight highlights
+        # Highlight highlights.
         highlights = highlight_matrix[value][click_data["points"][0]['y']][
             click_data["points"][0]['x']]
         for hy, hx in highlights:
