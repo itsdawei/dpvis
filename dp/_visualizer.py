@@ -287,7 +287,7 @@ def display(dp_arr,
                   [Input("play", "n_clicks"),
                    Input("stop", "n_clicks")], State("interval",
                                                      "max_intervals"))
-    def control_interval(start_clicks, stop_clicks, max_intervals):
+    def control_interval(_start_clicks, _stop_clicks, _max_intervals):
         ctx = dash.callback_context
         if not ctx.triggered_id:
             return dash.no_update
@@ -301,7 +301,7 @@ def display(dp_arr,
                   Input("interval", "n_intervals"),
                   State("my_slider", "value"),
                   prevent_initial_call=True)
-    def button_iterate_slider(n_intervals, value):
+    def button_iterate_slider(_n_intervals, value):
         new_value = (value + 1) % (len(values))
         return new_value
 
@@ -345,18 +345,18 @@ def display(dp_arr,
             return ""
 
     @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
-    def display_click_data(clickData):
-        return json.dumps(clickData, indent=2)
+    def display_click_data(click_data):
+        return json.dumps(click_data, indent=2)
 
     @app.callback([Output('graph', 'figure', allow_duplicate=True)],
                   [Input('graph', 'clickData')],
                   [State('my_slider', 'value'),
                    State("graph", "figure")],
                   prevent_initial_call=True)
-    def display_hover_data(hoverData, value, figure):
+    def display_dependencies(click_data, value, figure):
         # if selected cell is empty, do nothing
-        if figure["data"][0]['z'][hoverData["points"][0]['y']][
-                hoverData["points"][0]['x']] == CellType.EMPTY:
+        if figure["data"][0]['z'][click_data["points"][0]['y']][
+                click_data["points"][0]['x']] == CellType.EMPTY:
             return figure
 
         # clear all highlight, read, and write cells to filled
@@ -368,18 +368,18 @@ def display(dp_arr,
                 figure['data'][0]['z']))
 
         # highlight selected cell
-        figure["data"][0]['z'][hoverData["points"][0]['y']][
-            hoverData["points"][0]['x']] = CellType.WRITE
+        figure["data"][0]['z'][click_data["points"][0]['y']][
+            click_data["points"][0]['x']] = CellType.WRITE
 
         # highlight dependencies
-        dependencies = dependency_matrix[value][hoverData["points"][0]['y']][
-            hoverData["points"][0]['x']]
+        dependencies = dependency_matrix[value][click_data["points"][0]['y']][
+            click_data["points"][0]['x']]
         for dy, dx in dependencies:
             figure["data"][0]['z'][dy][dx] = CellType.READ
 
         # highlight highlights
-        highlights = highlight_matrix[value][hoverData["points"][0]['y']][
-            hoverData["points"][0]['x']]
+        highlights = highlight_matrix[value][click_data["points"][0]['y']][
+            click_data["points"][0]['x']]
         for hy, hx in highlights:
             figure["data"][0]['z'][hy][hx] = CellType.HIGHLIGHT
 
@@ -387,8 +387,6 @@ def display(dp_arr,
 
     if show:
         app.run_server(debug=True, use_reloader=True)
-
-    return figure
 
 
 # TODO:
