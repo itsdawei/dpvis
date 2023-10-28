@@ -133,7 +133,7 @@ def display(dp_arr,
         contents[_index_set_to_numpy_index(
             arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
-        cellsModded.append(t[dp_arr.array_name][Op.WRITE])
+        cellsModded.append(list(t[dp_arr.array_name][Op.WRITE]))
 
     colors = np.array(colors)
     values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
@@ -142,6 +142,9 @@ def display(dp_arr,
     if values.ndim == 2:
         colors = np.expand_dims(colors, 1)
         values = np.expand_dims(values, 1)
+        for i in range(len(cellsModded)):
+            for idx in range(len(cellsModded[i])):
+                cellsModded[i][idx] = (cellsModded[i][idx], 0)
 
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
