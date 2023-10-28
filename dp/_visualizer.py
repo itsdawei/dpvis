@@ -1,11 +1,12 @@
 """This file provides the visualizer for the DPArray class."""
+import collections.abc
 import json
 from enum import IntEnum
 
 import dash
 import numpy as np
 import plotly.graph_objs as go
-from dash import Dash, Input, Output, State, dcc, html
+from dash import Dash, Input, Output, State, dcc, html, ctx
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp._logger import Op
@@ -96,27 +97,44 @@ def _get_colorbar_kwargs(name):
     }
 
 
-def create_figure(dp_arr, start=0, show=True, colorscale_name="Sunset", row_labels=None, column_labels=None):
+def create_figure(arr,
+                  start=0,
+                  colorscale_name="Sunset",
+                  row_labels=None,
+                  column_labels=None):
+    """Create a figure for an array.
+
+    Args:
+        dp_arr (DPArray): DParray to be visualized.
+        start (int): Starting interation to be displayed. Defaults to 0.
+        show (bool): Whether to show figure. Defaults to true.
+        colorscale_name (str): Name of built-in colorscales in plotly. See
+            plotly.colors.named_colorscales for the built-in colorscales.
+        row_labels (list of str): Row labels of the DP array.
+        column_labels (list of str): Column labels of the DP array.
+
+    Returns:
+        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
+    """
     # Obtaining the dp_array timesteps object.
-    timesteps = dp_arr.get_timesteps()
+    timesteps = arr.get_timesteps()
 
     # Getting the data values for each frame
     colors = []
     for t in timesteps:
-        arr_data = t[dp_arr.array_name]
-        contents = np.copy(t[dp_arr.array_name]["contents"])
+        arr_data = t[arr.array_name]
+        contents = np.copy(t[arr.array_name]["contents"])
         mask = np.isnan(contents.astype(float))
         contents[np.where(mask)] = CellType.EMPTY
         contents[np.where(~mask)] = CellType.FILLED
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
-        contents[_index_set_to_numpy_index(
-            arr_data[Op.WRITE])] = CellType.WRITE
+        contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
         contents[_index_set_to_numpy_index(
             arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
 
     colors = np.array(colors)
-    values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
+    values = np.array([t[arr.array_name]["contents"] for t in timesteps])
 
     # Plotly heatmaps requires 2d input as data.
     if values.ndim == 2:
@@ -128,17 +146,17 @@ def create_figure(dp_arr, start=0, show=True, colorscale_name="Sunset", row_labe
     # cell with its value and dependencies.
     hovertext = np.full_like(values, None)
     for t, record in enumerate(timesteps):
-        for write_idx in record[dp_arr.array_name][Op.WRITE]:
+        for write_idx in record[arr.array_name][Op.WRITE]:
             # Fill in corresponding hovertext cell with value and dependencies
             # Have to add a dimension if arr is a 1D Array
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{record[arr.array_name][Op.READ] or '{}'}")
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
                     f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[dp_arr.array_name][Op.READ] or '{}'}")
+                    f"{record[arr.array_name][Op.READ] or '{}'}")
 
     # Create heatmaps.
     values = np.where(np.isnan(values.astype(float)), "", values)
@@ -160,16 +178,13 @@ def create_figure(dp_arr, start=0, show=True, colorscale_name="Sunset", row_labe
     ]
 
     # Rendering all the frames for the animation.
-    frames = [
-        go.Frame(name=f"Frame {i}", data=heatmap)
-        for i, heatmap in enumerate(heatmaps)
-    ]
+    frames = [go.Frame(data=heatmap) for heatmap in heatmaps]
 
     # Create the figure
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
-            title=dp_arr.array_name,
+            title=arr.array_name,
             title_x=0.5,
             xaxis={
                 "tickmode": "array",
@@ -189,10 +204,10 @@ def create_figure(dp_arr, start=0, show=True, colorscale_name="Sunset", row_labe
     fig.update_coloraxes(showscale=False)
     fig.update_layout(clickmode="event+select")
 
-    return fig, values, heatmaps
+    return fig, heatmaps
 
 
-def display(dp_arr,
+def display(arrays,
             start=0,
             show=True,
             colorscale_name="Sunset",
@@ -204,7 +219,8 @@ def display(dp_arr,
     testing as well as the figure.
 
     Args:
-        dp_arr (DPArray): DParray to be visualized.
+        arrays (sequence of DPArray): Multiple DP arrays will be placed in
+            a vertical column on the visualization.
         start (int): Starting interation to be displayed. Defaults to 0.
         show (bool): Whether to show figure. Defaults to true.
         colorscale_name (str): Name of built-in colorscales in plotly. See
@@ -215,21 +231,18 @@ def display(dp_arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
-
-    if not isinstance(dp_arr, list):
-        dp_arr = [dp_arr]
+    if not isinstance(arrays, collections.abc.Sequence):
+        raise TypeError("Arrays must be a Sequence.")
 
     graphs = []
-    heatmaps = []
-    fig, values, heatmap = create_figure(dp_arr[0], colorscale_name=colorscale_name,
-                        row_labels=row_labels, column_labels=column_labels)
-    graphs.append(dcc.Graph(id="graph", figure=fig))
-    heatmaps.append(heatmap)
-    for i, arr in enumerate(dp_arr[1:]):
-        fig, _, heatmap = create_figure(arr, colorscale_name=colorscale_name,
-                            row_labels=row_labels, column_labels=column_labels)
-        graphs.append(dcc.Graph(id="graph_2", figure=fig))
-        heatmaps.append(heatmap)
+    graph_heatmaps = []
+    for i, arr in enumerate(arrays):
+        fig, heatmaps = create_figure(arr,
+                                      colorscale_name=colorscale_name,
+                                      row_labels=row_labels,
+                                      column_labels=column_labels)
+        graphs.append(dcc.Graph(id=f"graph_{i}", figure=fig))
+        graph_heatmaps.append(heatmaps)
 
     styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
@@ -240,11 +253,11 @@ def display(dp_arr,
     app.layout = html.Div([
         *graphs,
         dcc.Slider(min=0,
-                   max=len(values) - 1,
+                   max=len(graph_heatmaps[0]) - 1,
                    step=1,
                    value=0,
                    updatemode="drag",
-                   id="my_slider"),
+                   id="slider"),
         dcc.Store(id="store-keypress", data=0),
         dcc.Interval(id="interval",
                      interval=1000,
@@ -258,7 +271,7 @@ def display(dp_arr,
             """),
             html.Pre(id="click-data", style=styles["pre"]),
         ],
-            className="three columns"),
+                 className="three columns"),
         dcc.Input(id="user_input", type="number", placeholder="",
                   debounce=True),
         html.Div(id="user_output"),
@@ -266,39 +279,30 @@ def display(dp_arr,
         html.Div(id="comparison-result")
     ])
 
-    # Callback to change current heatmap based on slider value
-    @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
-                  [State("graph", "figure")])
-    def update_figure(value, existing_figure):
-        # Get the heatmap for the current slider value
-        current_heatmap = heatmaps[0][value]
-
-        # Update the figure data
-        existing_figure["data"] = [current_heatmap]
-
-        return existing_figure
+    output_callback = [Output(g.id, "figure") for g in graphs]
+    state_callback = [State(g.id, "figure") for g in graphs]
 
     # Callback to change current heatmap based on slider value
-    @app.callback(Output("graph_2", "figure"), [Input("my_slider", "value")],
-                  [State("graph_2", "figure")])
-    def update_figure_2(value, existing_figure):
-        # Get the heatmap for the current slider value
-        current_heatmap = heatmaps[1][value]
+    @app.callback(output_callback, Input("slider", "value"), state_callback)
+    def update_figure(value, *existing_figures):
+        for i, g in enumerate(graph_heatmaps):
+            # Get the heatmap for the current slider value
+            current_heatmap = g[value]
 
-        # Update the figure data
-        existing_figure["data"] = [current_heatmap]
+            # Update the figure data
+            existing_figures[i]["data"] = [current_heatmap]
 
-        return existing_figure
+        return existing_figures
 
     # Update slider value baed on store-keypress.
     # Store-keypress is changed in assets/custom.js
-    @app.callback(Output("my_slider", "value"), Input("store-keypress", "data"),
-                  State("my_slider", "value"))
+    @app.callback(Output("slider", "value"), Input("store-keypress", "data"),
+                  State("slider", "value"))
     def update_slider(key_data, current_value):
         if key_data == 37:  # left arrow
             current_value = max(current_value - 1, 0)
         elif key_data == 39:  # right arrow
-            current_value = min(current_value + 1, len(values) - 1)
+            current_value = min(current_value + 1, len(heatmaps) - 1)
         return current_value
 
     # Starts and stop interval from running
@@ -307,21 +311,19 @@ def display(dp_arr,
                    Input("stop", "n_clicks")], State("interval",
                                                      "max_intervals"))
     def control_interval(start_clicks, stop_clicks, max_intervals):
-        ctx = dash.callback_context
-        if not ctx.triggered_id:
-            return dash.no_update
-        if "play" in ctx.triggered_id:
+        triggered_id = ctx.triggered_id
+        if triggered_id == "play":
             return -1  # Runs interval indefinitely
-        if "stop" in ctx.triggered_id:
+        if triggered_id == "stop" :
             return 0  # Stops interval from running
 
     # Changes value of slider based on state of play/stop button
-    @app.callback(Output("my_slider", "value", allow_duplicate=True),
+    @app.callback(Output("slider", "value", allow_duplicate=True),
                   Input("interval", "n_intervals"),
-                  State("my_slider", "value"),
+                  State("slider", "value"),
                   prevent_initial_call=True)
     def button_iterate_slider(n_intervals, value):
-        new_value = (value + 1) % (len(values))
+        new_value = (value + 1) % (len(heatmaps))
         return new_value
 
     # Displays user input after pressing enter
@@ -335,7 +337,7 @@ def display(dp_arr,
     # Saves data of clicked element inside of store-clicked-z
     @app.callback(
         [Output("store-clicked-z", "data"),
-         Output("user_input", "value")], Input("graph", "clickData"))
+         Output("user_input", "value")], Input("graph_1", "clickData"))
     def save_click_data(click_data):
         if click_data is not None:
             z_value = click_data["points"][0]["text"]
@@ -363,23 +365,10 @@ def display(dp_arr,
         except ValueError:
             return ""
 
-    @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
+    @app.callback(Output('click-data', 'children'),
+                  Input('graph_1', 'clickData'))
     def display_click_data(clickData):
         return json.dumps(clickData, indent=2)
 
     if show:
         app.run_server(debug=True, use_reloader=True)
-
-    return figure
-
-
-# TODO:
-# def backtrack(dp_arr, indices, direction="forward"):
-#     pass
-# Backtracking:
-# backtrack(OPT, indices_in_order, function)
-# indices_in_order = [(5, 10), (4, 9), ...]
-# indices_in_order = [(4, 9), (5, 10), ...]
-# function = lambda x,y: return x-y
-# function((5, 10), (4,9)) months
-# template = "{} months"
