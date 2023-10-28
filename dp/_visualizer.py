@@ -96,29 +96,7 @@ def _get_colorbar_kwargs(name):
     }
 
 
-def display(dp_arr,
-            start=0,
-            show=True,
-            colorscale_name="Sunset",
-            row_labels=None,
-            column_labels=None):
-    """Creates an interactive display of the given DPArray in a webpage.
-
-    Using a slider and buttons for time travel. This UI will have interactive
-    testing as well as the figure.
-
-    Args:
-        dp_arr (DPArray): DParray to be visualized.
-        start (int): Starting interation to be displayed. Defaults to 0.
-        show (bool): Whether to show figure. Defaults to true.
-        colorscale_name (str): Name of built-in colorscales in plotly. See
-            plotly.colors.named_colorscales for the built-in colorscales.
-        row_labels (list of str): Row labels of the DP array.
-        column_labels (list of str): Column labels of the DP array.
-
-    Returns:
-        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
-    """
+def create_figure(dp_arr, start=0, show=True, colorscale_name="Sunset", row_labels=None, column_labels=None):
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
@@ -131,7 +109,8 @@ def display(dp_arr,
         contents[np.where(mask)] = CellType.EMPTY
         contents[np.where(~mask)] = CellType.FILLED
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
-        contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
+        contents[_index_set_to_numpy_index(
+            arr_data[Op.WRITE])] = CellType.WRITE
         contents[_index_set_to_numpy_index(
             arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
@@ -210,6 +189,48 @@ def display(dp_arr,
     fig.update_coloraxes(showscale=False)
     fig.update_layout(clickmode="event+select")
 
+    return fig, values, heatmaps
+
+
+def display(dp_arr,
+            start=0,
+            show=True,
+            colorscale_name="Sunset",
+            row_labels=None,
+            column_labels=None):
+    """Creates an interactive display of the given DPArray in a webpage.
+
+    Using a slider and buttons for time travel. This UI will have interactive
+    testing as well as the figure.
+
+    Args:
+        dp_arr (DPArray): DParray to be visualized.
+        start (int): Starting interation to be displayed. Defaults to 0.
+        show (bool): Whether to show figure. Defaults to true.
+        colorscale_name (str): Name of built-in colorscales in plotly. See
+            plotly.colors.named_colorscales for the built-in colorscales.
+        row_labels (list of str): Row labels of the DP array.
+        column_labels (list of str): Column labels of the DP array.
+
+    Returns:
+        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
+    """
+
+    if not isinstance(dp_arr, list):
+        dp_arr = [dp_arr]
+
+    graphs = []
+    heatmaps = []
+    fig, values, heatmap = create_figure(dp_arr[0], colorscale_name=colorscale_name,
+                        row_labels=row_labels, column_labels=column_labels)
+    graphs.append(dcc.Graph(id="graph", figure=fig))
+    heatmaps.append(heatmap)
+    for i, arr in enumerate(dp_arr[1:]):
+        fig, _, heatmap = create_figure(arr, colorscale_name=colorscale_name,
+                            row_labels=row_labels, column_labels=column_labels)
+        graphs.append(dcc.Graph(id="graph_2", figure=fig))
+        heatmaps.append(heatmap)
+
     styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
     # Create Dash App
@@ -217,7 +238,7 @@ def display(dp_arr,
 
     # Creates layout for dash app
     app.layout = html.Div([
-        dcc.Graph(id="graph", figure=fig),
+        *graphs,
         dcc.Slider(min=0,
                    max=len(values) - 1,
                    step=1,
@@ -237,7 +258,7 @@ def display(dp_arr,
             """),
             html.Pre(id="click-data", style=styles["pre"]),
         ],
-                 className="three columns"),
+            className="three columns"),
         dcc.Input(id="user_input", type="number", placeholder="",
                   debounce=True),
         html.Div(id="user_output"),
@@ -250,7 +271,19 @@ def display(dp_arr,
                   [State("graph", "figure")])
     def update_figure(value, existing_figure):
         # Get the heatmap for the current slider value
-        current_heatmap = heatmaps[value]
+        current_heatmap = heatmaps[0][value]
+
+        # Update the figure data
+        existing_figure["data"] = [current_heatmap]
+
+        return existing_figure
+
+    # Callback to change current heatmap based on slider value
+    @app.callback(Output("graph_2", "figure"), [Input("my_slider", "value")],
+                  [State("graph_2", "figure")])
+    def update_figure_2(value, existing_figure):
+        # Get the heatmap for the current slider value
+        current_heatmap = heatmaps[1][value]
 
         # Update the figure data
         existing_figure["data"] = [current_heatmap]

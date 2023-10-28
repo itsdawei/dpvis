@@ -30,6 +30,11 @@ def excavate(v, M):
     # on mining sites up to the ith site.
     OPT = DPArray((v.shape[0] + 1, M + 1), array_name="Excavation")
 
+    V = DPArray(shape=v.shape, array_name="V", logger=OPT.logger)
+    for i in range(v.shape[0]):
+        for j in range(v.shape[1]):
+            V[i, j] = v[i, j]
+
     # Base case:
     OPT[0, :] = 0  # Given no mining sites.
     OPT[:, 0] = 0  # Given zero months.
@@ -50,7 +55,7 @@ def excavate(v, M):
                 # value given m-l months and up to the (i-1)st site as
                 # OPT[i - 1, m-l]. Hence, we can simply add these values
                 # together as follows:
-                elements.append(OPT[i - 1, m - l] + np.sum(v[i - 1, :l]))
+                elements.append(OPT[i - 1, m - l] + np.sum(V[i - 1, :l]))
             # After considering all possible choices of digging l layers from
             # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
@@ -68,7 +73,7 @@ def excavate(v, M):
     if len(row_labels) > 3:
         row_labels[3] = "3rd Mine"
     column_labels = [f"{i} Months" for i in range(M + 1)]
-    display(OPT, row_labels=row_labels, column_labels=column_labels)
+    display([OPT, V], row_labels=row_labels, column_labels=column_labels)
 
     return OPT[v.shape[0], M]
 
