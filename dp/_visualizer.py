@@ -42,7 +42,7 @@ def _index_set_to_numpy_index(indices):
         a list of values on the first dimension and a list of values on
         the second dimension.
     """
-    # ignore if 1-d or no indicies
+    # Ignore if 1-d or no indicies.
     if len(indices) <= 0 or isinstance(list(indices)[0], int):
         return list(indices)
 
@@ -76,7 +76,7 @@ def _get_colorbar_kwargs(name):
     color[0] = "rgb(255,255,255)"  # white
     color[1] = "rgb(220,220,220)"  # grey
 
-    # colorscale for the colorbar
+    # Colorscale for the colorbar.
     color = np.repeat(color, 2)
 
     return {
@@ -116,10 +116,13 @@ def create_figure(arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
+    # Height and width of the array.
+    h, w = arr.shape
+
     # Obtaining the dp_array timesteps object.
     timesteps = arr.get_timesteps()
 
-    # Getting the data values for each frame
+    # Getting the data values for each frame.
     colors = []
     for t in timesteps:
         arr_data = t[arr.array_name]
@@ -129,8 +132,7 @@ def create_figure(arr,
         contents[np.where(~mask)] = CellType.FILLED
         contents[_index_set_to_numpy_index(arr_data[Op.READ])] = CellType.READ
         contents[_index_set_to_numpy_index(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[_index_set_to_numpy_index(
-            arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+        contents[_index_set_to_numpy_index(arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
 
     colors = np.array(colors)
@@ -144,27 +146,35 @@ def create_figure(arr,
     # Creates a hovertext array with the same shape as arr.
     # For each frame and cell in arr, populate the corresponding hovertext
     # cell with its value and dependencies.
-    hovertext = np.full_like(values, None)
-    for t, record in enumerate(timesteps):
-        for write_idx in record[arr.array_name][Op.WRITE]:
-            # Fill in corresponding hovertext cell with value and dependencies
-            # Have to add a dimension if arr is a 1D Array
+    hovertext = np.full_like(values, "")
+    dependency_matrix = np.empty_like(values)
+    highlight_matrix = np.empty_like(values)
+    for t, timestep in enumerate(timesteps):
+        for write_idx in timestep[arr.array_name][Op.WRITE]:
+            # Fill in corresponding hovertext cell with value and dependencies.
+            # An added dimension is needed if arr is a 1D Array.
             if isinstance(write_idx, int):
-                hovertext[t:, 0, write_idx] = (
+                indices = (np.s_[t:], 0, write_idx)
+                hovertext[indices] = (
                     f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
-                    f"{record[arr.array_name][Op.READ] or '{}'}")
+                    f"{timestep[arr.array_name][Op.READ] or '{}'}")
+                dependency_matrix[indices] = timestep[arr.array_name][Op.READ]
+                highlight_matrix[indices] = timestep[arr.array_name][
+                    Op.HIGHLIGHT]
             else:
-                hovertext[(np.s_[t:], *write_idx)] = (
+                indices = (np.s_[t:], *write_idx)
+                hovertext[indices] = (
                     f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
-                    f"{record[arr.array_name][Op.READ] or '{}'}")
+                    f"{timestep[arr.array_name][Op.READ] or '{}'}")
+                dependency_matrix[indices] = timestep[arr.array_name][Op.READ]
+                highlight_matrix[indices] = timestep[arr.array_name][
+                    Op.HIGHLIGHT]
 
     # Create heatmaps.
     values = np.where(np.isnan(values.astype(float)), "", values)
     heatmaps = [
         go.Heatmap(
             z=color,
-            x=column_labels,
-            y=row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
@@ -180,7 +190,9 @@ def create_figure(arr,
     # Rendering all the frames for the animation.
     frames = [go.Frame(data=heatmap) for heatmap in heatmaps]
 
-    # Create the figure
+    # Create the figure.
+    column_alias = {i: column_labels[i] for i in range(w)}
+    row_alias = {i: row_labels[i] for i in range(h)}
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
@@ -189,12 +201,14 @@ def create_figure(arr,
             xaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[2]),
+                "labelalias": column_alias,
                 "showgrid": False,
                 "zeroline": False,
             },
             yaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[1]),
+                "labelalias": row_alias,
                 "showgrid": False,
                 "zeroline": False
             },
@@ -246,10 +260,10 @@ def display(arrays,
 
     styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
 
-    # Create Dash App
+    # Create Dash App.
     app = Dash()
 
-    # Creates layout for dash app
+    # Creates layout for dash app.
     app.layout = html.Div([
         *graphs,
         dcc.Slider(min=0,
@@ -282,30 +296,29 @@ def display(arrays,
     output_callback = [Output(g.id, "figure") for g in graphs]
     state_callback = [State(g.id, "figure") for g in graphs]
 
-    # Callback to change current heatmap based on slider value
+    # Callback to change current heatmap based on slider value.
     @app.callback(output_callback, Input("slider", "value"), state_callback)
     def update_figure(value, *existing_figures):
         for i, g in enumerate(graph_heatmaps):
-            # Get the heatmap for the current slider value
+            # Get the heatmap for the current slider value.
             current_heatmap = g[value]
 
-            # Update the figure data
+            # Update the figure data.
             existing_figures[i]["data"] = [current_heatmap]
-
         return existing_figures
 
-    # Update slider value baed on store-keypress.
-    # Store-keypress is changed in assets/custom.js
+    # Update slider value based on store-keypress.
+    # Store-keypress is changed in assets/custom.js.
     @app.callback(Output("slider", "value"), Input("store-keypress", "data"),
                   State("slider", "value"))
     def update_slider(key_data, current_value):
-        if key_data == 37:  # left arrow
+        if key_data == 37:  # Left arrow
             current_value = max(current_value - 1, 0)
-        elif key_data == 39:  # right arrow
+        elif key_data == 39:  # Right arrow
             current_value = min(current_value + 1, len(heatmaps) - 1)
         return current_value
 
-    # Starts and stop interval from running
+    # Starts and stop interval from running.
     @app.callback(Output("interval", "max_intervals"),
                   [Input("play", "n_clicks"),
                    Input("stop", "n_clicks")], State("interval",
@@ -313,20 +326,20 @@ def display(arrays,
     def control_interval(start_clicks, stop_clicks, max_intervals):
         triggered_id = ctx.triggered_id
         if triggered_id == "play":
-            return -1  # Runs interval indefinitely
+            return -1  # Runs interval indefinitely.
         if triggered_id == "stop":
-            return 0  # Stops interval from running
+            return 0  # Stops interval from running.
 
-    # Changes value of slider based on state of play/stop button
+    # Changes value of slider based on state of play/stop button.
     @app.callback(Output("slider", "value", allow_duplicate=True),
                   Input("interval", "n_intervals"),
                   State("slider", "value"),
                   prevent_initial_call=True)
-    def button_iterate_slider(n_intervals, value):
+    def button_iterate_slider(_n_intervals, value):
         new_value = (value + 1) % (len(heatmaps))
         return new_value
 
-    # Displays user input after pressing enter
+    # Displays user input after pressing enter.
     @app.callback(
         Output("user_output", "children"),
         Input("user_input", "value"),
@@ -334,9 +347,8 @@ def display(arrays,
     def update_output(user_input):
         return f"User Input: {user_input}"
 
-    # Tests if user input is correct
+    # Tests if user input is correct.
     # TODO: Change what it compares the user input to
-
     @app.callback(
         Output("comparison-result", "children"),
         [Input("user_input", "value"),
@@ -348,7 +360,7 @@ def display(arrays,
         if z_value is None:
             return "No point clicked yet."
 
-        # Converting to integers before comparison
+        # Converting to integers before comparison.
         try:
             if int(user_input) == int(z_value):
                 return "Correct!"
@@ -364,5 +376,43 @@ def display(arrays,
     def display_click_data(*click_datum):
         return json.dumps(click_datum, indent=2)
 
+    # TODO: Allow multiple graphs.
+    @app.callback(Output('graph', 'figure',
+                         allow_duplicate=True), [Input('graph', 'clickData')],
+                  [State('my_slider', 'value'),
+                   State("graph", "figure")],
+                  prevent_initial_call=True)
+    def display_dependencies(click_data, value, figure):
+        # If selected cell is empty, do nothing.
+        if figure["data"][0]['z'][click_data["points"][0]['y']][
+                click_data["points"][0]['x']] == CellType.EMPTY:
+            return dash.no_update
+
+        # Clear all highlight, read, and write cells to filled.
+        figure['data'][0]['z'] = list(
+            map(
+                lambda x: list(
+                    map(lambda y: CellType.FILLED
+                        if y != CellType.EMPTY else y, x)),
+                figure['data'][0]['z']))
+
+        # Highlight selected cell.
+        figure["data"][0]['z'][click_data["points"][0]['y']][
+            click_data["points"][0]['x']] = CellType.WRITE
+
+        # Highlight dependencies.
+        dependencies = dependency_matrix[value][click_data["points"][0]['y']][
+            click_data["points"][0]['x']]
+        for dy, dx in dependencies:
+            figure["data"][0]['z'][dy][dx] = CellType.READ
+
+        # Highlight highlights.
+        highlights = highlight_matrix[value][click_data["points"][0]['y']][
+            click_data["points"][0]['x']]
+        for hy, hx in highlights:
+            figure["data"][0]['z'][hy][hx] = CellType.HIGHLIGHT
+
+        return figure
+
     if show:
-        app.run_server(debug=True, use_reloader=True)
+        app.run_server(debug=True, use_reloader=False)

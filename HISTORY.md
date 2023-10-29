@@ -4,7 +4,11 @@
 
 ### API
 
+<<<<<<< HEAD
 - Add support for displaying multiple arrays(#23)
+=======
+- Display dependencies on click (#25)
+>>>>>>> 404a6f372529397da59152cd83c62e4126336427
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)
 - Remove "null" text in empty cells (#21)
