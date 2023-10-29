@@ -1,6 +1,8 @@
+"""This file contains a method to verify traceback solutions"""
 import numpy as np
 from dp._logger import Op
 from dp._index_converter import _indices_to_np_indices
+
 
 @staticmethod
 def verify_traceback_solution(arr, solution):
@@ -8,8 +10,10 @@ def verify_traceback_solution(arr, solution):
     Check if solution is a valid traceback of DPArray dp.
 
     Args:
-        dp (DPArray): A DPArray that should be initialzed according to an optimization problem.
-        Traceback is not well defined for non-optimization dynamic programming (i.e. does not use max min)
+        dp (DPArray): A DPArray that should be initialzed according to an
+        optimization problem. A traceback solution is not well defined
+        for non-optimization dynamic programming (i.e. does not use
+        max or min).
 
         solution (list of indices): S list of indices.
         For 1D DPArrays, this should be a list of integers.
@@ -18,15 +22,16 @@ def verify_traceback_solution(arr, solution):
     Return:
         bool: False if the given solution is not correct
         and True if it is correct. Empty solutions are considered correct.
-        Incomplete solutions (in which an unexplored predecessor still exists) are incorrect.
-        Solutions that contain the index of an unitialized element are incorrect.
+        Incomplete solutions (in which an unexplored predecessor still
+        exists) are incorrect. Solutions that contain the index of an
+        unitialized element are incorrect.
     """
     # Handle trivial case
-    if(len(solution) == 0):
+    if len(solution) == 0:
         return True
-    
+
     # Ensure each index in the solution is initialized
-    if not np.all(arr._occupied_arr[*_indices_to_np_indices(solution)]):
+    if not np.all(arr.occupied_arr[*_indices_to_np_indices(solution)]):
         return False
 
     # Go through time steps and check predecessors
@@ -37,11 +42,11 @@ def verify_traceback_solution(arr, solution):
             # Check that solution[0] has no predecessors
             if i == 0:
                 return len(timestep[arr.array_name][Op.HIGHLIGHT]) == 0
-            
-            # Check that solution[i - 1] is a predecessor of solution[i]
-            else:
-                # solution[i - 1] is not a predecessor, so the given solution is not correct
-                if solution[i - 1] not in timestep[arr.array_name][Op.HIGHLIGHT]:
-                    return False
-                i = i - 1
+
+            # solution[i - 1] is not a predecessor
+            # The given solution is not correct
+            if solution[i - 1] not in \
+                    timestep[arr.array_name][Op.HIGHLIGHT]:
+                return False
+            i = i - 1
     return True

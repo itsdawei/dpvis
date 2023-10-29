@@ -51,7 +51,7 @@ def matrix_traversal(M):
     solution = solution[::-1]
 
     if verify_traceback_solution(OPT, solution):
-        OPT.add_backtrack_solution(solution)        
+        OPT.add_backtrack_solution(solution)
     else:
         print("Code is incorrect. Did not find a traceback soluton.")
 

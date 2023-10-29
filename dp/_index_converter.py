@@ -1,4 +1,6 @@
+"""This file contains functions to manipulate indices."""
 import numpy as np
+
 
 def _indices_to_np_indices(indices):
     """Get an Iterable of tuples representing indices and convert it into numpy
@@ -8,13 +10,14 @@ def _indices_to_np_indices(indices):
     Example output: [[0, 2, 4], [1, 3, 5]]
 
     Args:
-        indices(Iterable): Iterable of indices. It is expected that the indices are
-        integers for 1D arrays and tuples of integers for arrays of greater than two dimensions
-        (the number of intergers in the tuples should be equal to the dimension of the array).
+        indices(Iterable): Iterable of indices. It is expected that the
+        indices are integers for 1D arrays and tuples of integers for
+        arrays of greater than two dimensions (the number of intergers
+        in the tuples should be equal to the dimension of the array).
 
     Returns:
-        formatted_indices(list of lists): Outputs the given indices in numpy form.
-        The first element corresponds with first dimension indices, 
+        formatted_indices(list of lists): Outputs the given indices in
+        numpy form. The first element corresponds with first dimension indices, 
         the second element corresponds with second dimension indices, and so on.
         Make sure to use list unravelling (*) before using as indices.
     """
@@ -34,6 +37,7 @@ def _indices_to_np_indices(indices):
     index_arr = np.array(indices)
     return [index_arr[:, i].tolist() for i in range(index_arr.shape[1])]
 
+
 def _nd_slice_to_indices(arr, nd_slice):
     """Converts a nd-slice to indices.
 
@@ -52,9 +56,10 @@ def _nd_slice_to_indices(arr, nd_slice):
             - Mixture: (slice(0, 10, 2), 5, 1)
 
     Returns:
-        list of tuples/integer: length n list of d-tuples, where n is the 
-            number of indices and d is the dimension DPArray. If d = 1, 
-            then the list will contain integers instead.
+        list of tuples/integer: length n list of d-tuples,
+            where n is the number of indices and d is the
+            dimension DPArray. If d = 1, then the list will
+            contain integers instead.
 
     Raises:
         ValueError: ``nd_slice`` is not a slice object, a list of slice
@@ -69,8 +74,8 @@ def _nd_slice_to_indices(arr, nd_slice):
         return nd_slice
     if not isinstance(nd_slice, (list, tuple)):
         raise ValueError(f"'nd_slice' has type {type(nd_slice)}, must be "
-                            f"a slice object, a list/tuple of slice objects,"
-                            f" or a list/tuple of integers.")
+                         f"a slice object, a list/tuple of slice objects,"
+                         f" or a list/tuple of integers.")
 
     slice_indices = []
     for dim, size in enumerate(arr.shape):
@@ -83,16 +88,15 @@ def _nd_slice_to_indices(arr, nd_slice):
             slice_indices.append(s)
         else:
             raise ValueError("Each element in 'nd_slice' must be a valid "
-                                "slice object or integer.")
+                             "slice object or integer.")
 
     # Generate the meshgrid of indices and combine indices into
     # n-dimensional index tuples.
     mesh_indices = np.meshgrid(*slice_indices, indexing="ij")
-    indices = np.stack(mesh_indices,
-                        axis=-1).reshape(-1, len(slice_indices))
+    indices = np.stack(mesh_indices, axis=-1).reshape(-1, len(slice_indices))
 
     # Convert to tuple if index is > 1D, otherwise remove the last
     # dimension.
-    indices_tuples = ([tuple(row) for row in indices] if indices.shape[1]
-                        != 1 else np.squeeze(indices, axis=1))
+    indices_tuples = ([tuple(row) for row in indices]
+                      if indices.shape[1] != 1 else np.squeeze(indices, axis=1))
     return indices_tuples

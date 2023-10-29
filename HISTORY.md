@@ -3,7 +3,7 @@
 ## 0.1.0
 
 ### API
-
+- Traceback solution verification and visualization (#24)
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)
 - Remove "null" text in empty cells (#21)

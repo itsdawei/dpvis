@@ -125,7 +125,14 @@ def test_min():
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
-    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {None: None}}}
+    assert dp.logger.logs[2] == {
+        "op": Op.HIGHLIGHT,
+        "idx": {
+            "name": {
+                None: None
+            }
+        }
+    }
     assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
@@ -163,9 +170,9 @@ def test_min():
 
         # Construct argmin set
         if isinstance(highlight_ans[i], list):
-            name = { j: None for j in highlight_ans[i]}
+            name = {j: None for j in highlight_ans[i]}
         else:
-            name = { highlight_ans[i]: None}
+            name = {highlight_ans[i]: None}
         assert dp.logger.logs[next_log + 1] == {
             "op": Op.HIGHLIGHT,
             "idx": {
