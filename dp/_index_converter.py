@@ -21,19 +21,19 @@ def _indices_to_np_indices(indices):
         the second element corresponds with second dimension indices, and so on.
         Make sure to use list unravelling (*) before using as indices.
     """
-    # Formate indices as list
+    # Formate indices as a list.
     if not isinstance(indices, list):
         indices = list(indices)
 
-    # Handle emtpy lists
+    # Handle emtpy lists.
     if len(indices) == 0:
         return [[]]
 
-    # Handle 1D case
+    # Handle 1D case.
     if isinstance(indices[0], int):
         return [indices]
 
-    # handle >1D case
+    # handle >1D case.
     index_arr = np.array(indices)
     return [index_arr[:, i].tolist() for i in range(index_arr.shape[1])]
 

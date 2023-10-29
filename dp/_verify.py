@@ -26,25 +26,25 @@ def verify_traceback_solution(arr, solution):
         exists) are incorrect. Solutions that contain the index of an
         unitialized element are incorrect.
     """
-    # Handle trivial case
+    # Handle trivial case.
     if len(solution) == 0:
         return True
 
-    # Ensure each index in the solution is initialized
+    # Ensure each index in the solution is initialized.
     if not np.all(arr.occupied_arr[*_indices_to_np_indices(solution)]):
         return False
 
-    # Go through time steps and check predecessors
+    # Go through time steps and check predecessors.
     i = len(solution) - 1
     for timestep in reversed(arr.get_timesteps()):
-        # If writing solution[i], analyze predecessors
+        # If writing solution[i], analyze predecessors.
         if solution[i] in timestep[arr.array_name][Op.WRITE]:
-            # Check that solution[0] has no predecessors
+            # Check that solution[0] has no predecessors.
             if i == 0:
                 return len(timestep[arr.array_name][Op.HIGHLIGHT]) == 0
 
-            # solution[i - 1] is not a predecessor
-            # The given solution is not correct
+            # solution[i - 1] is not a predecessor.
+            # The given solution is not correct.
             if solution[i - 1] not in \
                     timestep[arr.array_name][Op.HIGHLIGHT]:
                 return False
