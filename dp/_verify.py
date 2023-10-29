@@ -7,7 +7,7 @@ from dp._index_converter import _indices_to_np_indices
 @staticmethod
 def verify_traceback_solution(arr, solution):
     """
-    Check if solution is a valid traceback of DPArray dp.
+    Verify that solution is a valid traceback solution of the DPArray.
 
     Args:
         dp (DPArray): A DPArray that should be initialzed according to an
