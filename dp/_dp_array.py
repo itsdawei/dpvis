@@ -271,7 +271,12 @@ class DPArray:
         """
         return self._cmp(lambda x, y: x < y, indices, elements)
 
-    def add_backtrack_solution(self, solution):
+    def add_traceback_solution(self, solution):
+        """Add a traceback solution to display be displayed
+
+        Args:
+            solution (array-like): An array-like of indices to be displayed.
+        """
         log_idx = _nd_slice_to_indices(self._arr, solution)
         self._logger.append(self._array_name, Op.READ, log_idx)
 

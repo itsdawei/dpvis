@@ -7,7 +7,6 @@ import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, dcc, html
 from plotly.colors import get_colorscale, sample_colorscale
-import pdb
 
 from dp._index_converter import _indices_to_np_indices
 from dp._logger import Op
@@ -101,14 +100,13 @@ def display(dp_arr,
 
     # Getting the data values for each frame.
     colors = []
-    # pdb.set_trace()
     for t in timesteps:
         arr_data = t[dp_arr.array_name]
         contents = np.copy(t[dp_arr.array_name]["contents"])
         mask = np.isnan(contents.astype(float))
         contents[np.where(mask)] = CellType.EMPTY
         contents[np.where(~mask)] = CellType.FILLED
-        contents[*_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
+        contents[(*_indices_to_np_indices(arr_data[Op.READ]),)] = CellType.READ
         contents[*_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
         contents[*_indices_to_np_indices(arr_data[Op.HIGHLIGHT]
                                         )] = CellType.HIGHLIGHT
