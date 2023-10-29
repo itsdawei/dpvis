@@ -119,7 +119,7 @@ class DPArray:
                 f"'{self._array_name}'. Undefined elements: "
                 f"{undef_read_indices}.",
                 category=RuntimeWarning)
-        log_idx = _nd_slice_to_indices(idx)
+        log_idx = _nd_slice_to_indices(self._arr, idx)
         if self._logger_enabled:
             self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
@@ -134,7 +134,7 @@ class DPArray:
         Raises:
             ValueError: If ``idx`` is a slice object.
         """
-        log_idx = _nd_slice_to_indices(idx)
+        log_idx = _nd_slice_to_indices(self._arr, idx)
 
         value = self.dtype(value)
         if isinstance(value, self.dtype):
@@ -217,7 +217,7 @@ class DPArray:
             if isinstance(i, slice) and isinstance(e, np.ndarray):
                 # get argmax indices
                 slice_max_idx = e.flatten().argmax()
-                slice_indices = _nd_slice_to_indices(i)
+                slice_indices = _nd_slice_to_indices(self._arr, i)
                 i = slice_indices[slice_max_idx]
                 # get max element
                 e = np.max(e)
@@ -272,7 +272,7 @@ class DPArray:
         return self._cmp(lambda x, y: x < y, indices, elements)
 
     def add_backtrack_solution(self, solution):
-        log_idx = _nd_slice_to_indices(solution)
+        log_idx = _nd_slice_to_indices(self._arr, solution)
         self._logger.append(self._array_name, Op.READ, log_idx)
 
     def enable_logger(self, enable=True):

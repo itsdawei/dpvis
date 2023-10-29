@@ -26,7 +26,7 @@ def is_traceback(dp, solution):
         return True
     
     # Ensure each index in the solution is initialized
-    if not np.all(dp._occupied_arr[_indices_to_np_indices(solution)]):
+    if not np.all(dp._occupied_arr[*_indices_to_np_indices(solution)]):
         return False
 
     # Go through time steps and check predecessors

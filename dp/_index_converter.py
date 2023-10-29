@@ -5,35 +5,37 @@ def _indices_to_np_indices(indices):
     indicies.
 
     Example input: [(0, 1), (2, 3), (4, 5)]
-    Example output: ([0, 2, 4], [1, 3, 5])
+    Example output: [[0, 2, 4], [1, 3, 5]]
 
     Args:
+        arr(array): np array used to format indices correctly.
         indices(Iterable): Set of indices. It is expected that the indices are
         integers for 1D arrays and tuples of integers for arrays of greater than two dimensions
         (the number of intergers in the tuples should be equal to the dimension of the array).
 
     Returns:
-        formatted_indices: outputs the given indices in numpy form:
-        a list of values on the first dimension and a list of values on
-        the second dimension.
+        formatted_indices(list of lists): outputs the given indices in numpy form.
+        The first element corresponds with first dimension indices, 
+        the second element corresponds with second dimension indices, and so on.
+        Make sure to use list unravelling (*) before using as indices!
     """
+    # Formate indices as list
     if not isinstance(indices, list):
         indices = list(indices)
 
-    np.ndarray(indices)
+    # Handle emtpy lists
+    if len(indices) == 0:
+        return [[]]
 
+    # Handle 1D case
+    if isinstance(indices[0], int):
+        return [indices]
 
-    # # ignore if 1-d or no indicies
-    # if len(indices) <= 0 or isinstance(list(indices)[0], int):
-    #     return list(indices)
+    # handle >1D case
+    index_arr = np.array(indices)
+    return [index_arr[:, i].tolist() for i in range(index_arr.shape[1])]
 
-    # x, y = [], []
-    # for i in indices:
-    #     x.append(i[0])
-    #     y.append(i[1])
-    # return x, y
-
-def _nd_slice_to_indices(self, nd_slice):
+def _nd_slice_to_indices(arr, nd_slice):
     """Converts a nd-slice to indices.
 
     Calculate the indices from the slices.
@@ -72,7 +74,7 @@ def _nd_slice_to_indices(self, nd_slice):
                             f" or a list/tuple of integers.")
 
     slice_indices = []
-    for dim, size in enumerate(self._arr.shape):
+    for dim, size in enumerate(arr.shape):
         s = nd_slice[dim]
         if isinstance(s, slice):
             # Handle slice objects.
