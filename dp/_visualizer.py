@@ -98,39 +98,28 @@ def _get_colorbar_kwargs(name):
     }
 
 
-def display(arrays,
-            colorscale_name="Sunset",
+def display(array,
             row_labels=None,
-            column_labels=None):
+            column_labels=None,
+            colorscale_name="Sunset"):
     """Creates an interactive display of the given DPArray in a webpage.
 
     Using a slider and buttons for time travel. This UI will have interactive
     testing as well as the figure.
 
     Args:
-        arrays (sequence of DPArray): Multiple DP arrays will be placed in
-            a vertical column on the visualization.
-        colorscale_name (str): Name of built-in colorscales in plotly. See
-            plotly.colors.named_colorscales for the built-in colorscales.
+        array (DPArray): The array to be visualized.
         row_labels (list of str): Row labels of the DP array.
         column_labels (list of str): Column labels of the DP array.
-
-    Returns:
-        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
+        colorscale_name (str): Name of built-in colorscales in plotly. See
+            plotly.colors.named_colorscales for the built-in colorscales.
     """
-    if not isinstance(arrays, collections.abc.Sequence):
-        raise TypeError("Arrays must be a Sequence.")
-
-    graphs = []
-    graph_heatmaps = []
     visualizer = Visualizer()
-
-    visualizer.add_array(arrays[0])
-
+    visualizer.add_array(array,
+                         column_labels=column_labels,
+                         row_labels=row_labels,
+                         colorscale_name=colorscale_name)
     visualizer.show()
-
-    # Runs Dash search.
-    app.run_server(debug=True, use_reloader=False)
 
 
 class Visualizer:
@@ -147,7 +136,11 @@ class Visualizer:
         """Returns the Dash app object."""
         return self._app
 
-    def add_array(self, arr, column_labels=None, row_labels=None):
+    def add_array(self,
+                  arr,
+                  column_labels=None,
+                  row_labels=None,
+                  colorscale_name="Sunset"):
         if not isinstance(arr, DPArray):
             raise TypeError()
         # TODO: Check that arr have same logger.
@@ -155,9 +148,10 @@ class Visualizer:
         self._figure_kwargs.append({
             "column_labels": column_labels,
             "row_labels": row_labels,
+            "colorscale_name": colorscale_name,
         })
 
-    def parse_timesteps(self, arr):
+    def _parse_timesteps(self, arr):
         timesteps = arr.get_timesteps()
 
         w, = arr.shape
@@ -204,11 +198,11 @@ class Visualizer:
         # TODO: Clean this up
         return t_color_matrix, t_value_matrix, t_read_matrix, t_write_matrix, t_highlight_matrix
 
-    def create_figure(self,
-                      arr,
-                      colorscale_name="Sunset",
-                      row_labels=None,
-                      column_labels=None):
+    def _create_figure(self,
+                       arr,
+                       colorscale_name="Sunset",
+                       row_labels=None,
+                       column_labels=None):
         """Create a figure for an array.
 
         Args:
@@ -228,7 +222,7 @@ class Visualizer:
             dependency_matrix,
             _,
             highlight_matrix,
-        ) = self.parse_timesteps(arr)
+        ) = self._parse_timesteps(arr)
 
         w, = arr.shape
         h = 1
@@ -304,7 +298,7 @@ class Visualizer:
         }
 
     # TODO: Maybe the callbacks should be in a differnt file --- dash_callbacks.py?
-    def attach_callbacks(self, max_timestep):
+    def _attach_callbacks(self, max_timestep):
         graph_callbacks = {
             "output": [],
             "state": [],
@@ -403,7 +397,8 @@ class Visualizer:
 
         # TODO: Allow multiple graphs.
         @self.app.callback(
-            Output('dp_array', 'figure', allow_duplicate=True), [Input('dp_array', 'clickData')],
+            Output('dp_array', 'figure',
+                   allow_duplicate=True), [Input('dp_array', 'clickData')],
             [State('slider', 'value'),
              State("dp_array", "figure")],
             prevent_initial_call=True)
@@ -444,7 +439,7 @@ class Visualizer:
         graphs = []
         graph_heatmaps = []
         for arr, kwargs in zip(self._arrays, self._figure_kwargs):
-            fig_dict = self.create_figure(arr, **kwargs)
+            fig_dict = self._create_figure(arr, **kwargs)
             graphs.append(
                 dcc.Graph(id=arr.array_name, figure=fig_dict["figure"]))
             graph_heatmaps.append(fig_dict["heatmaps"])
@@ -487,6 +482,6 @@ class Visualizer:
             html.Div(id="comparison-result")
         ])
 
-        self.attach_callbacks(len(graph_heatmaps[0]))
+        self._attach_callbacks(len(graph_heatmaps[0]))
 
         self.app.run_server(debug=True, use_reloader=True)

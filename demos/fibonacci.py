@@ -23,4 +23,4 @@ def fib(n):
 dp_array = fib(n)
 
 # Visualize.
-display([dp_array])
+display(dp_array)
