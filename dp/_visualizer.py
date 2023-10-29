@@ -14,8 +14,7 @@ from dp._logger import Op
 
 
 class CellType(IntEnum):
-    """
-    CellType determines the color of elements in the DP array.
+    """CellType determines the color of elements in the DP array.
 
     EMPTY and FILLED are always white and grey, respectively. The other colors
     are defined by a builtin colorscale of plotly (defaults to Sunset).

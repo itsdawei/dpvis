@@ -184,7 +184,7 @@ class DPArray:
         elements = [0, 1, 2, 3, 4, 4]
         indices = [None, 2, 4, 6, 8, 1]
         ```
-        The output of this function will be `4` and indices `8`, `1` will be
+        The output of this function will be `4` and indices `8` and `1` will be
         highlighted.
 
         Args:

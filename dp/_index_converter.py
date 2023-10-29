@@ -8,16 +8,15 @@ def _indices_to_np_indices(indices):
     Example output: [[0, 2, 4], [1, 3, 5]]
 
     Args:
-        arr(array): np array used to format indices correctly.
-        indices(Iterable): Set of indices. It is expected that the indices are
+        indices(Iterable): Iterable of indices. It is expected that the indices are
         integers for 1D arrays and tuples of integers for arrays of greater than two dimensions
         (the number of intergers in the tuples should be equal to the dimension of the array).
 
     Returns:
-        formatted_indices(list of lists): outputs the given indices in numpy form.
+        formatted_indices(list of lists): Outputs the given indices in numpy form.
         The first element corresponds with first dimension indices, 
         the second element corresponds with second dimension indices, and so on.
-        Make sure to use list unravelling (*) before using as indices!
+        Make sure to use list unravelling (*) before using as indices.
     """
     # Formate indices as list
     if not isinstance(indices, list):

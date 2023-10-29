@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from dp import DPArray
-from dp._verify import is_traceback
+from dp._verify import verify_traceback_solution
 
 @pytest.mark.parametrize(
         "matrix, solutions, not_solutions",
@@ -53,7 +53,7 @@ def test_is_backtrack(matrix, solutions, not_solutions):
             dp[i, j] = dp.max(indices, elements) + matrix[i, j]
     
     for solution in solutions:
-        assert is_traceback(dp, solution)
+        assert verify_traceback_solution(dp, solution)
 
     for not_solution in not_solutions:
-        assert not is_traceback(dp, not_solution)
+        assert not verify_traceback_solution(dp, not_solution)

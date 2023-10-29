@@ -1,7 +1,7 @@
 import numpy as np
 
 from dp import DPArray, display
-from dp._verify import is_traceback
+from dp._verify import verify_traceback_solution
 
 
 def matrix_traversal(M):
@@ -50,7 +50,7 @@ def matrix_traversal(M):
         solution.append(current)
     solution = solution[::-1]
 
-    if is_traceback(OPT, solution):
+    if verify_traceback_solution(OPT, solution):
         OPT.add_backtrack_solution(solution)        
     else:
         print("Code is incorrect. Did not find a traceback soluton.")
