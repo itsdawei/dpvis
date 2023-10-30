@@ -42,7 +42,6 @@ class DPArray:
 
         self._logger = Logger() if logger is None else logger
         self._logger.add_array(array_name, shape)
-        self._logger_enabled = True
 
         self._array_name = array_name
 
@@ -120,8 +119,7 @@ class DPArray:
                 f"{undef_read_indices}.",
                 category=RuntimeWarning)
         log_idx = _nd_slice_to_indices(self._arr, idx)
-        if self._logger_enabled:
-            self._logger.append(self._array_name, Op.READ, log_idx)
+        self._logger.append(self._array_name, Op.READ, log_idx)
         return self._arr[idx]
 
     def __setitem__(self, idx, value):
@@ -142,8 +140,7 @@ class DPArray:
 
         self._arr[idx] = value.reshape(self._arr[idx].shape)
         self._occupied_arr[idx] = True
-        if self._logger_enabled:
-            self._logger.append(self._array_name, Op.WRITE, log_idx, value)
+        self._logger.append(self._array_name, Op.WRITE, log_idx, value)
 
     def __eq__(self, other):
         """Equal to operator.
@@ -235,8 +232,7 @@ class DPArray:
                 best_indices.extend(i)
 
         # Highlight and write value.
-        if self._logger_enabled:
-            self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
+        self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
         return best_element
 
     def max(self, indices, elements):
@@ -285,10 +281,6 @@ class DPArray:
         """
         log_idx = _nd_slice_to_indices(self._arr, path)
         self._logger.append(self._array_name, Op.READ, log_idx)
-
-    def enable_logger(self, enable=True):
-        """Enable or disable logger."""
-        self._logger_enabled = enable
 
     @property
     def arr(self):
