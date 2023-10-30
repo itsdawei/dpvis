@@ -5,7 +5,7 @@ from dp._index_converter import _indices_to_np_indices
 
 
 @staticmethod
-def verify_traceback_solution(arr, solution):
+def verify_traceback_path(arr, path):
     """Verify that solution is a valid traceback solution of the DPArray.
 
     Args:
@@ -14,38 +14,38 @@ def verify_traceback_solution(arr, solution):
             well defined for non-optimization dynamic programming
             (i.e. does not use max or min).
 
-        solution (list of indices): A list of indices.
+        path (list of indices): A list of indices.
             For 1D DPArrays, this should be a list of integers.
             For 2D DPArrays, this should be a list of tuples.
         
     Return:
-        bool: False if the given solution is not correct and True
-            if it is correct. Empty solutions are considered correct.
-            Incomplete solutions (in which an unexplored predecessor
-            still exists) are incorrect. Solutions that contain the
+        bool: False if the given path is not correct and True
+            if it is correct. Empty paths are considered correct.
+            Incomplete paths (in which an unexplored predecessor
+            still exists) are incorrect. Paths that contain the
             index of an unitialized element are incorrect.
     """
     # Handle trivial case.
-    if len(solution) == 0:
+    if len(path) == 0:
         return True
 
-    # Ensure each index in the solution is initialized.
-    if not np.all(arr.occupied_arr[*_indices_to_np_indices(solution)]):
+    # Ensure each index in the path is initialized.
+    if not np.all(arr.occupied_arr[*_indices_to_np_indices(path)]):
         return False
 
     # Go through time steps and check predecessors.
-    i = len(solution) - 1
+    i = len(path) - 1
     name = arr.array_name
     for timestep in reversed(arr.get_timesteps()):
-        # If writing solution[i], analyze predecessors.
-        if solution[i] in timestep[name][Op.WRITE]:
-            # Check that solution[0] has no predecessors.
+        # If writing path[i], analyze predecessors.
+        if path[i] in timestep[name][Op.WRITE]:
+            # Check that path[0] has no predecessors.
             if i == 0:
                 return len(timestep[name][Op.HIGHLIGHT]) == 0
 
-            # solution[i - 1] is not a predecessor.
-            # The given solution is not correct.
-            if solution[i - 1] not in timestep[name][Op.HIGHLIGHT]:
+            # path[i - 1] is not a predecessor.
+            # The given path is not correct.
+            if path[i - 1] not in timestep[name][Op.HIGHLIGHT]:
                 return False
             i = i - 1
     return True

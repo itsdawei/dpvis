@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
 from dp import DPArray
-from dp._verify import verify_traceback_solution
+from dp._verify import verify_traceback_path
 
 
-@pytest.mark.parametrize("matrix, solutions, not_solutions", [
+@pytest.mark.parametrize("matrix, paths, not_paths", [
     (
         np.array([
             [0, 2, 1],
@@ -33,7 +33,7 @@ from dp._verify import verify_traceback_solution
     )
 ],
                          ids=["a", "b"])
-def test_is_backtrack(matrix, solutions, not_solutions):
+def test_is_backtrack(matrix, paths, not_paths):
     (h, w) = matrix.shape
     dp = DPArray((h, w))
 
@@ -55,8 +55,8 @@ def test_is_backtrack(matrix, solutions, not_solutions):
 
             dp[i, j] = dp.max(indices, elements) + matrix[i, j]
 
-    for solution in solutions:
-        assert verify_traceback_solution(dp, solution)
+    for path in paths:
+        assert verify_traceback_path(dp, path)
 
-    for not_solution in not_solutions:
-        assert not verify_traceback_solution(dp, not_solution)
+    for not_path in not_paths:
+        assert not verify_traceback_path(dp, not_path)

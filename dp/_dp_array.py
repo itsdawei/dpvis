@@ -271,13 +271,19 @@ class DPArray:
         """
         return self._cmp(lambda x, y: x < y, indices, elements)
 
-    def add_traceback_solution(self, solution):
-        """Add a traceback solution to display be displayed
+    def add_traceback_path(self, path):
+        """Add a traceback path to this DPArray object.
+        
+        Paths added to a DPArray object will be displayed when calling display()
+        on that DPArray object. The path will appear on the last frame of the
+        visualization window (slider is in the rightmost position).
 
         Args:
-            solution (array-like): An array-like of indices to be displayed.
+            path (list of tuples): A list of indices to be displayed.
+            Indices should be tuples with as many elements as the dimension
+            of the array (the number of dimensions is given by len(shape)).
         """
-        log_idx = _nd_slice_to_indices(self._arr, solution)
+        log_idx = _nd_slice_to_indices(self._arr, path)
         self._logger.append(self._array_name, Op.READ, log_idx)
 
     def enable_logger(self, enable=True):

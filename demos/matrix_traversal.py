@@ -1,7 +1,7 @@
 import numpy as np
 
 from dp import DPArray, display
-from dp._verify import verify_traceback_solution
+from dp._verify import verify_traceback_path
 
 
 def matrix_traversal(M):
@@ -38,25 +38,21 @@ def matrix_traversal(M):
             # (i, j-1).
             OPT[i, j] = M[i, j] + OPT.min(indices=indices, elements=elements)
 
-    OPT.enable_logger(False)
+    # Make a copy of OPT to prevent unecessary visualization
+    OPT_copy = OPT.arr
     current = (M.shape[0] - 1, M.shape[1] - 1)
-    solution = [current]
+    path = [current]
     while current != (0, 0):
-        if (current[1] < 1 or OPT[current[0] - 1, current[1]]
+        if (current[1] < 1 or OPT_copy[current[0] - 1, current[1]]
                 <= OPT[current[0], current[1] - 1]):
             current = (current[0] - 1, current[1])
         else:
             current = (current[0], current[1] - 1)
-        solution.append(current)
-    solution = solution[::-1]
+        path.append(current)
+    path = path[::-1]
+    OPT.add_backtrack_solution(path)
 
-    OPT.add_backtrack_solution(solution)
-    
-    # TODO:
-    # import verify_solution_set from verifaction
-    # verify_solution_set(OPT, index_of_final_solution, proposed_path)
-    # Print info on command line.
-
+    # Add labels to the visualization
     row_labels = [str(i) for i in range(M.shape[0])]
     column_labels = [str(j) for j in range(M.shape[1])]
     display(OPT, row_labels=row_labels, column_labels=column_labels)
