@@ -16,11 +16,10 @@ def _indices_to_np_indices(indices):
             in the tuples should be equal to the dimension of the array).
 
     Returns:
-        formatted_indices (list of lists): Outputs the given indices in
+        formatted_indices (tuple of lists): Outputs the given indices in
             numpy form. The first element corresponds with first dimension
             indices, the second element corresponds with second dimension
-            indices, and so on. Make sure to use list unraveling (*)
-            before using as indices.
+            indices, and so on.
     """
     # Formate indices as a list.
     if not isinstance(indices, list):
@@ -28,15 +27,15 @@ def _indices_to_np_indices(indices):
 
     # Handle emtpy lists.
     if len(indices) == 0:
-        return [[]]
+        return ([])
 
     # Handle 1D case.
     if isinstance(indices[0], int):
-        return [indices]
+        return (indices)
 
     # handle >1D case.
     index_arr = np.array(indices)
-    return [index_arr[:, i].tolist() for i in range(index_arr.shape[1])]
+    return tuple(index_arr[:, i].tolist() for i in range(index_arr.shape[1]))
 
 
 def _nd_slice_to_indices(arr, nd_slice):

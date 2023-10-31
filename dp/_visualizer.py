@@ -106,9 +106,9 @@ def display(dp_arr,
         mask = np.isnan(contents.astype(float))
         contents[np.where(mask)] = CellType.EMPTY
         contents[np.where(~mask)] = CellType.FILLED
-        contents[(*_indices_to_np_indices(arr_data[Op.READ]),)] = CellType.READ
-        contents[*_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[*_indices_to_np_indices(arr_data[Op.HIGHLIGHT]
+        contents[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
+        contents[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
+        contents[_indices_to_np_indices(arr_data[Op.HIGHLIGHT]
                                         )] = CellType.HIGHLIGHT
         colors.append(contents)
 

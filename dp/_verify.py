@@ -30,7 +30,7 @@ def verify_traceback_path(arr, path):
         return True
 
     # Ensure each index in the path is initialized.
-    if not np.all(arr.occupied_arr[*_indices_to_np_indices(path)]):
+    if not np.all(arr.occupied_arr[_indices_to_np_indices(path)]):
         return False
 
     # Go through time steps and check predecessors.
