@@ -116,9 +116,11 @@ def display(dp_arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
-    # height and width of the array.
-    h, w = dp_arr.shape
-
+    # Height and width of the array.
+    if len(dp_arr.shape) == 1:
+        h, w = *dp_arr.shape, 1
+    else:
+        h, w = dp_arr.shape
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
@@ -199,9 +201,12 @@ def display(dp_arr,
         for i, heatmap in enumerate(heatmaps)
     ]
 
-    # Create the figure
-    column_alias = {i: column_labels[i] for i in range(w)}
-    row_alias = {i: row_labels[i] for i in range(h)}
+    # Create the figure.
+    row_alias = column_alias = None
+    if column_labels:
+        column_alias = {i: column_labels[i] for i in range(w)}
+    if row_labels:
+        row_alias = {i: row_labels[i] for i in range(h)}
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
@@ -401,8 +406,8 @@ def display(dp_arr,
         existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
         return existing_figure
 
-    @app.callback(Output('graph', 'figure', allow_duplicate=True),
-                  [Input('graph', 'clickData')],
+    @app.callback(Output('graph', 'figure',
+                         allow_duplicate=True), [Input('graph', 'clickData')],
                   [State('my_slider', 'value'),
                    State("graph", "figure")],
                   prevent_initial_call=True)
