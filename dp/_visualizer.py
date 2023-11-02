@@ -116,6 +116,9 @@ def display(dp_arr,
     Returns:
         Plotly figure: Figure of DPArray as it is filled out by the recurrence.
     """
+    # height and width of the array.
+    h, w = dp_arr.shape
+
     # Obtaining the dp_array timesteps object.
     timesteps = dp_arr.get_timesteps()
 
@@ -166,8 +169,6 @@ def display(dp_arr,
     heatmaps = [
         go.Heatmap(
             z=color,
-            x=column_labels,
-            y=row_labels,
             text=val,
             texttemplate="%{text}",
             textfont={"size": 20},
@@ -187,6 +188,8 @@ def display(dp_arr,
     ]
 
     # Create the figure
+    column_alias = {i: column_labels[i] for i in range(w)}
+    row_alias = {i: row_labels[i] for i in range(h)}
     fig = go.Figure(
         data=heatmaps[start],
         layout=go.Layout(
@@ -195,12 +198,14 @@ def display(dp_arr,
             xaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[2]),
+                "labelalias": column_alias,
                 "showgrid": False,
                 "zeroline": False,
             },
             yaxis={
                 "tickmode": "array",
                 "tickvals": np.arange(values.shape[1]),
+                "labelalias": row_alias,
                 "showgrid": False,
                 "zeroline": False
             },
