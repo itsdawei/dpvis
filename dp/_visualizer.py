@@ -252,7 +252,9 @@ def display(dp_arr,
     ])
 
     # Callback to change current heatmap based on slider value
-    @app.callback(Output("graph", "figure"), [Input("my_slider", "value")],
+    @app.callback(Output("graph", "figure"), 
+                  Output("current_write","data"),
+                  [Input("my_slider", "value")],
                   [State("graph", "figure")])
     def update_figure(value, existing_figure):
         # Get the heatmap for the current slider value
@@ -261,7 +263,7 @@ def display(dp_arr,
         # Update the figure data
         existing_figure["data"] = [current_heatmap]
 
-        return existing_figure
+        return existing_figure,0
 
     # Update slider value baed on store-keypress.
     # Store-keypress is changed in assets/custom.js
@@ -333,11 +335,12 @@ def display(dp_arr,
         
     @app.callback(
         Output("comparison-result", "children"),
-        Output("current_write", "data"),
+        Output("current_write", "data",allow_duplicate=True),
         [Input("user_input", "value"),
         Input("self_testing_mode", "data"),
         State("my_slider", "value"),
-        State("current_write", "data")]
+        State("current_write", "data")],
+        prevent_initial_call=True
     )
     def compare_input_and_frame(user_input, is_self_testing, current_frame, current_write):
         if is_self_testing and user_input != None:
@@ -345,15 +348,29 @@ def display(dp_arr,
             x,y = modded[next_frame][current_write]
             test = values[next_frame][x][y]
             next_write = (current_write + 1) % len(modded[next_frame])
-            # for x,y in modded[next_frame]:
-            #     test = values[next_frame][y][x]
-            # numberFilled = np.count_nonzero(values[next_frame][0])
-            # test = values[next_frame][0][numberFilled - 1]
+
             if int(user_input) == int(test):
                 return "Correct!", (next_write)
             else:
                 return "Incorrect!", (current_write)
         return None, current_write
+    
+    @app.callback(
+        Output("graph","figure", allow_duplicate=True),
+        Input("current_write","data"),
+        Input('my_slider',"value"),
+        Input("self_testing_mode", "data"),
+        State("graph", "figure"),
+        prevent_initial_call=True
+    )
+    def highlight_testing_cell(current_write, current_frame,is_self_testing, existing_figure):
+        next_frame = (current_frame + 1) % len(values)
+        x,y = modded[next_frame][current_write]
+        if is_self_testing:
+            existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
+            return existing_figure
+        existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
+        return existing_figure
 
     if show:
         app.run_server(debug=True, use_reloader=True)
