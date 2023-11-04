@@ -139,13 +139,13 @@ class Visualizer:
         t = len(timesteps)
 
         # Height and width of the array.
-        if len(dp_arr.shape) == 1:
-            h, w = *dp_arr.shape, 1
+        if len(arr.shape) == 1:
+            h, w = *arr.shape, 1
         else:
-            h, w = dp_arr.shape
+            h, w = arr.shape
 
         # Obtaining the dp_array timesteps object.
-        timesteps = dp_arr.get_timesteps()
+        timesteps = arr.get_timesteps()
 
         name = arr.array_name
 
@@ -161,9 +161,9 @@ class Visualizer:
             mask = np.isnan(c_mat.astype(float))
             c_mat[np.where(mask)] = CellType.EMPTY
             c_mat[np.where(~mask)] = CellType.FILLED
-            c_mat[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
-            c_mat[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
-            c_mat[_indices_to_np_indices(arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+            c_mat[_indices_to_np_indices(arr[Op.READ])] = CellType.READ
+            c_mat[_indices_to_np_indices(arr[Op.WRITE])] = CellType.WRITE
+            c_mat[_indices_to_np_indices(arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_color_matrix[i] = c_mat
             t_value_matrix[i] = arr["contents"]
 
