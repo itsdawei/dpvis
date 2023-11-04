@@ -240,16 +240,18 @@ def display(dp_arr,
     # Creates layout for dash app.
     app.layout = html.Div([
         dcc.Graph(id="graph", figure=fig),
-        html.Div(id='slider-container', children=[ 
-            dcc.Slider(min=0,
-                    max=len(values) - 1,
-                    step=1,
-                    value=0,
-                    updatemode="drag",
-                    id="my_slider"), 
-            html.Button("Play", id="play"),
-            html.Button("Stop", id="stop"),
-        ], style={"display": "block"}),
+        html.Div(id='slider-container',
+                 children=[
+                     dcc.Slider(min=0,
+                                max=len(values) - 1,
+                                step=1,
+                                value=0,
+                                updatemode="drag",
+                                id="my_slider"),
+                     html.Button("Play", id="play"),
+                     html.Button("Stop", id="stop"),
+                 ],
+                 style={"display": "block"}),
         dcc.Store(id="store-keypress", data=0),
         dcc.Interval(id="interval",
                      interval=1000,
@@ -271,14 +273,12 @@ def display(dp_arr,
         html.Div(id="next_prompt"),
         dcc.Store(id="self_testing_mode", data=False),
         html.Div(id="toggle_text", children="Self-Testing Mode: OFF"),
-        dcc.Store(id="current_write",data=0)
+        dcc.Store(id="current_write", data=0)
     ])
 
     # Callback to change current heatmap based on slider value
-    @app.callback(Output("graph", "figure"), 
-                  Output("current_write","data"),
-                  [Input("my_slider", "value")],
-                  [State("graph", "figure")])
+    @app.callback(Output("graph", "figure"), Output("current_write", "data"),
+                  [Input("my_slider", "value")], [State("graph", "figure")])
     def update_figure(value, existing_figure):
         # Get the heatmap for the current slider value.
         current_heatmap = heatmaps[value]
@@ -286,7 +286,7 @@ def display(dp_arr,
         # Update the figure data.
         existing_figure["data"] = [current_heatmap]
 
-        return existing_figure,0
+        return existing_figure, 0
 
     # Update slider value baed on store-keypress.
     # Store-keypress is changed in assets/custom.js.
@@ -311,6 +311,7 @@ def display(dp_arr,
             return -1  # Runs interval indefinitely.
         if "stop" in ctx.triggered_id:
             return 0  # Stops interval from running.
+        return dash.no_update
 
     # Changes value of slider based on state of play/stop button.
     @app.callback(Output("my_slider", "value", allow_duplicate=True),
@@ -333,31 +334,27 @@ def display(dp_arr,
         return f"User Input: {user_input}"
 
     @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
-    def display_click_data(clickData):
-        return json.dumps(clickData, indent=2)
-    
+    def display_click_data(click_data):
+        return json.dumps(click_data, indent=2)
+
     # Define callback to toggle self_testing_mode
-    @app.callback(
-        Output('self_testing_mode', 'data'),
-        Input('self_test_button', 'n_clicks'),
-        State('self_testing_mode', 'data')
-    )
+    @app.callback(Output('self_testing_mode', 'data'),
+                  Input('self_test_button', 'n_clicks'),
+                  State('self_testing_mode', 'data'))
     def toggle_self_testing_mode(n_clicks, self_testing_mode):
         if n_clicks is None:
             return dash.no_update  # Do not update if the button wasn't clicked
         return not self_testing_mode  # Toggle the state
-    
+
     # Define another callback that uses self_testing_mode
     @app.callback(
         Output('toggle_text', 'children'),
         Output(component_id='slider-container', component_property='style'),
-        Input('self_testing_mode', 'data')
-    )
-    def update_output(self_testing_mode):
+        Input('self_testing_mode', 'data'))
+    def toggle_playback_and_slider(self_testing_mode):
         if self_testing_mode:
             return "Self-Testing Mode: ON", {'display': 'none'}
-        else:
-            return "Self-Testing Mode: OFF", {'display': 'block'}
+        return "Self-Testing Mode: OFF", {'display': 'block'}
 
     # Saves data of clicked element inside of store-clicked-z.
     @app.callback(
@@ -370,50 +367,47 @@ def display(dp_arr,
         return dash.no_update, dash.no_update
 
     # Tests if user input is correct.
-    # TODO: Change what it compares the user input to
-    @app.callback(
-        Output("comparison-result", "children"),
-        Output("current_write", "data", allow_duplicate=True),
-        Output("graph","figure", allow_duplicate=True),
-        [Input("user_input", "value"),
-        Input("self_testing_mode", "data"),
-        State("my_slider", "value"),
-        State("current_write", "data"),
-        State("graph", "figure")],
-        prevent_initial_call=True
-    )
-    def compare_input_and_frame(user_input, is_self_testing, current_frame, current_write, existing_figure):
+    @app.callback(Output("comparison-result", "children"),
+                  Output("current_write", "data", allow_duplicate=True),
+                  Output("graph", "figure", allow_duplicate=True), [
+                      Input("user_input", "value"),
+                      Input("self_testing_mode", "data"),
+                      State("my_slider", "value"),
+                      State("current_write", "data"),
+                      State("graph", "figure")
+                  ],
+                  prevent_initial_call=True)
+    def compare_input_and_frame(user_input, is_self_testing, current_frame,
+                                current_write, existing_figure):
         # TODO: Was the isdigit comparison necessary?
-        if is_self_testing and user_input != None and user_input != "":
+        if is_self_testing and user_input is not None and user_input != "":
             next_frame = (current_frame + 1) % len(values)
-            x,y = modded[next_frame][current_write]
+            x, y = modded[next_frame][current_write]
             test = values[next_frame][x][y]
             next_write = (current_write + 1) % len(modded[next_frame])
 
             if int(user_input) == int(test):
                 existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
                 return "Correct!", (next_write), existing_figure
-            else:
-                return "Incorrect!", (current_write), existing_figure
-        return None, current_write
-    
-    @app.callback(
-        Output("graph","figure", allow_duplicate=True),
-        Input("current_write","data"),
-        Input('my_slider',"value"),
-        Input("self_testing_mode", "data"),
-        State("graph", "figure"),
-        prevent_initial_call=True
-    )
-    def highlight_testing_cell(current_write, current_frame, is_self_testing, existing_figure):
+            return "Incorrect!", (current_write), existing_figure
+        return dash.no_update
+
+    @app.callback(Output("graph", "figure", allow_duplicate=True),
+                  Input("current_write", "data"),
+                  Input('my_slider', "value"),
+                  Input("self_testing_mode", "data"),
+                  State("graph", "figure"),
+                  prevent_initial_call=True)
+    def highlight_testing_cell(current_write, current_frame, is_self_testing,
+                               existing_figure):
         next_frame = (current_frame + 1) % len(values)
-        x,y = modded[next_frame][current_write]
+        x, y = modded[next_frame][current_write]
         if is_self_testing:
             existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
             return existing_figure
         # TODO: Is the following line necessary?
-        existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
-        return existing_figure
+        # existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
+        return dash.no_update
 
     @app.callback(Output('graph', 'figure',
                          allow_duplicate=True), [Input('graph', 'clickData')],
@@ -421,10 +415,10 @@ def display(dp_arr,
                    State("graph", "figure")],
                   Input('self_testing_mode', 'data'),
                   prevent_initial_call=True)
-    def display_dependencies(click_data, value, figure, self_testing_mode):        
+    def display_dependencies(click_data, value, figure, self_testing_mode):
         # If in self_testing_mode or selected cell is empty, do nothing.
-        if self_testing_mode or figure["data"][0]['z'][click_data["points"][0]['y']][
-                click_data["points"][0]['x']] == CellType.EMPTY:
+        if self_testing_mode or figure["data"][0]['z'][click_data["points"][0][
+                'y']][click_data["points"][0]['x']] == CellType.EMPTY:
             return dash.no_update
 
         # Clear all highlight, read, and write cells to filled.
