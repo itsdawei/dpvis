@@ -28,8 +28,16 @@ class Logger:
             ...
         }
         "cell_annotations": {
-            array_name_1: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
-            array_name_2: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
+            array_name_1: {
+                idx1: [annotation1], 
+                idx2: [annotation2, annotation3], 
+                ...
+            },
+            array_name_2: {
+                idx1: [annotation1], 
+                idx2: [annotation2, annotation3], 
+                ...
+            },
         }
     }
     note that values are None for READ and HIGHLIGHT.
@@ -118,7 +126,7 @@ class Logger:
         """Appends an annotated operation to the log.
 
         Args:
-            array_name (str): The name of the array associated with this operation.
+            array_name (str): Name of the array associated with this operation.
             operation (Operation): Type of operation performed.
             annotation (str): Annotations associated with this operation.
             idx (int): Index of the array.
@@ -155,7 +163,8 @@ class Logger:
             list of timestep dicts
             timestep: {
                 "array_name": {
-                    "annotations": array annotations (not associated to any particular cell) at this timestep,
+                    "annotations": array annotations at this timestep which are
+                        not associated with any cell but the entire array.
                     "cell_annotations": array cell annotations at this timestep,
                     "contents": array contents at this timestep,
                     Op.READ: [idx1, idx2, ...],
