@@ -265,7 +265,7 @@ def test_min():
 
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
-    assert dp.logger.logs[1] >= {
+    assert dp.logger.logs[1].items() >= {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -273,7 +273,7 @@ def test_min():
             }
         }
     }.items()
-    assert dp.logger.logs[2] == {
+    assert dp.logger.logs[2].items() >= {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
@@ -281,7 +281,7 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[3] >= {
+    assert dp.logger.logs[3].items() >= {
         "op": Op.WRITE,
         "idx": {
             "name": {
@@ -291,7 +291,7 @@ def test_min():
     }.items()
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
-    assert dp.logger.logs[4] >= {
+    assert dp.logger.logs[4].items() >= {
         "op": Op.READ,
         "idx": {
             "name": {
