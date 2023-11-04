@@ -58,7 +58,7 @@ def matrix_traversal(M):
     # Add the path to OPT so it will be displayed.
     OPT.add_traceback_path(path)
 
-    # Add labels to the visualization
+    # Add labels to the visualization.
     row_labels = [str(i) for i in range(M.shape[0])]
     column_labels = [str(j) for j in range(M.shape[1])]
     display(OPT, row_labels=row_labels, column_labels=column_labels)

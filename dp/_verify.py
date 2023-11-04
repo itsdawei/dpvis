@@ -12,14 +12,13 @@ def verify_traceback_path(arr, path):
             to an optimization problem. A traceback solution is not
             well defined for non-optimization dynamic programming
             (i.e. does not use max or min).
-
         path (list of indices): A list of indices.
             For 1D DPArrays, this should be a list of integers.
             For 2D DPArrays, this should be a list of tuples.
         
     Return:
         bool: False if the given path is not correct and True
-            if it is correct. Empty paths are considered correct.
+            if it is correct. Empty paths will raise a Value Error.
             Incomplete paths (in which an unexplored predecessor
             still exists) are incorrect. Paths that contain the
             index of an unitialized element are incorrect.

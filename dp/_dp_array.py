@@ -212,22 +212,22 @@ class DPArray:
         for i, e in zip(indices, elements):
             # Unravel when index is a slice.
             if isinstance(i, slice) and isinstance(e, np.ndarray):
-                # get argmax indices
+                # Get argmax indices.
                 slice_max_idx = e.flatten().argmax()
                 slice_indices = _nd_slice_to_indices(self._arr, i)
                 i = slice_indices[slice_max_idx]
-                # get max element
+                # Get max element.
                 e = np.max(e)
             else:
-                # make index into a singleton
+                # Make index into a singleton.
                 i = [i]
 
-            # If new best index/element is found
+            # If new best index/element is found.
             if cmp(e, best_element):
                 best_indices = i
                 best_element = e
 
-            # If index has equivalent element to the best element
+            # If index has equivalent element to the best element.
             elif e == best_element:
                 best_indices.extend(i)
 
