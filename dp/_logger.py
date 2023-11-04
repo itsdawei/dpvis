@@ -187,6 +187,17 @@ class Logger:
                     } for name in self._array_shapes
                 })
                 new_timestep = False
+            else:
+                # append annotations
+                print(log)
+                print(timesteps[-1])
+                for name in self._array_shapes:
+                    timesteps[-1][name]["annotations"] += log["annotations"][name]
+                    for idx, annotations in log["cell_annotations"][name].items():
+                        if idx not in timesteps[-1][name]["cell_annotations"]:
+                            timesteps[-1][name]["cell_annotations"][idx] = annotations
+                        else:
+                            timesteps[-1][name]["cell_annotations"][idx] += annotations
 
             if log["op"] == Op.WRITE:
                 for name, idx in log["idx"].items():

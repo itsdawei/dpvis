@@ -379,3 +379,73 @@ def test_cell_annotation_log(logger):
     logger.append("dp1", Op.WRITE, 0, 1)
     logger.append("dp1", Op.WRITE, 2, 3)
     logger.append_annotation("dp1", "hello", 0)
+
+    assert len(logger.logs) == 1
+    log0 = logger.logs[-1]
+    assert log0 == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp1": {
+                0: 1,
+                2: 3
+            },
+        },
+        "annotations": {
+            "dp1": [],
+        },
+        "cell_annotations": {
+            "dp1": {
+                0: ["hello"]
+            }
+        }
+    }
+
+def test_multiple_cell_annotation_log(logger):
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append_annotation("dp1", "hello", 0)
+    logger.append_annotation("dp1", "world", 0)
+
+    assert len(logger.logs) == 1
+    log0 = logger.logs[-1]
+    assert log0 == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp1": {
+                0: 1,
+                2: 3
+            },
+        },
+        "annotations": {
+            "dp1": [],
+        },
+        "cell_annotations": {
+            "dp1": {
+                0: ["hello", "world"]
+            }
+        }
+    }
+
+    logger.append("dp1", Op.READ, 1)
+    logger.append_annotation("dp1", "hellooo", 0)
+    logger.append_annotation("dp1", "hello", 1)
+
+    assert len(logger.logs) == 2
+    log1 = logger.logs[-1]
+    assert log1 == {
+        "op": Op.READ,
+        "idx": {
+            "dp1": {
+                1: None
+            },
+        },
+        "annotations": {
+            "dp1": [],
+        },
+        "cell_annotations": {
+            "dp1": {
+                0: ["hellooo"],
+                1: ["hello"]
+            }
+        }
+    }

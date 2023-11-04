@@ -693,3 +693,79 @@ def test_to_timestep_2d():
         Op.WRITE: set(),
         Op.HIGHLIGHT: set(),
     }.items()
+
+def test_annotation():
+    dp = DPArray(10, "dp")
+    dp[0] = 1
+    dp[1] = 2
+    dp[2] = 3
+    dp.annotate("hello world")
+
+    timesteps0 = dp.get_timesteps()
+    assert len(timesteps0) == 1
+    assert timesteps0[0]["dp"].items() >= {
+        Op.READ: set(),
+        Op.WRITE: {0, 1, 2},
+        Op.HIGHLIGHT: set(),
+        "annotations": ["hello world"],
+        "cell_annotations": {}
+    }.items()
+
+    dp.annotate("hello world again")
+    dp.annotate("bye world")
+    timesteps1 = dp.get_timesteps()
+    assert len(timesteps1) == 1
+    assert timesteps1[0]["dp"].items() >= {
+        Op.READ: set(),
+        Op.WRITE: {0, 1, 2},
+        Op.HIGHLIGHT: set(),
+        "annotations": ["hello world", "hello world again", "bye world"],
+        "cell_annotations": {}
+    }.items()
+
+    _ = dp[0]
+    dp[6] = 10
+    dp.annotate_cell(6, "hello cell")
+    timesteps2 = dp.get_timesteps()
+    assert len(timesteps2) == 2
+    assert timesteps2[1]["dp"].items() >= {
+        Op.READ: {0},
+        Op.WRITE: {6},
+        Op.HIGHLIGHT: set(),
+        "annotations": [],
+        "cell_annotations": {6: ["hello cell"]}
+    }.items()
+
+    dp.annotate_cell(6, "hello cell again")
+    dp.annotate_cell(0, "hello cell 0")
+    timesteps3 = dp.get_timesteps()
+    assert len(timesteps3) == 2
+    assert timesteps3[1]["dp"].items() >= {
+        Op.READ: {0},
+        Op.WRITE: {6},
+        Op.HIGHLIGHT: set(),
+        "annotations": [],
+        "cell_annotations": {6: ["hello cell", "hello cell again"], 0: ["hello cell 0"]}
+    }.items()
+
+    dp.annotate("some annotation")
+    timesteps4 = dp.get_timesteps()
+    assert len(timesteps4) == 2
+    assert timesteps4[1]["dp"].items() >= {
+        Op.READ: {0},
+        Op.WRITE: {6},
+        Op.HIGHLIGHT: set(),
+        "annotations": ["some annotation"],
+        "cell_annotations": {6: ["hello cell", "hello cell again"], 0: ["hello cell 0"]}
+    }.items()
+
+    _ = dp[0]
+    timesteps5 = dp.get_timesteps()
+    assert len(timesteps5) == 3
+    assert timesteps5[2]["dp"].items() >= {
+        Op.READ: {0},
+        Op.WRITE: set(),
+        Op.HIGHLIGHT: set(),
+        "annotations": [],
+        "cell_annotations": {}
+    }.items()
