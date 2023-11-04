@@ -101,7 +101,7 @@ def display(dp_arr,
             column_labels=None):
     """Creates an interactive display of the given DPArray in a webpage.
 
-    Using a slider and buttons for time travel. This UI will have interactive
+    Using a slider and buttons for time travel. This UI has interactive
     testing as well as the figure.
 
     Args:
@@ -240,12 +240,14 @@ def display(dp_arr,
     # Creates layout for dash app.
     app.layout = html.Div([
         dcc.Graph(id="graph", figure=fig),
-        dcc.Slider(min=0,
-                   max=len(values) - 1,
-                   step=1,
-                   value=0,
-                   updatemode="drag",
-                   id="my_slider"),
+        html.Div(id='slider-container', children=[ 
+            dcc.Slider(min=0,
+                    max=len(values) - 1,
+                    step=1,
+                    value=0,
+                    updatemode="drag",
+                    id="my_slider")
+        ], style={"display": "block"}),
         dcc.Store(id="store-keypress", data=0),
         dcc.Interval(id="interval",
                      interval=1000,
@@ -347,13 +349,14 @@ def display(dp_arr,
     # Define another callback that uses self_testing_mode
     @app.callback(
         Output('toggle_text', 'children'),
+        Output(component_id='slider-container', component_property='style'),
         Input('self_testing_mode', 'data')
     )
     def update_output(self_testing_mode):
         if self_testing_mode:
-            return "Self-Testing Mode: ON"
+            return "Self-Testing Mode: ON", {'display': 'none'}
         else:
-            return "Self-Testing Mode: OFF"
+            return "Self-Testing Mode: OFF", {'display': 'block'}
         
     # Saves data of clicked element inside of store-clicked-z.
     @app.callback(
@@ -377,6 +380,7 @@ def display(dp_arr,
         prevent_initial_call=True
     )
     def compare_input_and_frame(user_input, is_self_testing, current_frame, current_write):
+        # TODO: Was the isdigit comparison necessary?
         if is_self_testing and user_input != None:
             next_frame = (current_frame + 1) % len(values)
             x,y = modded[next_frame][current_write]
