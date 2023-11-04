@@ -27,11 +27,11 @@ def _indices_to_np_indices(indices):
 
     # Handle emtpy lists.
     if len(indices) == 0:
-        return ([])
+        return []
 
     # Handle 1D case.
     if isinstance(indices[0], int):
-        return (indices)
+        return indices
 
     # handle >1D case.
     index_arr = np.array(indices)
