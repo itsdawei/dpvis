@@ -153,6 +153,8 @@ class Logger:
             list of timestep dicts
             timestep: {
                 "array_name": {
+                    "annotations": array annotations (not associated to any particular cell) at this timestep,
+                    "cell_annotations": array cell annotations at this timestep,
                     "contents": array contents at this timestep,
                     Op.READ: [idx1, idx2, ...],
                     Op.WRITE: [idx1, idx2, ...],
