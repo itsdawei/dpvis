@@ -39,14 +39,14 @@ def matrix_traversal(M):
             OPT[i, j] = M[i, j] + OPT.min(indices=indices, elements=elements)
 
     # Make a copy data in OPT to prevent visualization of future operations.
-    OPT_copy = OPT.arr
+    arr = OPT.arr
 
     # Recover a traceback path.
     current = (M.shape[0] - 1, M.shape[1] - 1)
     path = [current]
     while current != (0, 0):
-        if (current[1] < 1 or OPT_copy[current[0] - 1, current[1]]
-                <= OPT_copy[current[0], current[1] - 1]):
+        if (current[1] < 1 or arr[current[0] - 1, current[1]]
+                <= arr[current[0], current[1] - 1]):
             current = (current[0] - 1, current[1])
         else:
             current = (current[0], current[1] - 1)
