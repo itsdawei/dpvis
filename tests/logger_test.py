@@ -400,6 +400,7 @@ def test_cell_annotation_log(logger):
         }
     }
 
+
 def test_multiple_cell_annotation_log(logger):
     logger.append("dp1", Op.WRITE, 0, 1)
     logger.append("dp1", Op.WRITE, 2, 3)

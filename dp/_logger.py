@@ -145,7 +145,6 @@ class Logger:
             self._logs[-1]["cell_annotations"][array_name][idx].append(
                 annotation)
 
-
     def to_timesteps(self):
         """Converts the logs to timesteps.
         
@@ -179,23 +178,32 @@ class Logger:
             if new_timestep:
                 timesteps.append({
                     name: {
-                        "annotations": log["annotations"][name].copy(),
-                        "cell_annotations": log["cell_annotations"][name].copy(),
-                        "contents": array_contents[name].copy(),
-                        Op.READ: set(),
-                        Op.WRITE: set(),
-                        Op.HIGHLIGHT: set(),
+                        "annotations":
+                            log["annotations"][name].copy(),
+                        "cell_annotations":
+                            log["cell_annotations"][name].copy(),
+                        "contents":
+                            array_contents[name].copy(),
+                        Op.READ:
+                            set(),
+                        Op.WRITE:
+                            set(),
+                        Op.HIGHLIGHT:
+                            set(),
                     } for name in self._array_shapes
                 })
                 new_timestep = False
             else:
                 # append annotations
                 for name in self._array_shapes:
-                    timesteps[-1][name]["annotations"] += log["annotations"][name]
-                    for idx, annotations in log["cell_annotations"][name].items():
+                    timesteps[-1][name]["annotations"] += log["annotations"][
+                        name]
+                    for idx, annotations in log["cell_annotations"][name].items(
+                    ):
                         if idx not in timesteps[-1][name]["cell_annotations"]:
                             timesteps[-1][name]["cell_annotations"][idx] = []
-                        timesteps[-1][name]["cell_annotations"][idx] += annotations
+                        timesteps[-1][name]["cell_annotations"][
+                            idx] += annotations
 
             if log["op"] == Op.WRITE:
                 for name, idx in log["idx"].items():

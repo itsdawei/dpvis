@@ -694,6 +694,7 @@ def test_to_timestep_2d():
         Op.HIGHLIGHT: set(),
     }.items()
 
+
 def test_annotation():
     dp = DPArray(10, "dp")
     dp[0] = 1
@@ -733,7 +734,9 @@ def test_annotation():
         Op.WRITE: {6},
         Op.HIGHLIGHT: set(),
         "annotations": [],
-        "cell_annotations": {6: ["hello cell"]}
+        "cell_annotations": {
+            6: ["hello cell"]
+        }
     }.items()
 
     dp.annotate_cell(6, "hello cell again")
@@ -745,7 +748,10 @@ def test_annotation():
         Op.WRITE: {6},
         Op.HIGHLIGHT: set(),
         "annotations": [],
-        "cell_annotations": {6: ["hello cell", "hello cell again"], 0: ["hello cell 0"]}
+        "cell_annotations": {
+            6: ["hello cell", "hello cell again"],
+            0: ["hello cell 0"]
+        }
     }.items()
 
     dp.annotate("some annotation")
@@ -756,7 +762,10 @@ def test_annotation():
         Op.WRITE: {6},
         Op.HIGHLIGHT: set(),
         "annotations": ["some annotation"],
-        "cell_annotations": {6: ["hello cell", "hello cell again"], 0: ["hello cell 0"]}
+        "cell_annotations": {
+            6: ["hello cell", "hello cell again"],
+            0: ["hello cell 0"]
+        }
     }.items()
 
     _ = dp[0]
