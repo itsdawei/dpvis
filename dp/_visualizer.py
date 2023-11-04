@@ -128,6 +128,9 @@ class Visualizer:
         self._arrays = []
         self._figure_kwargs = []
 
+        self._dependency_matrix = None
+        self._highlight_matrix = None
+
         # Create Dash App.
         self._app = Dash()
 
@@ -142,8 +145,14 @@ class Visualizer:
                   row_labels=None,
                   colorscale_name="Sunset"):
         if not isinstance(arr, DPArray):
-            raise TypeError()
-        # TODO: Check that arr have same logger.
+            raise TypeError("Array must be DPArray")
+
+        if len(self._arrays) > 0:
+            logger = self._arrays[0].logger
+            for a in self._arrays:
+                if logger is not a.logger:
+                    raise ValueError("Added arrays should have the same logger")
+
         self._arrays.append(arr)
         self._figure_kwargs.append({
             "column_labels": column_labels,
@@ -154,8 +163,11 @@ class Visualizer:
     def _parse_timesteps(self, arr):
         timesteps = arr.get_timesteps()
 
-        w, = arr.shape
-        h = 1
+        if len(arr.shape) == 1:
+            h, = arr.shape
+            w = 1
+        else:
+            h, w = arr.shape
         name = arr.array_name
         t = len(timesteps)
 
@@ -224,8 +236,11 @@ class Visualizer:
             highlight_matrix,
         ) = self._parse_timesteps(arr)
 
-        w, = arr.shape
-        h = 1
+        if len(arr.shape) == 1:
+            h, = arr.shape
+            w = 1
+        else:
+            h, w = arr.shape
 
         # Extra hovertext info:
         # <br>Value: {value_text}<br>Dependencies: {deps_text}
@@ -298,7 +313,7 @@ class Visualizer:
         }
 
     # TODO: Maybe the callbacks should be in a differnt file --- dash_callbacks.py?
-    def _attach_callbacks(self, max_timestep):
+    def _attach_callbacks(self, max_timestep, dependencies, highlights):
         graph_callbacks = {
             "output": [],
             "state": [],
@@ -306,7 +321,8 @@ class Visualizer:
         }
         graph_frames = []
         for arr in self._arrays:
-            graph_callbacks["output"].append(Output(arr.array_name, "figure"))
+            graph_callbacks["output"].append(
+                Output(arr.array_name, "figure", allow_duplicate=True))
             graph_callbacks["input"].append(Input(arr.array_name, "clickData"))
             graph_callbacks["state"].append(State(arr.array_name, "figure"))
             graph_frames.append(
@@ -317,6 +333,7 @@ class Visualizer:
             graph_callbacks["output"],
             Input("slider", "value"),
             graph_callbacks["state"],
+            prevent_initial_call=True,
         )
         def update_figure(t, *figures):
             for i, frame in enumerate(graph_frames):
@@ -327,7 +344,6 @@ class Visualizer:
                 figures[i]["data"] = [current_heatmap]
             return figures
 
-        # BUG: This doesn't work for some reason.
         # Update slider value based on store-keypress.
         # Store-keypress is changed in assets/custom.js.
         @self.app.callback(Output("slider", "value"),
@@ -341,16 +357,15 @@ class Visualizer:
             return current_value
 
         # Starts and stop interval from running.
-        @self.app.callback(
-            Output("interval", "max_intervals"),
-            [Input("play", "n_clicks"),
-             Input("stop", "n_clicks")], State("interval", "max_intervals"))
-        def control_interval(_start_clicks, _stop_clicks, _max_intervals):
+        @self.app.callback(Output("interval", "max_intervals"),
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"))
+        def control_interval(_start_clicks, _stop_clicks):
             triggered_id = ctx.triggered_id
             if triggered_id == "play":
                 return -1  # Runs interval indefinitely.
             if triggered_id == "stop":
                 return 0  # Stops interval from running.
+            return dash.no_update
 
         # Changes value of slider based on state of play/stop button.
         @self.app.callback(Output("slider", "value", allow_duplicate=True),
@@ -370,10 +385,10 @@ class Visualizer:
 
         # Tests if user input is correct.
         # TODO: Change what it compares the user input to
-        @self.app.callback(
-            Output("comparison-result", "children"),
-            [Input("user_input", "value"),
-             Input("store-clicked-z", "data")])
+        @self.app.callback(Output("comparison-result", "children"), [
+            Input("user_input", "value"),
+            Input("store-clicked-z", "data"),
+        ])
         def compare_input_and_click(user_input, click_data):
             if user_input is None or click_data is None:
                 return dash.no_update
@@ -395,54 +410,61 @@ class Visualizer:
         def display_click_data(*click_datum):
             return json.dumps(click_datum, indent=2)
 
-        # TODO: Allow multiple graphs.
-        @self.app.callback(
-            Output('dp_array', 'figure',
-                   allow_duplicate=True), [Input('dp_array', 'clickData')],
-            [State('slider', 'value'),
-             State("dp_array", "figure")],
-            prevent_initial_call=True)
-        def display_dependencies(click_data, value, figure):
+        name = self._arrays[0].array_name
+
+        @self.app.callback(graph_callbacks["output"],
+                           Input(name, "clickData"),
+                           State("slider", "value"),
+                           graph_callbacks["state"],
+                           prevent_initial_call=True)
+        def display_dependencies(click_data, value, *figures):
+            click = click_data["points"][0]
+            x = click["x"]
+            y = click["y"]
+
             # If selected cell is empty, do nothing.
-            if figure["data"][0]['z'][click_data["points"][0]['y']][
-                    click_data["points"][0]['x']] == CellType.EMPTY:
+            if figures[0]["data"][0]["z"][y][x] == CellType.EMPTY:
                 return dash.no_update
 
-            # Clear all highlight, read, and write cells to filled.
-            figure['data'][0]['z'] = list(
-                map(
-                    lambda x: list(
-                        map(
-                            lambda y: CellType.FILLED
-                            if y != CellType.EMPTY else y, x)),
-                    figure['data'][0]['z']))
+            # NOTE: Doesn't work for synchronizing multiple arrays.
+            for i in [0]:
+                # Clear all highlight, read, and write cells to filled.
+                figures[i]["data"][0]["z"] = list(
+                    map(
+                        lambda x: list(
+                            map(
+                                lambda y: CellType.FILLED
+                                if y != CellType.EMPTY else y, x)),
+                        figures[i]["data"][0]["z"]))
 
-            # Highlight selected cell.
-            figure["data"][0]['z'][click_data["points"][0]['y']][
-                click_data["points"][0]['x']] = CellType.WRITE
+                # Highlight selected cell.
+                if i == 0:
+                    figures[i]["data"][0]["z"][y][x] = CellType.WRITE
 
-            # Highlight dependencies.
-            dependencies = dependency_matrix[value][
-                click_data["points"][0]['y']][click_data["points"][0]['x']]
-            for dy, dx in dependencies:
-                figure["data"][0]['z'][dy][dx] = CellType.READ
+                # Highlight dependencies.
+                d = dependencies[i][value][y][x]
+                for dy, dx in d:
+                    figures[i]["data"][0]["z"][dy][dx] = CellType.READ
 
-            # Highlight highlights.
-            highlights = highlight_matrix[value][click_data["points"][0]['y']][
-                click_data["points"][0]['x']]
-            for hy, hx in highlights:
-                figure["data"][0]['z'][hy][hx] = CellType.HIGHLIGHT
+                # Highlight highlights.
+                h = highlights[i][value][y][x]
+                for hy, hx in h:
+                    figures[i]["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
 
-            return figure
+            return figures
 
     def show(self):
         graphs = []
         graph_heatmaps = []
+        dependencies = []
+        highlights = []
         for arr, kwargs in zip(self._arrays, self._figure_kwargs):
             fig_dict = self._create_figure(arr, **kwargs)
             graphs.append(
                 dcc.Graph(id=arr.array_name, figure=fig_dict["figure"]))
             graph_heatmaps.append(fig_dict["heatmaps"])
+            dependencies.append(fig_dict["dependency_matrix"])
+            highlights.append(fig_dict["highlight_matrix"])
 
         styles = {
             "pre": {
@@ -482,6 +504,7 @@ class Visualizer:
             html.Div(id="comparison-result")
         ])
 
-        self._attach_callbacks(len(graph_heatmaps[0]))
+        self._attach_callbacks(len(graph_heatmaps[0]), dependencies, highlights)
 
-        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)

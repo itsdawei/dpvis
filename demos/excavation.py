@@ -1,6 +1,7 @@
 import numpy as np
+from dp._visualizer import Visualizer
 
-from dp import DPArray, display
+from dp import DPArray
 
 
 def excavate(v, M):
@@ -73,7 +74,12 @@ def excavate(v, M):
     if len(row_labels) > 3:
         row_labels[3] = "3rd Mine"
     column_labels = [f"{i} Months" for i in range(M + 1)]
-    display([OPT, V], row_labels=row_labels, column_labels=column_labels)
+    visualizer = Visualizer()
+    visualizer.add_array(OPT,
+                         column_labels=column_labels,
+                         row_labels=row_labels)
+    visualizer.add_array(V)
+    visualizer.show()
 
     return OPT[v.shape[0], M]
 
