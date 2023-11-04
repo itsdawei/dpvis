@@ -42,7 +42,7 @@ def matrix_traversal(M):
     arr = OPT.arr
 
     # Recover a traceback path.
-    current = (M.shape[0] - 1, M.shape[1] - 1)
+    current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
     while current != (0, 0):
         if (current[1] < 1 or arr[current[0] - 1, current[1]]
