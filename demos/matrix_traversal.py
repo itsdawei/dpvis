@@ -1,6 +1,6 @@
 import numpy as np
 
-from dp import DPArray, display
+from dp import DPArray
 from dp._visualizer import Visualizer
 
 
@@ -43,23 +43,27 @@ def matrix_traversal(M):
             # (i, j-1).
             OPT[i, j] = V[i, j] + OPT.min(indices=indices, elements=elements)
 
-    OPT.enable_logger(False)
+    # Make a copy data in OPT to prevent visualization of future operations.
+    arr = OPT.arr
+
+    # Recover a traceback path.
     current = (M.shape[0] - 1, M.shape[1] - 1)
-    solution_set = [current]
+    path = [current]
     while current != (0, 0):
-        if (current[1] < 1 or OPT[current[0] - 1, current[1]]
-                <= OPT[current[0], current[1] - 1]):
+        if (current[1] < 1 or arr[current[0] - 1, current[1]]
+                <= arr[current[0], current[1] - 1]):
             current = (current[0] - 1, current[1])
         else:
             current = (current[0], current[1] - 1)
-        solution_set.append(current)
-    OPT.add_backtrack_solution(solution_set)
+        path.append(current)
 
-    # TODO:
-    # import verify_solution_set from verifaction
-    # verify_solution_set(OPT, index_of_final_solution, proposed_path)
-    # Print info on command line.
+    # Reverse the path so it starts at (0, 0).
+    path = path[::-1]
 
+    # Add the path to OPT so it will be displayed.
+    OPT.add_traceback_path(path)
+
+    # Add labels to the visualization.
     row_labels = [str(i) for i in range(M.shape[0])]
     column_labels = [str(j) for j in range(M.shape[1])]
     visualizer = Visualizer()

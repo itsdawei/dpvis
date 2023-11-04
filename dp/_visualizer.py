@@ -10,6 +10,7 @@ from dash import Dash, Input, Output, State, ctx, dcc, html
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp import DPArray
+from dp._index_converter import _indices_to_np_indices
 from dp._logger import Op
 
 
@@ -25,33 +26,6 @@ class CellType(IntEnum):
     HIGHLIGHT = 2
     READ = 3
     WRITE = 4
-
-
-def _index_set_to_numpy_index(indices):
-    """Get a set of tuples representing indices and convert it into numpy
-    indicies.
-
-    Example input: {(0, 1), (2, 3), (4, 5)}
-    Example output: {[0, 2, 4], [1, 3, 5]}
-
-    Args:
-        indices(set): Set of indices. It is expected that the indices are
-        integers for 1D arrays and tuples of to integers for 2D arrays.
-
-    Returns:
-        formatted_indices: outputs the given indices in numpy form:
-        a list of values on the first dimension and a list of values on
-        the second dimension.
-    """
-    # Ignore if 1-d or no indicies.
-    if len(indices) <= 0 or isinstance(list(indices)[0], int):
-        return list(indices)
-
-    x, y = [], []
-    for i in indices:
-        x.append(i[0])
-        y.append(i[1])
-    return x, y
 
 
 def _get_colorbar_kwargs(name):
@@ -162,14 +136,18 @@ class Visualizer:
 
     def _parse_timesteps(self, arr):
         timesteps = arr.get_timesteps()
-
-        if len(arr.shape) == 1:
-            h, = arr.shape
-            w = 1
-        else:
-            h, w = arr.shape
-        name = arr.array_name
         t = len(timesteps)
+
+        # Height and width of the array.
+        if len(dp_arr.shape) == 1:
+            h, w = *dp_arr.shape, 1
+        else:
+            h, w = dp_arr.shape
+
+        # Obtaining the dp_array timesteps object.
+        timesteps = dp_arr.get_timesteps()
+
+        name = arr.array_name
 
         # Constructing the color and value matrix for each timestep.
         t_color_matrix = np.empty((t, h, w))
@@ -183,10 +161,9 @@ class Visualizer:
             mask = np.isnan(c_mat.astype(float))
             c_mat[np.where(mask)] = CellType.EMPTY
             c_mat[np.where(~mask)] = CellType.FILLED
-            c_mat[_index_set_to_numpy_index(arr[Op.READ])] = CellType.READ
-            c_mat[_index_set_to_numpy_index(arr[Op.WRITE])] = CellType.WRITE
-            c_mat[_index_set_to_numpy_index(
-                arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+            c_mat[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
+            c_mat[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
+            c_mat[_indices_to_np_indices(arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_color_matrix[i] = c_mat
             t_value_matrix[i] = arr["contents"]
 
@@ -276,9 +253,9 @@ class Visualizer:
 
         # Create the figure.
         column_alias = row_alias = None
-        if column_labels is not None:
+        if column_labels:
             column_alias = {i: column_labels[i] for i in range(w)}
-        if row_labels is not None:
+        if row_labels:
             row_alias = {i: row_labels[i] for i in range(h)}
         figure = go.Figure(
             data=heatmaps[0],

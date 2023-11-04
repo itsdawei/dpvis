@@ -20,6 +20,7 @@ def fib(n):
     # Return the dp array
     return arr
 
+
 dp_array = fib(n)
 
 # Visualize.
