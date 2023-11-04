@@ -280,7 +280,7 @@ def test_min():
                 None: None
             }
         }
-    }
+    }.items()
     assert dp.logger.logs[3].items() >= {
         "op": Op.WRITE,
         "idx": {
@@ -300,7 +300,7 @@ def test_min():
             }
         }
     }.items()
-    assert dp.logger.logs[4].items() >= {
+    assert dp.logger.logs[5].items() >= {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
@@ -308,7 +308,7 @@ def test_min():
             }
         }
     }.items()
-    assert dp.logger.logs[5].items() >= {
+    assert dp.logger.logs[6].items() >= {
         "op": Op.WRITE,
         "idx": {
             "name": {
