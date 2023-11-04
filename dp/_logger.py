@@ -23,7 +23,10 @@ class Logger:
             array_name_2: {idx1: value1, idx2: value2, ...},
             ...
         },
-        "annotations": [annotation1, annotation2, ...]
+        "annotations": {
+            array_name_1: [annotation1, annotation2, ...],
+            ...
+        }
         "cell_annotations": {
             array_name_1: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
             array_name_2: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
@@ -99,7 +102,9 @@ class Logger:
                     # array_name: {idx1: value1, idx2: value2, ...}
                     name: {} for name in self._array_shapes
                 },
-                "annotations": [],
+                "annotations": {
+                    name: [] for name in self._array_shapes
+                },
                 "cell_annotations": {
                     name : {} for name in self._array_shapes
                 }
@@ -131,7 +136,7 @@ class Logger:
         
         if idx is None:
             # append to annotations
-            self._logs[-1]["annotations"].append(annotation)
+            self._logs[-1]["annotations"][array_name].append(annotation)
         else:
             # append to cell_annotations
             if idx not in self._logs[-1]["cell_annotations"][array_name]:
@@ -169,14 +174,14 @@ class Logger:
             if new_timestep:
                 timesteps.append({
                     name: {
-                        "contents": array_contents[name].copy(),
+                        "annotations": log["annotations"][name],
                         "cell_annotations": log["cell_annotations"][name],
+                        "contents": array_contents[name].copy(),
                         Op.READ: set(),
                         Op.WRITE: set(),
                         Op.HIGHLIGHT: set(),
                     } for name in self._array_shapes
                 })
-                timesteps[-1]["annotations"] = log["annotations"]
                 new_timestep = False
 
             if log["op"] == Op.WRITE:
