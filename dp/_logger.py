@@ -23,6 +23,11 @@ class Logger:
             array_name_2: {idx1: value1, idx2: value2, ...},
             ...
         },
+        "annotations": [annotation1, annotation2, ...]
+        "cell_annotations": {
+            array_name_1: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
+            array_name_2: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
+        }
     }
     note that values are None for READ and HIGHLIGHT.
 
@@ -94,11 +99,44 @@ class Logger:
                     # array_name: {idx1: value1, idx2: value2, ...}
                     name: {} for name in self._array_shapes
                 },
+                "annotations": [],
+                "cell_annotations": {
+                    name : {} for name in self._array_shapes
+                }
             })
         self._logs[-1]["idx"][array_name].update(
             dict(zip(idx_list, values) \
                 if values is not None \
                 else zip(idx_list, [None] * len(idx_list))))
+        
+    def append_annotation(self, array_name, annotation, idx=None):
+        """Appends an annotated operation to the log.
+
+        Args:
+            array_name (str): The name of the array associated with this operation.
+            operation (Operation): Type of operation performed.
+            annotation (str): Annotations associated with this operation.
+            idx (int): Index of the array.
+
+        Raises:
+            ValueError: Array name not recognized by logger. 
+            AttributeError: Appending annotations to an empty logger.
+        """
+        if array_name not in self._array_shapes:
+            raise ValueError(f"Array name {array_name} not recognized by"
+                             f"logger. Make sure logger is passed to the"
+                             f"constructor of {array_name}")
+        if len(self._logs) == 0:
+            raise AttributeError("Cannot append annotations to an empty logger.")
+        
+        if idx is None:
+            # append to annotations
+            self._logs[-1]["annotations"].append(annotation)
+        else:
+            # append to cell_annotations
+            if idx not in self._logs[-1]["cell_annotations"][array_name]:
+                self._logs[-1]["cell_annotations"][array_name][idx] = []
+            self._logs[-1]["cell_annotations"][array_name][idx].append(annotation)
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
@@ -132,11 +170,13 @@ class Logger:
                 timesteps.append({
                     name: {
                         "contents": array_contents[name].copy(),
+                        "cell_annotations": log["cell_annotations"][name],
                         Op.READ: set(),
                         Op.WRITE: set(),
                         Op.HIGHLIGHT: set(),
                     } for name in self._array_shapes
                 })
+                timesteps[-1]["annotations"] = log["annotations"]
                 new_timestep = False
 
             if log["op"] == Op.WRITE:
