@@ -377,7 +377,8 @@ def display(dp_arr,
         prevent_initial_call=True
     )
     def compare_input_and_frame(user_input, is_self_testing, current_frame, current_write):
-        if is_self_testing and user_input != None and user_input.isdigit():
+        if is_self_testing and user_input != None:
+        # if is_self_testing and user_input != None and user_input.isdigit():
             next_frame = (current_frame + 1) % len(values)
             x,y = modded[next_frame][current_write]
             test = values[next_frame][x][y]
