@@ -129,6 +129,23 @@ class DPArray:
                           != 1 else np.squeeze(indices, axis=1))
         return indices_tuples
 
+    def annotate(self, annotation):
+        """Annotates the DPArray.
+
+        Args:
+            annotation (str): The annotation to be added.
+        """
+        self._logger.append_annotation(self._array_name, annotation)
+
+    def annotate_cell(self, idx, annotation):
+        """Annotates a cell in the DPArray.
+
+        Args:
+            idx (int or tuple): The index of the cell.
+            annotation (str): The annotation to be added.
+        """
+        self._logger.append_annotation(self._array_name, annotation, idx)
+
     def get_timesteps(self):
         """Retrieve the timesteps of all DPArrays associated with this array's 
             logger.
