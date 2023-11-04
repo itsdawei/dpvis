@@ -5,6 +5,7 @@
 ### API
 
 - Add annotation on the backend (#27)
+- Traceback solution verification and visualization (#24)
 - Display dependencies on click (#25, #26)
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)

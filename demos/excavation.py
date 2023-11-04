@@ -9,8 +9,9 @@ def excavate(v, M):
     There are N mining sites, where each site has L layers. Excavating level
     l of site i returns a value of v[i][l]. It takes one month to excavate one
     level from one mining site. The layers of the site must be excavated in
-    order, i.e., you must excavate levels 0,...,l-1 before excavating level l. Find
-    the maximum value that can be obtained from excavating if you have M months to mine.
+    order, i.e., you must excavate levels 0,...,l-1 before excavating level l.
+    Find the maximum value that can be obtained from excavating if you have M
+    months to mine.
 
     Args:
         v (array-like): v[i][l] represent the value gained from excavating level
