@@ -43,6 +43,14 @@ def test_append(logger):
                 0: None
             },
             "dp2": {}
+        },
+        "annotations": {
+            "dp1": [],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
         }
     }
     logger.append("dp1", Op.READ, 1)
@@ -54,6 +62,14 @@ def test_append(logger):
                 1: None
             },
             "dp2": {},
+        },
+        "annotations": {
+            "dp1": [],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
         }
     }
     assert len(logger.logs) == 1
@@ -70,6 +86,14 @@ def test_append(logger):
             "dp2": {
                 0: None
             },
+        },
+        "annotations": {
+            "dp1": [],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
         }
     }
     assert len(logger.logs) == 1
@@ -86,6 +110,14 @@ def test_append(logger):
             "dp2": {
                 0: None
             },
+        },
+        "annotations": {
+            "dp1": [],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
         }
     }
     # Current time-step is updated.
@@ -96,6 +128,14 @@ def test_append(logger):
                 0: 1
             },
             "dp2": {},
+        },
+        "annotations": {
+            "dp1": [],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
         }
     }
     # Total time-step.
@@ -121,6 +161,12 @@ def test_same_ops_and_index(logger, op):
             "dp1": {
                 0: 2 if op == Op.WRITE else None
             },
+        },
+        "annotations": {
+            "dp1": [],
+        },
+        "cell_annotations": {
+            "dp1": {},
         }
     }
 
@@ -222,3 +268,111 @@ def test_to_timesteps_two_arrays():
         Op.WRITE: set(),
         Op.HIGHLIGHT: set(),
     }.items()
+
+def test_annotation_log(logger):
+    logger.add_array("dp2", 10)
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append("dp2", Op.WRITE, 0, 2)
+    logger.append("dp2", Op.WRITE, 1, 4)
+    logger.append_annotation("dp1", "hello")
+
+    assert len(logger.logs) == 1
+    log0 = logger.logs[-1]
+    assert log0["annotations"]["dp1"] == ["hello"]
+    assert log0["annotations"]["dp2"] == []
+
+    logger.append_annotation("dp2", "world")
+    log1 = logger.logs[-1]
+    assert log1["annotations"]["dp1"] == ["hello"]
+    assert log1["annotations"]["dp2"] == ["world"]
+
+    assert log1 == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp1": {
+                0: 1,
+                2: 3
+            },
+            "dp2": {
+                0: 2,
+                1: 4
+            },
+        },
+        "annotations": {
+            "dp1": ["hello"],
+            "dp2": ["world"]
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
+        }
+    }
+
+    logger.append("dp1", Op.READ, 1)
+    logger.append("dp2", Op.READ, 1)
+    logger.append_annotation("dp1", "hello")
+    logger.append_annotation("dp1", "world")
+    assert len(logger.logs) == 2
+    log2 = logger.logs[0]
+    assert log2 == {
+        "op": Op.WRITE,
+        "idx": {
+            "dp1": {
+                0: 1,
+                2: 3
+            },
+            "dp2": {
+                0: 2,
+                1: 4
+            },
+        },
+        "annotations": {
+            "dp1": ["hello"],
+            "dp2": ["world"]
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
+        }
+    }
+    log3 = logger.logs[1]
+    assert log3 == {
+        "op": Op.READ,
+        "idx": {
+            "dp1": {
+                1: None
+            },
+            "dp2": {
+                1: None
+            },
+        },
+        "annotations": {
+            "dp1": ["hello", "world"],
+            "dp2": []
+        },
+        "cell_annotations": {
+            "dp1": {},
+            "dp2": {}
+        }
+    }
+
+def test_annotation_timestep(logger):
+    logger.add_array("dp2", 10)
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append("dp2", Op.WRITE, 0, 2)
+    logger.append("dp2", Op.WRITE, 1, 4)
+    logger.append_annotation("dp1", "hello")
+    logger.append_annotation("dp1", "world")
+    logger.append_annotation("dp1", "!!!")
+
+    timesteps0 = logger.to_timesteps()
+    assert len(timesteps0) == 1
+    assert timesteps0[0]["dp1"]["annotations"] == ["hello", "world", "!!!"]
+    assert timesteps0[0]["dp2"]["annotations"] == []
+
+def test_cell_annotation_log(logger):
+    logger.append("dp1", Op.WRITE, 0, 1)
+    logger.append("dp1", Op.WRITE, 2, 3)
+    logger.append_annotation("dp1", "hello", 0)
