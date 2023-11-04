@@ -4,6 +4,7 @@
 
 ### API
 
+- Implemented self testing of values (#22)
 - Display dependencies on click (#25, #26)
 - Migrate from graph objects to Dash (#20)
 - Enable arrow keys for time travel (#20)
