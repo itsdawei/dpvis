@@ -110,8 +110,8 @@ def display(dp_arr,
         contents[np.where(~mask)] = CellType.FILLED
         contents[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
         contents[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[_indices_to_np_indices(arr_data[Op.HIGHLIGHT]
-                                        )] = CellType.HIGHLIGHT
+        contents[_indices_to_np_indices(
+            arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
 
     colors = np.array(colors)

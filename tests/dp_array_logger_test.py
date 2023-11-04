@@ -343,7 +343,6 @@ def test_min():
         else:
             name = {highlight_ans[i]: None}
         assert dp.logger.logs[next_log + 1].items() >= {
-
             "op": Op.HIGHLIGHT,
             "idx": {
                 "name": name
