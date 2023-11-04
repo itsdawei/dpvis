@@ -269,6 +269,7 @@ def test_to_timesteps_two_arrays():
         Op.HIGHLIGHT: set(),
     }.items()
 
+
 def test_annotation_log(logger):
     logger.add_array("dp2", 10)
     logger.append("dp1", Op.WRITE, 0, 1)
@@ -357,6 +358,7 @@ def test_annotation_log(logger):
         }
     }
 
+
 def test_annotation_timestep(logger):
     logger.add_array("dp2", 10)
     logger.append("dp1", Op.WRITE, 0, 1)
@@ -371,6 +373,7 @@ def test_annotation_timestep(logger):
     assert len(timesteps0) == 1
     assert timesteps0[0]["dp1"]["annotations"] == ["hello", "world", "!!!"]
     assert timesteps0[0]["dp2"]["annotations"] == []
+
 
 def test_cell_annotation_log(logger):
     logger.append("dp1", Op.WRITE, 0, 1)

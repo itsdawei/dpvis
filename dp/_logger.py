@@ -106,14 +106,14 @@ class Logger:
                     name: [] for name in self._array_shapes
                 },
                 "cell_annotations": {
-                    name : {} for name in self._array_shapes
+                    name: {} for name in self._array_shapes
                 }
             })
         self._logs[-1]["idx"][array_name].update(
             dict(zip(idx_list, values) \
                 if values is not None \
                 else zip(idx_list, [None] * len(idx_list))))
-        
+
     def append_annotation(self, array_name, annotation, idx=None):
         """Appends an annotated operation to the log.
 
@@ -132,8 +132,9 @@ class Logger:
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
         if len(self._logs) == 0:
-            raise AttributeError("Cannot append annotations to an empty logger.")
-        
+            raise AttributeError(
+                "Cannot append annotations to an empty logger.")
+
         if idx is None:
             # append to annotations
             self._logs[-1]["annotations"][array_name].append(annotation)
@@ -141,7 +142,8 @@ class Logger:
             # append to cell_annotations
             if idx not in self._logs[-1]["cell_annotations"][array_name]:
                 self._logs[-1]["cell_annotations"][array_name][idx] = []
-            self._logs[-1]["cell_annotations"][array_name][idx].append(annotation)
+            self._logs[-1]["cell_annotations"][array_name][idx].append(
+                annotation)
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
