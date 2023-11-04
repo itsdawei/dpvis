@@ -4,7 +4,6 @@ from dp._logger import Op
 from dp._index_converter import _indices_to_np_indices
 
 
-@staticmethod
 def verify_traceback_path(arr, path):
     """Verify that solution is a valid traceback solution of the DPArray.
 
@@ -24,10 +23,13 @@ def verify_traceback_path(arr, path):
             Incomplete paths (in which an unexplored predecessor
             still exists) are incorrect. Paths that contain the
             index of an unitialized element are incorrect.
+    
+    Raises:
+        ValueError: Path is empty (length 0).
     """
     # Handle trivial case.
     if len(path) == 0:
-        return True
+        raise ValueError("Path must be non-empty.")
 
     # Ensure each index in the path is initialized.
     if not np.all(arr.occupied_arr[_indices_to_np_indices(path)]):
