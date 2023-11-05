@@ -403,6 +403,7 @@ def display(dp_arr,
         next_frame = (current_frame + 1) % len(values)
         x, y = modded[next_frame][current_write]
         if is_self_testing:
+            existing_figure["data"][0]["z"] = colors[current_frame]
             existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
             return existing_figure
         # TODO: Is the following line necessary?
