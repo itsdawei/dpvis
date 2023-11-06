@@ -39,7 +39,7 @@ Ready to contribute? Here's how to set up your environment for local development
 
    ```bash
    poetry shell
-   python demo/knapsack.py
+   python demos/knapsack.py
    exit
    ```
 
