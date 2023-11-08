@@ -101,8 +101,10 @@ class Visualizer:
         self._arrays = []
         self._figure_kwargs = []
 
-        self._dependency_matrix = None
-        self._highlight_matrix = None
+        self._figure_list = []
+        self._dependency_list = []
+        self._highlight_list = []
+        self._heatmap_list = []
 
         # Create Dash App.
         self._app = Dash()
@@ -281,12 +283,19 @@ class Visualizer:
         figure.update_coloraxes(showscale=False)
         figure.update_layout(clickmode="event+select")
 
+
+
         return {
             "figure": figure,
             "heatmaps": heatmaps,
             "dependency_matrix": dependency_matrix,
             "highlight_matrix": highlight_matrix,
         }
+
+        self._figure_list.append(figure)
+        self._heatmap_list.append(heatmaps)
+        self._dependency_list.append(dependency_matrix)
+        self._highlight_list.append(highlight_matrix)
 
     # TODO: Maybe the callbacks should be in a differnt file --- dash_callbacks.py?
     def _attach_callbacks(self, max_timestep, dependencies, highlights):
