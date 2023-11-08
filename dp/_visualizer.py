@@ -70,364 +70,28 @@ def _get_colorbar_kwargs(name):
     }
 
 
-def display(dp_arr,
-            start=0,
-            show=True,
-            colorscale_name="Sunset",
+def display(array,
             row_labels=None,
-            column_labels=None):
+            column_labels=None,
+            colorscale_name="Sunset"):
     """Creates an interactive display of the given DPArray in a webpage.
 
     Using a slider and buttons for time travel. This UI has interactive
     testing as well as the figure.
 
     Args:
-        dp_arr (DPArray): DParray to be visualized.
-        start (int): Starting interation to be displayed. Defaults to 0.
-        show (bool): Whether to show figure. Defaults to true.
-        colorscale_name (str): Name of built-in colorscales in plotly. See
-            plotly.colors.named_colorscales for the built-in colorscales.
+        array (DPArray): DParray to be visualized.
         row_labels (list of str): Row labels of the DP array.
         column_labels (list of str): Column labels of the DP array.
-
-    Returns:
-        Plotly figure: Figure of DPArray as it is filled out by the recurrence.
+        colorscale_name (str): Name of built-in colorscales in plotly. See
+            plotly.colors.named_colorscales for the built-in colorscales.
     """
-    # Height and width of the array.
-    if len(dp_arr.shape) == 1:
-        h, w = *dp_arr.shape, 1
-    else:
-        h, w = dp_arr.shape
-    # Obtaining the dp_array timesteps object.
-    timesteps = dp_arr.get_timesteps()
-
-    # Getting the data values for each frame
-    modded = []
-    colors = []
-    for t in timesteps:
-        arr_data = t[dp_arr.array_name]
-        contents = np.copy(t[dp_arr.array_name]["contents"])
-        mask = np.isnan(contents.astype(float))
-        contents[np.where(mask)] = CellType.EMPTY
-        contents[np.where(~mask)] = CellType.FILLED
-        contents[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
-        contents[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[_indices_to_np_indices(
-            arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
-        colors.append(contents)
-        modded.append(list(t[dp_arr.array_name][Op.WRITE]))
-
-    colors = np.array(colors)
-    values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
-
-    # Plotly heatmaps requires 2d input as data.
-    if values.ndim == 2:
-        colors = np.expand_dims(colors, 1)
-        values = np.expand_dims(values, 1)
-        modded = [[(idx, 0) for idx in t] for t in modded]
-
-    # Creates a hovertext array with the same shape as arr.
-    # For each frame and cell in arr, populate the corresponding hovertext
-    # cell with its value and dependencies.
-    hovertext = np.full_like(values, "")
-    dependency_matrix = np.empty_like(values)
-    highlight_matrix = np.empty_like(values)
-    for t, timestep in enumerate(timesteps):
-        for write_idx in timestep[dp_arr.array_name][Op.WRITE]:
-            # Fill in corresponding hovertext cell with value and dependencies.
-            # An added dimension is needed if arr is a 1D Array.
-            if isinstance(write_idx, int):
-                hovertext[t:, 0, write_idx] = (
-                    f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
-                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}")
-                dependency_matrix[t:, 0, write_idx] = timestep[
-                    dp_arr.array_name][Op.READ]
-                highlight_matrix[t:, 0, write_idx] = timestep[
-                    dp_arr.array_name][Op.HIGHLIGHT]
-            else:
-                hovertext[(np.s_[t:], *write_idx)] = (
-                    f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
-                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}")
-                dependency_matrix[(
-                    np.s_[t:],
-                    *write_idx)] = timestep[dp_arr.array_name][Op.READ]
-                highlight_matrix[(
-                    np.s_[t:],
-                    *write_idx)] = timestep[dp_arr.array_name][Op.HIGHLIGHT]
-
-    # Create heatmaps.
-    values = np.where(np.isnan(values.astype(float)), "", values)
-    heatmaps = [
-        go.Heatmap(
-            z=color,
-            text=val,
-            texttemplate="%{text}",
-            textfont={"size": 20},
-            customdata=hovertext[i],
-            hovertemplate="<b>%{y} %{x}</b><br>%{customdata}" +
-            "<extra></extra>",
-            **_get_colorbar_kwargs(colorscale_name),
-            xgap=1,
-            ygap=1,
-        ) for i, (val, color) in enumerate(zip(values, colors))
-    ]
-
-    # Rendering all the frames for the animation.
-    frames = [
-        go.Frame(name=f"Frame {i}", data=heatmap)
-        for i, heatmap in enumerate(heatmaps)
-    ]
-
-    # Create the figure.
-    row_alias = column_alias = None
-    if column_labels:
-        column_alias = {i: column_labels[i] for i in range(w)}
-    if row_labels:
-        row_alias = {i: row_labels[i] for i in range(h)}
-    fig = go.Figure(
-        data=heatmaps[start],
-        layout=go.Layout(
-            title=dp_arr.array_name,
-            title_x=0.5,
-            xaxis={
-                "tickmode": "array",
-                "tickvals": np.arange(values.shape[2]),
-                "labelalias": column_alias,
-                "showgrid": False,
-                "zeroline": False,
-            },
-            yaxis={
-                "tickmode": "array",
-                "tickvals": np.arange(values.shape[1]),
-                "labelalias": row_alias,
-                "showgrid": False,
-                "zeroline": False
-            },
-        ),
-        frames=frames,
-    )
-    fig.update_coloraxes(showscale=False)
-    fig.update_layout(clickmode="event+select")
-
-    styles = {"pre": {"border": "thin lightgrey solid", "overflowX": "scroll"}}
-
-    # Create Dash App.
-    app = Dash()
-
-    # Creates layout for dash app.
-    app.layout = html.Div([
-        dcc.Graph(id="graph", figure=fig),
-        html.Div(id="slider-container",
-                 children=[
-                     dcc.Slider(min=0,
-                                max=len(values) - 1,
-                                step=1,
-                                value=0,
-                                updatemode="drag",
-                                id="my_slider"),
-                     html.Button("Play", id="play"),
-                     html.Button("Stop", id="stop"),
-                 ],
-                 style={"display": "block"}),
-        dcc.Store(id="store-keypress", data=0),
-        dcc.Interval(id="interval",
-                     interval=1000,
-                     n_intervals=0,
-                     max_intervals=0),
-        html.Div([
-            dcc.Markdown("""
-                **SELF-TESTING**
-            """),
-            html.Pre(id="click-data", style=styles["pre"]),
-        ],
-                 className="three columns"),
-        dcc.Input(id="user_input", type="number", placeholder="",
-                  debounce=True),
-        html.Div(id="user_output"),
-        dcc.Store(id="store-clicked-z"),
-        html.Div(id="comparison-result"),
-        html.Button("Test Myself!", id="self_test_button"),
-        html.Div(id="next_prompt"),
-        dcc.Store(id="self_testing_mode", data=False),
-        html.Div(id="toggle_text", children="Self-Testing Mode: OFF"),
-        dcc.Store(id="current_write", data=0)
-    ])
-
-    # Callback to change current heatmap based on slider value
-    @app.callback(Output("graph", "figure"), Output("current_write", "data"),
-                  [Input("my_slider", "value")], [State("graph", "figure")])
-    def update_figure(value, existing_figure):
-        # Get the heatmap for the current slider value.
-        current_heatmap = heatmaps[value]
-
-        # Update the figure data.
-        existing_figure["data"] = [current_heatmap]
-
-        return existing_figure, 0
-
-    # Update slider value baed on store-keypress.
-    # Store-keypress is changed in assets/custom.js.
-    @app.callback(Output("my_slider", "value"), Input("store-keypress", "data"),
-                  State("my_slider", "value"))
-    def update_slider(key_data, current_value):
-        if key_data == 37:  # Left arrow
-            current_value = max(current_value - 1, 0)
-        elif key_data == 39:  # Right arrow
-            current_value = min(current_value + 1, len(values) - 1)
-        return current_value
-
-    # Starts and stop interval from running.
-    @app.callback(Output("interval", "max_intervals"),
-                  [Input("play", "n_clicks"),
-                   Input("stop", "n_clicks")])
-    def control_interval(_start_clicks, _stop_clicks):
-        ctx = dash.callback_context
-        if not ctx.triggered_id:
-            return dash.no_update
-        if "play" in ctx.triggered_id:
-            return -1  # Runs interval indefinitely.
-        if "stop" in ctx.triggered_id:
-            return 0  # Stops interval from running.
-        return dash.no_update
-
-    # Changes value of slider based on state of play/stop button.
-    @app.callback(Output("my_slider", "value", allow_duplicate=True),
-                  Input("interval", "n_intervals"),
-                  State("my_slider", "value"),
-                  State("self_testing_mode", "data"),
-                  prevent_initial_call=True)
-    def button_iterate_slider(_n_intervals, value, self_testing_mode):
-        if not self_testing_mode:
-            new_value = (value + 1) % (len(values))
-            return new_value
-        return value
-
-    # Displays user input after pressing enter.
-    @app.callback(
-        Output("user_output", "children"),
-        Input("user_input", "value"),
-    )
-    def update_output(user_input):
-        return f"User Input: {user_input}"
-
-    @app.callback(Output("click-data", "children"), Input("graph", "clickData"))
-    def display_click_data(click_data):
-        return json.dumps(click_data, indent=2)
-
-    # Define callback to toggle self_testing_mode
-    @app.callback(Output("self_testing_mode", "data"),
-                  Input("self_test_button", "n_clicks"),
-                  State("self_testing_mode", "data"))
-    def toggle_self_testing_mode(n_clicks, self_testing_mode):
-        if n_clicks is None:
-            return dash.no_update  # Do not update if the button wasn"t clicked
-        return not self_testing_mode  # Toggle the state
-
-    # Define another callback that uses self_testing_mode
-    @app.callback(
-        Output("toggle_text", "children"),
-        Output(component_id="slider-container", component_property="style"),
-        Input("self_testing_mode", "data"))
-    def toggle_playback_and_slider(self_testing_mode):
-        if self_testing_mode:
-            return "Self-Testing Mode: ON", {"display": "none"}
-        return "Self-Testing Mode: OFF", {"display": "block"}
-
-    # Saves data of clicked element inside of store-clicked-z.
-    @app.callback(
-        [Output("store-clicked-z", "data"),
-         Output("user_input", "value")], Input("graph", "clickData"))
-    def save_click_data(click_data):
-        if click_data is not None:
-            z_value = click_data["points"][0]["text"]
-            return {"z_value": z_value}, ""
-        return dash.no_update, dash.no_update
-
-    # Tests if user input is correct.
-    @app.callback(Output("comparison-result", "children"),
-                  Output("current_write", "data", allow_duplicate=True),
-                  Output("graph", "figure", allow_duplicate=True), [
-                      Input("user_input", "value"),
-                      Input("self_testing_mode", "data"),
-                      State("my_slider", "value"),
-                      State("current_write", "data"),
-                      State("graph", "figure")
-                  ],
-                  prevent_initial_call=True)
-    def compare_input_and_frame(user_input, is_self_testing, current_frame,
-                                current_write, existing_figure):
-        # TODO: Was the isdigit comparison necessary?
-        if is_self_testing and user_input is not None and user_input != "":
-            next_frame = (current_frame + 1) % len(values)
-            x, y = modded[next_frame][current_write]
-            test = values[next_frame][x][y]
-            next_write = (current_write + 1) % len(modded[next_frame])
-
-            if int(user_input) == int(test):
-                existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
-                return "Correct!", (next_write), existing_figure
-            return "Incorrect!", (current_write), existing_figure
-        return dash.no_update
-
-    @app.callback(Output("graph", "figure", allow_duplicate=True),
-                  Input("current_write", "data"),
-                  Input("my_slider", "value"),
-                  Input("self_testing_mode", "data"),
-                  State("graph", "figure"),
-                  prevent_initial_call=True)
-    def highlight_testing_cell(current_write, current_frame, is_self_testing,
-                               existing_figure):
-        next_frame = (current_frame + 1) % len(values)
-        x, y = modded[next_frame][current_write]
-        if is_self_testing:
-            # TODO: If we want to isolate the cell being tested, we need to remove this line
-            # But, if this line is removed, then we have issues with the dependencies function.
-            existing_figure["data"][0]["z"] = colors[current_frame]
-            existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
-            return existing_figure
-        # TODO: Is the following line necessary?
-        # existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
-        return dash.no_update
-
-    @app.callback(Output("graph", "figure",
-                         allow_duplicate=True), [Input("graph", "clickData")],
-                  [State("my_slider", "value"),
-                   State("graph", "figure")],
-                  Input("self_testing_mode", "data"),
-                  prevent_initial_call=True)
-    def display_dependencies(click_data, value, figure, self_testing_mode):
-        # If in self_testing_mode or selected cell is empty, do nothing.
-        if self_testing_mode or figure["data"][0]["z"][click_data["points"][0][
-                "y"]][click_data["points"][0]["x"]] == CellType.EMPTY:
-            return dash.no_update
-
-        # Clear all highlight, read, and write cells to filled.
-        figure["data"][0]["z"] = list(
-            map(
-                lambda x: list(
-                    map(lambda y: CellType.FILLED
-                        if y != CellType.EMPTY else y, x)),
-                figure["data"][0]["z"]))
-        # Highlight selected cell.
-        figure["data"][0]["z"][click_data["points"][0]["y"]][
-            click_data["points"][0]["x"]] = CellType.WRITE
-
-        # Highlight dependencies.
-        dependencies = dependency_matrix[value][click_data["points"][0]["y"]][
-            click_data["points"][0]["x"]]
-        for dy, dx in dependencies:
-            figure["data"][0]["z"][dy][dx] = CellType.READ
-
-        # Highlight highlights.
-        highlights = highlight_matrix[value][click_data["points"][0]["y"]][
-            click_data["points"][0]["x"]]
-        for hy, hx in highlights:
-            figure["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
-
-        return figure
-
-    if show:
-        app.run_server(debug=True, use_reloader=True)
+    visualizer = Visualizer()
+    visualizer.add_array(array,
+                         column_labels=column_labels,
+                         row_labels=row_labels,
+                         colorscale_name=colorscale_name)
+    visualizer.show()
 
 
 class Visualizer:
@@ -435,7 +99,7 @@ class Visualizer:
     def __init__(self):
         self._arrays = []
 
-        self._primary_name = ""
+        self._primary_name = None
         self._graph_metadata = {}
         """
         {
@@ -508,27 +172,27 @@ class Visualizer:
         t_highlight_matrix = np.empty((t, h, w), dtype="object")
         modded = []
         for i, timestep in enumerate(timesteps):
-            arr = timestep[name]
-            c_mat = np.copy(arr["contents"])
+            t_arr = timestep[name]
+            c_mat = np.copy(t_arr["contents"])
             mask = np.isnan(c_mat.astype(float))
             c_mat[np.where(mask)] = CellType.EMPTY
             c_mat[np.where(~mask)] = CellType.FILLED
-            c_mat[_indices_to_np_indices(arr[Op.READ])] = CellType.READ
-            c_mat[_indices_to_np_indices(arr[Op.WRITE])] = CellType.WRITE
+            c_mat[_indices_to_np_indices(t_arr[Op.READ])] = CellType.READ
+            c_mat[_indices_to_np_indices(t_arr[Op.WRITE])] = CellType.WRITE
             c_mat[_indices_to_np_indices(
-                arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+                t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_color_matrix[i] = c_mat
-            t_value_matrix[i] = arr["contents"]
-            modded.append(list(timestep[arr.array_name][Op.WRITE]))
+            t_value_matrix[i] = t_arr["contents"]
+            modded.append(list(t_arr[Op.WRITE]))
 
-            for write_idx in arr[Op.WRITE]:
+            for write_idx in t_arr[Op.WRITE]:
                 if isinstance(write_idx, int):
                     write_idx = (0, write_idx)
                 indices = (np.s_[i:], *write_idx)
                 # Fill in corresponding hovertext cell with value and dependencies.
-                # An added dimension is needed if arr is a 1D Array.
-                t_read_matrix[indices] = timestep[name][Op.READ]
-                t_highlight_matrix[indices] = timestep[name][Op.HIGHLIGHT]
+                # An added dimension is needed if t_arr is a 1D Array.
+                t_read_matrix[indices] = t_arr[Op.READ]
+                t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
 
         t_color_matrix = np.array(t_color_matrix)
         t_value_matrix = np.array(t_value_matrix)
@@ -653,16 +317,15 @@ class Visualizer:
         }
 
     def _attach_callbacks(self):
-        heatmaps = self._graph_metadata[self._primary_name]["t_heatmap_matrix"]
+        heatmaps = self._graph_metadata[self._primary_name]["t_heatmaps"]
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
-        modded = self._graph_metadata[self._primary_name]["t_modded"]
+        modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
         colors = self._graph_metadata[self._primary_name]["t_color_matrix"]
 
         # Callback to change current heatmap based on slider value
         @self.app.callback(Output("graph", "figure"),
-                           Output("current_write",
-                                  "data"), [Input("my_slider", "value")],
-                           [State("graph", "figure")])
+                           Output("current-write", "data"),
+                           Input("slider", "value"), State("graph", "figure"))
         def update_figure(value, existing_figure):
             # Get the heatmap for the current slider value.
             current_heatmap = heatmaps[value]
@@ -674,9 +337,9 @@ class Visualizer:
 
         # Update slider value baed on store-keypress.
         # Store-keypress is changed in assets/custom.js.
-        @self.app.callback(Output("my_slider", "value"),
+        @self.app.callback(Output("slider", "value"),
                            Input("store-keypress", "data"),
-                           State("my_slider", "value"))
+                           State("slider", "value"))
         def update_slider(key_data, current_value):
             if key_data == 37:  # Left arrow
                 current_value = max(current_value - 1, 0)
@@ -685,10 +348,8 @@ class Visualizer:
             return current_value
 
         # Starts and stop interval from running.
-        @self.app.callback(
-            Output("interval", "max_intervals"),
-            [Input("play", "n_clicks"),
-             Input("stop", "n_clicks")])
+        @self.app.callback(Output("interval", "max_intervals"),
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"))
         def control_interval(_start_clicks, _stop_clicks):
             ctx = dash.callback_context
             if not ctx.triggered_id:
@@ -700,10 +361,10 @@ class Visualizer:
             return dash.no_update
 
         # Changes value of slider based on state of play/stop button.
-        @self.app.callback(Output("my_slider", "value", allow_duplicate=True),
+        @self.app.callback(Output("slider", "value", allow_duplicate=True),
                            Input("interval", "n_intervals"),
-                           State("my_slider", "value"),
-                           State("self_testing_mode", "data"),
+                           State("slider", "value"),
+                           State("self-testing-mode", "data"),
                            prevent_initial_call=True)
         def button_iterate_slider(_n_intervals, value, self_testing_mode):
             if not self_testing_mode:
@@ -713,8 +374,8 @@ class Visualizer:
 
         # Displays user input after pressing enter.
         @self.app.callback(
-            Output("user_output", "children"),
-            Input("user_input", "value"),
+            Output("user-output", "children"),
+            Input("user-input", "value"),
         )
         def update_output(user_input):
             return f"User Input: {user_input}"
@@ -725,9 +386,9 @@ class Visualizer:
             return json.dumps(click_data, indent=2)
 
         # Define callback to toggle self_testing_mode
-        @self.app.callback(Output("self_testing_mode", "data"),
-                           Input("self_test_button", "n_clicks"),
-                           State("self_testing_mode", "data"))
+        @self.app.callback(Output("self-testing-mode", "data"),
+                           Input("self-test-button", "n_clicks"),
+                           State("self-testing-mode", "data"))
         def toggle_self_testing_mode(n_clicks, self_testing_mode):
             if n_clicks is None:
                 return dash.no_update  # Do not update if the button wasn"t clicked
@@ -735,18 +396,18 @@ class Visualizer:
 
         # Define another callback that uses self_testing_mode
         @self.app.callback(
-            Output("toggle_text", "children"),
+            Output("toggle-text", "children"),
             Output(component_id="slider-container", component_property="style"),
-            Input("self_testing_mode", "data"))
+            Input("self-testing-mode", "data"))
         def toggle_playback_and_slider(self_testing_mode):
             if self_testing_mode:
                 return "Self-Testing Mode: ON", {"display": "none"}
             return "Self-Testing Mode: OFF", {"display": "block"}
 
         # Saves data of clicked element inside of store-clicked-z.
-        @self.app.callback(
-            [Output("store-clicked-z", "data"),
-             Output("user_input", "value")], Input("graph", "clickData"))
+        @self.app.callback(Output("store-clicked-z", "data"),
+                           Output("user-input", "value"),
+                           Input("graph", "clickData"))
         def save_click_data(click_data):
             if click_data is not None:
                 z_value = click_data["points"][0]["text"]
@@ -755,15 +416,14 @@ class Visualizer:
 
         # Tests if user input is correct.
         @self.app.callback(Output("comparison-result", "children"),
-                           Output("current_write", "data",
+                           Output("current-write", "data",
                                   allow_duplicate=True),
-                           Output("graph", "figure", allow_duplicate=True), [
-                               Input("user_input", "value"),
-                               Input("self_testing_mode", "data"),
-                               State("my_slider", "value"),
-                               State("current_write", "data"),
-                               State("graph", "figure")
-                           ],
+                           Output("graph", "figure", allow_duplicate=True),
+                           Input("user-input", "value"),
+                           Input("self-testing-mode", "data"),
+                           State("slider", "value"),
+                           State("current-write", "data"),
+                           State("graph", "figure"),
                            prevent_initial_call=True)
         def compare_input_and_frame(user_input, is_self_testing, current_frame,
                                     current_write, existing_figure):
@@ -781,9 +441,9 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
-                           Input("current_write", "data"),
-                           Input("my_slider", "value"),
-                           Input("self_testing_mode", "data"),
+                           Input("current-write", "data"),
+                           Input("slider", "value"),
+                           Input("self-testing-mode", "data"),
                            State("graph", "figure"),
                            prevent_initial_call=True)
         def highlight_testing_cell(current_write, current_frame,
@@ -800,61 +460,63 @@ class Visualizer:
             # existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
             return dash.no_update
 
-        @self.app.callback(
-            Output("graph", "figure",
-                   allow_duplicate=True), [Input("graph", "clickData")],
-            [State("my_slider", "value"),
-             State("graph", "figure")],
-            Input("self_testing_mode", "data"),
-            prevent_initial_call=True)
-        def display_dependencies(click_data, value, *figures):
+        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
+                           Input("graph", "clickData"),
+                           Input("self-testing-mode", "data"),
+                           State("slider", "value"),
+                           State("graph", "figure"),
+                           prevent_initial_call=True)
+        def display_dependencies(click_data, value, figure, self_testing_mode):
+            # If in self_testing_mode or selected cell is empty, do nothing.
+            if self_testing_mode or figure["data"][0]["z"][click_data["points"][0][
+                    "y"]][click_data["points"][0]["x"]] == CellType.EMPTY:
+                return dash.no_update
             click = click_data["points"][0]
             x = click["x"]
             y = click["y"]
 
             # If selected cell is empty, do nothing.
-            if figures[0]["data"][0]["z"][y][x] == CellType.EMPTY:
+            if figure["data"][0]["z"][y][x] == CellType.EMPTY:
                 return dash.no_update
 
-            # NOTE: Doesn't work for synchronizing multiple arrays.
-            for i in [0]:
-                # Clear all highlight, read, and write cells to filled.
-                figures[i]["data"][0]["z"] = list(
-                    map(
-                        lambda x: list(
-                            map(
-                                lambda y: CellType.FILLED
-                                if y != CellType.EMPTY else y, x)),
-                        figures[i]["data"][0]["z"]))
+            # Clear all highlight, read, and write cells to filled.
+            figure["data"][0]["z"] = list(
+                map(
+                    lambda x: list(
+                        map(
+                            lambda y: CellType.FILLED
+                            if y != CellType.EMPTY else y, x)),
+                    figure["data"][0]["z"]))
 
-                # Highlight selected cell.
-                if i == 0:
-                    figures[i]["data"][0]["z"][y][x] = CellType.WRITE
+            # Highlight selected cell.
+            figure["data"][0]["z"][y][x] = CellType.WRITE
 
-                # Highlight dependencies.
-                deps = self._graph_metadata[
-                    self._primary_name]["t_dependency_matrix"]
-                d = deps[value][y][x]
-                for dy, dx in d:
-                    figures[i]["data"][0]["z"][dy][dx] = CellType.READ
+            # Highlight dependencies.
+            deps = self._graph_metadata[
+                self._primary_name]["t_dependency_matrix"]
+            d = deps[value][y][x]
+            for dy, dx in d:
+                figure["data"][0]["z"][dy][dx] = CellType.READ
 
-                # Highlight highlights.
-                high = self._graph_metadata[
-                    self._primary_name]["t_highlight_matrix"]
-                h = high[i][value][y][x]
-                for hy, hx in h:
-                    figures[i]["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
+            # Highlight highlights.
+            high = self._graph_metadata[
+                self._primary_name]["t_highlight_matrix"]
+            h = high[value][y][x]
+            for hy, hx in h:
+                figure["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
 
-            return figures
+            return figure
 
     def show(self):
         graphs = []
-        for name, graph_metadata in self._graph_metadata:
-            arr = graph_metadata["arr"]
-            kwargs = graph_metadata["figure_kwargs"]
+        for name in self._graph_metadata:
+            arr = self._graph_metadata[name]["arr"]
+            kwargs = self._graph_metadata[name]["figure_kwargs"]
             self._create_figure(arr, **kwargs)
 
-            graphs.append(dcc.Graph(id=name, figure=graph_metadata["figure"]))
+            graphs.append(
+                dcc.Graph(id="graph",
+                          figure=self._graph_metadata[name]["figure"]))
 
         styles = {
             "pre": {
@@ -863,11 +525,11 @@ class Visualizer:
             }
         }
 
-        max_timestep = len(self._graph_metadata[self._graph_metadata.keys()[0]]
-                           ["t_heatmaps"]) - 1
+        max_timestep = len(
+            list(self._graph_metadata.values())[0]["t_heatmaps"]) - 1
 
         self.app.layout = html.Div([
-            *graphs,
+            graphs[0],
             html.Div(id="slider-container",
                      children=[
                          dcc.Slider(min=0,
@@ -885,8 +547,6 @@ class Visualizer:
                          interval=1000,
                          n_intervals=0,
                          max_intervals=0),
-            html.Button("Dash_Play", id="play"),
-            html.Button("Dash_Stop", id="stop"),
             html.Div([
                 dcc.Markdown("""
                     **SELF-TESTING**
@@ -894,11 +554,11 @@ class Visualizer:
                 html.Pre(id="click-data", style=styles["pre"]),
             ],
                      className="three columns"),
-            dcc.Input(id="user_input",
+            dcc.Input(id="user-input",
                       type="number",
                       placeholder="",
                       debounce=True),
-            html.Div(id="user_output"),
+            html.Div(id="user-output"),
             dcc.Store(id="store-clicked-z"),
             html.Div(id="comparison-result"),
             html.Button("Test Myself!", id="self-test-button"),
