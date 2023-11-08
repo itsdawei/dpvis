@@ -216,7 +216,7 @@ def display(dp_arr,
     # Creates layout for dash app.
     app.layout = html.Div([
         dcc.Graph(id="graph", figure=fig),
-        html.Div(id='slider-container',
+        html.Div(id="slider-container",
                  children=[
                      dcc.Slider(min=0,
                                 max=len(values) - 1,
@@ -309,28 +309,28 @@ def display(dp_arr,
     def update_output(user_input):
         return f"User Input: {user_input}"
 
-    @app.callback(Output('click-data', 'children'), Input('graph', 'clickData'))
+    @app.callback(Output("click-data", "children"), Input("graph", "clickData"))
     def display_click_data(click_data):
         return json.dumps(click_data, indent=2)
 
     # Define callback to toggle self_testing_mode
-    @app.callback(Output('self_testing_mode', 'data'),
-                  Input('self_test_button', 'n_clicks'),
-                  State('self_testing_mode', 'data'))
+    @app.callback(Output("self_testing_mode", "data"),
+                  Input("self_test_button", "n_clicks"),
+                  State("self_testing_mode", "data"))
     def toggle_self_testing_mode(n_clicks, self_testing_mode):
         if n_clicks is None:
-            return dash.no_update  # Do not update if the button wasn't clicked
+            return dash.no_update  # Do not update if the button wasn"t clicked
         return not self_testing_mode  # Toggle the state
 
     # Define another callback that uses self_testing_mode
     @app.callback(
-        Output('toggle_text', 'children'),
-        Output(component_id='slider-container', component_property='style'),
-        Input('self_testing_mode', 'data'))
+        Output("toggle_text", "children"),
+        Output(component_id="slider-container", component_property="style"),
+        Input("self_testing_mode", "data"))
     def toggle_playback_and_slider(self_testing_mode):
         if self_testing_mode:
-            return "Self-Testing Mode: ON", {'display': 'none'}
-        return "Self-Testing Mode: OFF", {'display': 'block'}
+            return "Self-Testing Mode: ON", {"display": "none"}
+        return "Self-Testing Mode: OFF", {"display": "block"}
 
     # Saves data of clicked element inside of store-clicked-z.
     @app.callback(
@@ -370,7 +370,7 @@ def display(dp_arr,
 
     @app.callback(Output("graph", "figure", allow_duplicate=True),
                   Input("current_write", "data"),
-                  Input('my_slider', "value"),
+                  Input("my_slider", "value"),
                   Input("self_testing_mode", "data"),
                   State("graph", "figure"),
                   prevent_initial_call=True)
@@ -379,6 +379,8 @@ def display(dp_arr,
         next_frame = (current_frame + 1) % len(values)
         x, y = modded[next_frame][current_write]
         if is_self_testing:
+            # TODO: If we want to isolate the cell being tested, we need to remove this line
+            # But, if this line is removed, then we have issues with the dependencies function.
             existing_figure["data"][0]["z"] = colors[current_frame]
             existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
             return existing_figure
