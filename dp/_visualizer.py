@@ -95,23 +95,31 @@ def display(array,
 
 
 class Visualizer:
+    """Visualizer class.
+
+    Attributes:
+        _arrays (list of DPArray): Contains the values of the DP array.
+        _primary_name (string): Name of the primary array.
+        _graph_metadata (dict): A dictionary of metadata for each array.
+            The dictionary has the following format:
+            {
+                array_name: {
+                        arr: ,
+                        t_dependency: , 
+                        t_highlight: , 
+                        t_heatmap: ,
+                        ...
+                },
+                ...
+            }
+    """
 
     def __init__(self):
+        """Initialize Visualizer object."""
         self._arrays = []
 
         self._primary_name = None
         self._graph_metadata = {}
-        """
-        {
-        "array_name": {
-                arr:,
-                t_figure:, 
-                t_dependency:, 
-                t_highlight:, 
-                t_heatmap:,
-            }
-        }
-        """
 
         # Create Dash App.
         self._app = Dash()
