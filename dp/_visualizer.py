@@ -388,40 +388,40 @@ def display(dp_arr,
         # existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
         return dash.no_update
 
-    @app.callback(Output('graph', 'figure',
-                         allow_duplicate=True), [Input('graph', 'clickData')],
-                  [State('my_slider', 'value'),
+    @app.callback(Output("graph", "figure",
+                         allow_duplicate=True), [Input("graph", "clickData")],
+                  [State("my_slider", "value"),
                    State("graph", "figure")],
-                  Input('self_testing_mode', 'data'),
+                  Input("self_testing_mode", "data"),
                   prevent_initial_call=True)
     def display_dependencies(click_data, value, figure, self_testing_mode):
         # If in self_testing_mode or selected cell is empty, do nothing.
-        if self_testing_mode or figure["data"][0]['z'][click_data["points"][0][
-                'y']][click_data["points"][0]['x']] == CellType.EMPTY:
+        if self_testing_mode or figure["data"][0]["z"][click_data["points"][0][
+                "y"]][click_data["points"][0]["x"]] == CellType.EMPTY:
             return dash.no_update
 
         # Clear all highlight, read, and write cells to filled.
-        figure['data'][0]['z'] = list(
+        figure["data"][0]["z"] = list(
             map(
                 lambda x: list(
                     map(lambda y: CellType.FILLED
                         if y != CellType.EMPTY else y, x)),
-                figure['data'][0]['z']))
+                figure["data"][0]["z"]))
         # Highlight selected cell.
-        figure["data"][0]['z'][click_data["points"][0]['y']][
-            click_data["points"][0]['x']] = CellType.WRITE
+        figure["data"][0]["z"][click_data["points"][0]["y"]][
+            click_data["points"][0]["x"]] = CellType.WRITE
 
         # Highlight dependencies.
-        dependencies = dependency_matrix[value][click_data["points"][0]['y']][
-            click_data["points"][0]['x']]
+        dependencies = dependency_matrix[value][click_data["points"][0]["y"]][
+            click_data["points"][0]["x"]]
         for dy, dx in dependencies:
-            figure["data"][0]['z'][dy][dx] = CellType.READ
+            figure["data"][0]["z"][dy][dx] = CellType.READ
 
         # Highlight highlights.
-        highlights = highlight_matrix[value][click_data["points"][0]['y']][
-            click_data["points"][0]['x']]
+        highlights = highlight_matrix[value][click_data["points"][0]["y"]][
+            click_data["points"][0]["x"]]
         for hy, hx in highlights:
-            figure["data"][0]['z'][hy][hx] = CellType.HIGHLIGHT
+            figure["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
 
         return figure
 
