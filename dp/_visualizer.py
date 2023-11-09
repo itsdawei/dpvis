@@ -439,7 +439,7 @@ def display(dp_arr,
             clicked_y = click_data["points"][0]["y"]
             for dy, dx in dependencies:
                 if dy == clicked_y and dx == clicked_x:
-                    return "Correct Dependency!"
+                    return "Correct dependency clicked!"
             return "Incorrect dependency clicked!"
         return dash.no_update
 
