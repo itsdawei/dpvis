@@ -218,7 +218,7 @@ class Visualizer:
             "t_value_matrix": t_value_matrix,
             "t_read_matrix": t_read_matrix,
             "t_write_matrix": t_write_matrix,
-            "t_highlight_matirx": t_highlight_matrix,
+            "t_highlight_matrix": t_highlight_matrix,
             "t_modded_matrix": modded,
         }
         self._graph_metadata[arr.array_name] = {
@@ -481,7 +481,7 @@ class Visualizer:
                            State("slider", "value"),
                            State("graph", "figure"),
                            prevent_initial_call=True)
-        def display_dependencies(click_data, value, figure, self_testing_mode):
+        def display_dependencies(click_data, self_testing_mode, value, figure):
             # If in self_testing_mode or selected cell is empty, do nothing.
             if self_testing_mode or figure["data"][0]["z"][click_data["points"][0][
                     "y"]][click_data["points"][0]["x"]] == CellType.EMPTY:
@@ -508,7 +508,7 @@ class Visualizer:
 
             # Highlight dependencies.
             deps = self._graph_metadata[
-                self._primary_name]["t_dependency_matrix"]
+                self._primary_name]["t_read_matrix"]
             d = deps[value][y][x]
             for dy, dx in d:
                 figure["data"][0]["z"][dy][dx] = CellType.READ
@@ -591,5 +591,5 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=True, use_reloader=True)
-        self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=False, use_reloader=True)
