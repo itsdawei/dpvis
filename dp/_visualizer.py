@@ -143,6 +143,7 @@ class Visualizer:
         if self._primary_name is None:
             self._primary_name = arr.array_name
 
+        self._arrays.append(arr)
         logger = self._arrays[0].logger
         if logger is not arr.logger:
             raise ValueError("Added arrays should have the same"
