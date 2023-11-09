@@ -105,8 +105,8 @@ class Visualizer:
             {
                 array_name: {
                         arr: ,
-                        t_dependency: , 
-                        t_highlight: , 
+                        t_dependency: ,
+                        t_highlight: ,
                         t_heatmap: ,
                         ...
                 },
@@ -134,6 +134,8 @@ class Visualizer:
                   column_labels=None,
                   row_labels=None,
                   colorscale_name="Sunset"):
+        """Add a DPArray to the visualization."""
+        # TODO: @David Docstrings
         if not isinstance(arr, DPArray):
             raise TypeError("Array must be DPArray")
 
@@ -141,12 +143,10 @@ class Visualizer:
         if self._primary_name is None:
             self._primary_name = arr.array_name
 
-        if len(self._arrays) > 0:
-            logger = self._arrays[0].logger
-            for a in self._arrays:
-                if logger is not a.logger:
-                    raise ValueError("Added arrays should have the same"
-                                     "logger")
+        logger = self._arrays[0].logger
+        if logger is not arr.logger:
+            raise ValueError("Added arrays should have the same"
+                             "logger")
 
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
@@ -158,6 +158,7 @@ class Visualizer:
         }
 
     def _parse_timesteps(self, arr):
+        """Parse the timesteps of the logger."""
         timesteps = arr.get_timesteps()
         t = len(timesteps)
 
@@ -197,8 +198,8 @@ class Visualizer:
                 if isinstance(write_idx, int):
                     write_idx = (0, write_idx)
                 indices = (np.s_[i:], *write_idx)
-                # Fill in corresponding hovertext cell with value and dependencies.
-                # An added dimension is needed if t_arr is a 1D Array.
+                # Fill in corresponding hovertext cell with value and
+                # dependencies.
                 t_read_matrix[indices] = t_arr[Op.READ]
                 t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
 
@@ -230,6 +231,7 @@ class Visualizer:
                        row_labels=None,
                        column_labels=None):
         """Create a figure for an array.
+
         Args:
             arr (DPArray): DParray to be visualized.
             show (bool): Whether to show figure. Defaults to true.
@@ -237,8 +239,10 @@ class Visualizer:
                 plotly.colors.named_colorscales for the built-in colorscales.
             row_labels (list of str): Row labels of the DP array.
             column_labels (list of str): Column labels of the DP array.
+
         Returns:
-            Plotly figure: Figure of DPArray as it is filled out by the recurrence.
+            Plotly figure: Figure of DPArray as it is filled out by the
+                recurrence.
         """
         self._parse_timesteps(arr)
 
@@ -325,6 +329,7 @@ class Visualizer:
         }
 
     def _attach_callbacks(self):
+        """Attach callbacks."""
         heatmaps = self._graph_metadata[self._primary_name]["t_heatmaps"]
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
         modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
@@ -405,7 +410,8 @@ class Visualizer:
         # Define another callback that uses self_testing_mode
         @self.app.callback(
             Output("toggle-text", "children"),
-            Output(component_id="slider-container", component_property="style"),
+            Output(component_id="slider-container",
+                   component_property="style"),
             Input("self-testing-mode", "data"))
         def toggle_playback_and_slider(self_testing_mode):
             if self_testing_mode:
@@ -516,15 +522,21 @@ class Visualizer:
             return figure
 
     def show(self):
+        """Visualizes the DPArrays.
+
+        Create the figures for each DPArray, attach the callbacks, and render
+        the graph.
+        """
         graphs = []
-        for name in self._graph_metadata:
-            arr = self._graph_metadata[name]["arr"]
-            kwargs = self._graph_metadata[name]["figure_kwargs"]
+        for name, metadata in self._graph_metadata.items():
+            arr = metadata["arr"]
+            kwargs = metadata["figure_kwargs"]
             self._create_figure(arr, **kwargs)
 
-            graphs.append(
-                dcc.Graph(id="graph",
-                          figure=self._graph_metadata[name]["figure"]))
+            # We need to re-accesss graph_metadata because self._create_figure
+            # changes its value.
+            figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
+            graphs.append(dcc.Graph(id="graph", figure=figure))
 
         styles = {
             "pre": {
@@ -561,7 +573,7 @@ class Visualizer:
                 """),
                 html.Pre(id="click-data", style=styles["pre"]),
             ],
-                     className="three columns"),
+                className="three columns"),
             dcc.Input(id="user-input",
                       type="number",
                       placeholder="",
