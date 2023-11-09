@@ -249,7 +249,8 @@ def display(dp_arr,
         html.Div(id="next_prompt"),
         dcc.Store(id="self_testing_mode", data=False),
         html.Div(id="toggle_text", children="Self-Testing Mode: OFF"),
-        dcc.Store(id="current_write", data=0)
+        dcc.Store(id="current_write", data=0),
+        html.Div(id="dependency_test")
     ])
 
     # Callback to change current heatmap based on slider value
@@ -424,6 +425,23 @@ def display(dp_arr,
             figure["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
 
         return figure
+    
+    @app.callback(Output("dependency_test","children"),
+                  Input("graph","clickData"),
+                  State("self_testing_mode", "data"),
+                  State("my_slider","value"))
+    def test_dependencies(click_data, self_testing_mode,current_frame):
+        if self_testing_mode:
+            next_frame = (current_frame + 1) % len(values)
+            x, y = modded[next_frame][0]
+            dependencies = dependency_matrix[current_frame + 1][x][y]
+            clicked_x = click_data["points"][0]["x"]
+            clicked_y = click_data["points"][0]["y"]
+            for dy, dx in dependencies:
+                if dy == clicked_y and dx == clicked_x:
+                    return "Correct Dependency!"
+            return "Incorrect dependency clicked!"
+        return dash.no_update
 
     if show:
         app.run_server(debug=True, use_reloader=True)
