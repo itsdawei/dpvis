@@ -21,7 +21,7 @@ def _indices_to_np_indices(indices):
             indices, the second element corresponds with second dimension
             indices, and so on.
     """
-    # Formate indices as a list.
+    # Format indices as a list.
     if not isinstance(indices, list):
         indices = list(indices)
 
@@ -34,8 +34,7 @@ def _indices_to_np_indices(indices):
         return indices
 
     # handle >1D case.
-    index_arr = np.array(indices)
-    return tuple(index_arr[:, i].tolist() for i in range(index_arr.shape[1]))
+    return tuple(zip(*indices))
 
 
 def _nd_slice_to_indices(arr, nd_slice):

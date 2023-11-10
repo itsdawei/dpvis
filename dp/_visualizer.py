@@ -1,4 +1,5 @@
 """This file provides the visualizer for the DPArray class."""
+import copy
 import json
 from enum import IntEnum
 
@@ -6,6 +7,7 @@ import dash
 import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, ctx, dcc, html
+from numpy_groupies import aggregate
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp import DPArray
@@ -121,13 +123,10 @@ class Visualizer:
         self._primary_name = None
         self._graph_metadata = {}
 
+        self._testing_mode = False
+
         # Create Dash App.
         self._app = Dash()
-
-    @property
-    def app(self):
-        """Returns the Dash app object."""
-        return self._app
 
     def add_array(self,
                   arr,
@@ -183,15 +182,14 @@ class Visualizer:
         modded = []
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
-            c_mat = np.copy(t_arr["contents"])
-            mask = np.isnan(c_mat.astype(float))
-            c_mat[np.where(mask)] = CellType.EMPTY
-            c_mat[np.where(~mask)] = CellType.FILLED
-            c_mat[_indices_to_np_indices(t_arr[Op.READ])] = CellType.READ
-            c_mat[_indices_to_np_indices(t_arr[Op.WRITE])] = CellType.WRITE
-            c_mat[_indices_to_np_indices(
+            mask = np.isnan(t_arr["contents"].astype(float))
+            t_color_matrix[i][np.where(~mask)] = CellType.FILLED
+            t_color_matrix[i][_indices_to_np_indices(
+                t_arr[Op.READ])] = CellType.READ
+            t_color_matrix[i][_indices_to_np_indices(
+                t_arr[Op.WRITE])] = CellType.WRITE
+            t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
-            t_color_matrix[i] = c_mat
             t_value_matrix[i] = t_arr["contents"]
             modded.append(list(t_arr[Op.WRITE]))
 
@@ -264,6 +262,7 @@ class Visualizer:
                               t_value_matrix.astype("str"))
         deps_text = np.where(t_read_matrix == set(), "{}",
                              t_read_matrix.astype("str"))
+        # deps_text = np.where(t_read_matrix == None, "{}", t_read_matrix)
         extra_hovertext = np.char.add("<br>Value: ", value_text)
         extra_hovertext = np.char.add(extra_hovertext, "<br>Dependencies: ")
         extra_hovertext = np.char.add(extra_hovertext, deps_text)
@@ -336,99 +335,92 @@ class Visualizer:
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
         modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
         colors = self._graph_metadata[self._primary_name]["t_color_matrix"]
+        main_figure = self._graph_metadata[self._primary_name]["figure"]
 
         # Callback to change current heatmap based on slider value
         @self.app.callback(Output("graph", "figure"),
-                           Output("current-write", "data"),
-                           Input("slider", "value"), State("graph", "figure"))
-        def update_figure(value, existing_figure):
-            # Get the heatmap for the current slider value.
-            current_heatmap = heatmaps[value]
-
-            # Update the figure data.
-            existing_figure["data"] = [current_heatmap]
-
-            return existing_figure, 0
+                           Input("slider", "value"),
+                           prevent_initial_call=True)
+        def update_figure(t):
+            return main_figure.frames[t]
 
         # Update slider value baed on store-keypress.
         # Store-keypress is changed in assets/custom.js.
         @self.app.callback(Output("slider", "value"),
                            Input("store-keypress", "data"),
-                           State("slider", "value"))
-        def update_slider(key_data, current_value):
-            if key_data == 37:  # Left arrow
-                current_value = max(current_value - 1, 0)
-            elif key_data == 39:  # Right arrow
-                current_value = min(current_value + 1, len(values) - 1)
-            return current_value
-
-        # Starts and stop interval from running.
-        @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"))
-        def control_interval(_start_clicks, _stop_clicks):
-            ctx = dash.callback_context
-            if not ctx.triggered_id:
-                return dash.no_update
-            if "play" in ctx.triggered_id:
-                return -1  # Runs interval indefinitely.
-            if "stop" in ctx.triggered_id:
-                return 0  # Stops interval from running.
-            return dash.no_update
-
-        # Changes value of slider based on state of play/stop button.
-        @self.app.callback(Output("slider", "value", allow_duplicate=True),
                            Input("interval", "n_intervals"),
                            State("slider", "value"),
-                           State("self-testing-mode", "data"),
                            prevent_initial_call=True)
-        def button_iterate_slider(_n_intervals, value, self_testing_mode):
-            if not self_testing_mode:
-                new_value = (value + 1) % (len(values))
-                return new_value
-            return value
+        def update_slider(key_data, _n_interval, t):
+            """Changes value of slider based on state of play/stop button."""
+            if ctx.triggered_id == "interval":
+                if not self._testing_mode:
+                    return (t + 1) % len(values)
+                return t
+            if key_data in [37, 39]:
+                return (t + key_data - 38) % len(values)
+            return dash.no_update
 
-        # Displays user input after pressing enter.
-        @self.app.callback(
-            Output("user-output", "children"),
-            Input("user-input", "value"),
-        )
-        def update_output(user_input):
-            return f"User Input: {user_input}"
+        @self.app.callback(Output("interval", "max_intervals"),
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"))
+        def play_pause_playback(_start_clicks, _stop_clicks):
+            """Starts and stop interval from running."""
+            triggered_id = ctx.triggered_id
+            if triggered_id == "play":
+                return -1  # Runs interval indefinitely.
+            if triggered_id == "stop":
+                return 0  # Stops interval from running.
+            return dash.no_update
 
         @self.app.callback(Output("click-data", "children"),
                            Input("graph", "clickData"))
         def display_click_data(click_data):
+            # TODO: Remove this
             return json.dumps(click_data, indent=2)
 
         # Define callback to toggle self_testing_mode
-        @self.app.callback(Output("self-testing-mode", "data"),
-                           Input("self-test-button", "n_clicks"),
-                           State("self-testing-mode", "data"))
-        def toggle_self_testing_mode(n_clicks, self_testing_mode):
-            if n_clicks is None:
-                return dash.no_update  # Do not update if the button wasn"t clicked
-            return not self_testing_mode  # Toggle the state
+        # @self.app.callback(Output("self-testing-mode", "data"),
+        #                    Input("self-test-button", "n_clicks"),
+        #                    State("self-testing-mode", "data"))
+        # def toggle_self_testing_mode(n_clicks, self_testing_mode):
+        #     # Do not update if the button wasn"t clicked
+        #     if n_clicks is None:
+        #         return dash.no_update
+        #     return not self_testing_mode  # Toggle the state
 
-        # Define another callback that uses self_testing_mode
+        @self.app.callback(Output("interval",
+                                  "max_intervals",
+                                  allow_duplicate=True),
+                           Input("self-test-button", "n_clicks"),
+                           prevent_initial_call=True)
+        def pause_playback_in_testing_mode(_n_clicks):
+            """Pauses the playback in testing mode."""
+            return 0
+
         @self.app.callback(
             Output("toggle-text", "children"),
-            Output(component_id="slider-container",
-                   component_property="style"),
-            Input("self-testing-mode", "data"))
-        def toggle_playback_and_slider(self_testing_mode):
-            if self_testing_mode:
+            Output(component_id="slider-container", component_property="style"),
+            Input("self-test-button", "n_clicks"))
+        def toggle_layout(n_clicks):
+            if n_clicks % 2:
                 return "Self-Testing Mode: ON", {"display": "none"}
             return "Self-Testing Mode: OFF", {"display": "block"}
 
-        # Saves data of clicked element inside of store-clicked-z.
-        @self.app.callback(Output("store-clicked-z", "data"),
-                           Output("user-input", "value"),
-                           Input("graph", "clickData"))
-        def save_click_data(click_data):
-            if click_data is not None:
-                z_value = click_data["points"][0]["text"]
-                return {"z_value": z_value}, ""
-            return dash.no_update, dash.no_update
+        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
+                           Input("self-test-button", "n_clicks"),
+                           State("slider", "value"),
+                           prevent_initial_call=True)
+        def toggle_testing_mode(n_clicks, t):
+            # Update state variable to set testing mode.
+            self._testing_mode = n_clicks % 2 == 1
+            fig = copy.deepcopy(main_figure.frames[t])
+            if self._testing_mode:
+                if t == len(values):
+                    # TODO: notify user that there is no more testing
+                    return dash.no_update
+                x, y = modded[t + 1][0]
+                fig.data[0]["z"][x][y] = CellType.WRITE
+            return fig
 
         # Tests if user input is correct.
         @self.app.callback(Output("comparison-result", "children"),
@@ -436,15 +428,14 @@ class Visualizer:
                                   allow_duplicate=True),
                            Output("graph", "figure", allow_duplicate=True),
                            Input("user-input", "value"),
-                           Input("self-testing-mode", "data"),
                            State("slider", "value"),
                            State("current-write", "data"),
                            State("graph", "figure"),
                            prevent_initial_call=True)
-        def compare_input_and_frame(user_input, is_self_testing, current_frame,
-                                    current_write, existing_figure):
+        def compare_input_and_frame(user_input, current_frame, current_write,
+                                    existing_figure):
             # TODO: Was the isdigit comparison necessary?
-            if is_self_testing and user_input is not None and user_input != "":
+            if self._testing_mode and user_input != "":
                 next_frame = (current_frame + 1) % len(values)
                 x, y = modded[next_frame][current_write]
                 test = values[next_frame][x][y]
@@ -457,35 +448,15 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
-                           Input("current-write", "data"),
-                           Input("slider", "value"),
-                           Input("self-testing-mode", "data"),
-                           State("graph", "figure"),
-                           prevent_initial_call=True)
-        def highlight_testing_cell(current_write, current_frame,
-                                   is_self_testing, existing_figure):
-            next_frame = (current_frame + 1) % len(values)
-            x, y = modded[next_frame][current_write]
-            if is_self_testing:
-                # TODO: If we want to isolate the cell being tested, we need to remove this line
-                # But, if this line is removed, then we have issues with the dependencies function.
-                existing_figure["data"][0]["z"] = colors[current_frame]
-                existing_figure["data"][0]["z"][x][y] = CellType.HIGHLIGHT
-                return existing_figure
-            # TODO: Is the following line necessary?
-            # existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
-            return dash.no_update
-
-        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("graph", "clickData"),
-                           Input("self-testing-mode", "data"),
                            State("slider", "value"),
                            State("graph", "figure"),
                            prevent_initial_call=True)
-        def display_dependencies(click_data, self_testing_mode, value, figure):
+        def display_dependencies(click_data, value, figure):
             # If in self_testing_mode or selected cell is empty, do nothing.
-            if self_testing_mode or figure["data"][0]["z"][click_data["points"][0][
-                    "y"]][click_data["points"][0]["x"]] == CellType.EMPTY:
+            if self._testing_mode or figure["data"][0]["z"][
+                    click_data["points"][0]["y"]][click_data["points"][0]
+                                                  ["x"]] == CellType.EMPTY:
                 return dash.no_update
             click = click_data["points"][0]
             x = click["x"]
@@ -508,8 +479,7 @@ class Visualizer:
             figure["data"][0]["z"][y][x] = CellType.WRITE
 
             # Highlight dependencies.
-            deps = self._graph_metadata[
-                self._primary_name]["t_read_matrix"]
+            deps = self._graph_metadata[self._primary_name]["t_read_matrix"]
             d = deps[value][y][x]
             for dy, dx in d:
                 figure["data"][0]["z"][dy][dx] = CellType.READ
@@ -575,17 +545,15 @@ class Visualizer:
                 """),
                 html.Pre(id="click-data", style=styles["pre"]),
             ],
-                className="three columns"),
+                     className="three columns"),
             dcc.Input(id="user-input",
                       type="number",
                       placeholder="",
                       debounce=True),
-            html.Div(id="user-output"),
             dcc.Store(id="store-clicked-z"),
             html.Div(id="comparison-result"),
             html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
-            dcc.Store(id="self-testing-mode", data=False),
             html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
             dcc.Store(id="current-write", data=0)
         ])
@@ -594,3 +562,8 @@ class Visualizer:
 
         self.app.run_server(debug=True, use_reloader=True)
         # self.app.run_server(debug=False, use_reloader=True)
+
+    @property
+    def app(self):
+        """Returns the Dash app object."""
+        return self._app
