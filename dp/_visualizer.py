@@ -221,6 +221,7 @@ class Visualizer:
             "t_highlight_matrix": t_highlight_matrix,
             "t_modded_matrix": modded,
         }
+
         self._graph_metadata[arr.array_name] = {
             **self._graph_metadata[arr.array_name],
             **metadata
@@ -352,7 +353,11 @@ class Visualizer:
         # Update slider value baed on store-keypress.
         # Store-keypress is changed in assets/custom.js.
         @self.app.callback(Output("slider", "value"),
-                           Input("store-keypress", "data"),
+                           Input( t_color_matrix = np.empty((t, h, w))
+        t_value_matrix = np.empty((t, h, w))
+        t_read_matrix = np.empty((t, h, w), dtype="object")
+        t_write_matrix = np.empty((t, h, w), dtype="object")
+        t_highlight_matri"store-keypress", "data"),
                            State("slider", "value"))
         def update_slider(key_data, current_value):
             if key_data == 37:  # Left arrow
