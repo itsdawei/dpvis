@@ -3,6 +3,7 @@
 ## 0.1.0
 
 ### API
+- Traceback path and solution construction in demos (#30)
 - Traceback solution verification and visualization (#24)
 - Display dependencies on click (#25, #26)
 - Migrate from graph objects to Dash (#20)
