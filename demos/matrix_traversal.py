@@ -44,16 +44,21 @@ def matrix_traversal(M):
     # Recover a traceback path.
     current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
+    solution = []
     while current != (0, 0):
         if (current[1] < 1 or arr[current[0] - 1, current[1]]
                 <= arr[current[0], current[1] - 1]):
             current = (current[0] - 1, current[1])
+            solution.append("up")
         else:
             current = (current[0], current[1] - 1)
+            solution.append("right")
         path.append(current)
 
-    # Reverse the path so it starts at (0, 0).
+    # Reverse the path and solution so they starts at (0, 0).
     path = path[::-1]
+    solution = solution[::-1]
+    print(solution)
 
     # Add the path to OPT so it will be displayed.
     OPT.add_traceback_path(path)

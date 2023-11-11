@@ -62,6 +62,8 @@ def excavate(v, M):
     current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
     solution = []  # Format: tuple(mining site, optimal number of levels to mine).
+    
+    # While the path is not fully constructed.
     while current != (0, 0):
         i = current[0]  # Mines still available.
         m = current[1]  # Months still available.
@@ -86,6 +88,7 @@ def excavate(v, M):
     solution = solution[::-1]
     OPT.add_traceback_path(path)
 
+    # Define labels.
     row_labels = [f"{i}th Mine" for i in range(v.shape[0] + 1)]
     if len(row_labels) > 0:
         row_labels[0] = "0th Mine"
