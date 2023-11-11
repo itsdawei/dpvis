@@ -16,7 +16,8 @@ def knapsack(items, capacity):
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val).
     for idx, item in enumerate(items):
         for rem in range(capacity + 1):
-            # Base case: 0 value if there are no items left or if there is no space.
+            # Base case: 0 value if there are no items left or
+            # if there is no space.
             if idx == 0 or rem == 0:
                 continue
             # Normal case: There is an item to add and space remaining.
@@ -32,7 +33,8 @@ def knapsack(items, capacity):
                 OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
             # Edge case: adding item is not possible.
             elif idx >= 1 and rem - item[0] < 0:
-                OPT[idx, rem] = OPT.max(indices=[(idx - 1, rem)], elements=[OPT[idx - 1, rem]])
+                OPT[idx, rem] = OPT.max(indices=[(idx - 1, rem)],
+                                        elements=[OPT[idx - 1, rem]])
 
     # Make a copy of data in OPT to prevent visualization of future operations.
     arr = OPT.arr
@@ -47,7 +49,7 @@ def knapsack(items, capacity):
         idx = current[0]
         rem = current[1]
         item = items[idx]
-        
+
         # Find the predecessor of current.
         # Case 1: there is capacity for item
         if idx >= 1 and rem - item[0] >= 0:

@@ -1,7 +1,6 @@
 import numpy as np
 
 from dp import DPArray, display
-from dp._verify import verify_traceback_path
 
 
 def matrix_traversal(M):

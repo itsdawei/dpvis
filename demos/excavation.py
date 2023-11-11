@@ -61,28 +61,29 @@ def excavate(v, M):
     # Recover a traceback path.
     current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
-    solution = []  # Format: tuple(mining site, optimal number of levels to mine).
-    
+    solution = [
+    ]  # Format: tuple(mining site, optimal number of levels to mine).
+
     # While the path is not fully constructed.
     while current != (0, 0):
         i = current[0]  # Mines still available.
         m = current[1]  # Months still available.
 
         # Find the predecessor of current
-        next = (i - 1, m)  # Mine no levels of mine i
+        next_mine = (i - 1, m)  # Mine no levels of mine i
         next_value = arr[i - 1, m] + np.sum(v[i - 1, :0])
         solution_entry = (i, 0)
 
         # Variable l is the number of levels to mine at mining site i.
         for l in range(1, m + 1):
             if next_value < arr[i - 1, m - l] + np.sum(v[i - 1, :l]):
-                next = (i - 1, m - l)  # Mine l levels of mine i
+                next_mine = (i - 1, m - l)  # Mine l levels of mine i
                 next_value = arr[i - 1, m - l] + np.sum(v[i - 1, :l])
                 solution_entry = (i, l)
 
-        path.append(next)
+        path.append(next_mine)
         solution.append(solution_entry)
-        current = next
+        current = next_mine
 
     path = path[::-1]
     solution = solution[::-1]
