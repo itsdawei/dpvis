@@ -124,9 +124,12 @@ class Visualizer:
         self._graph_metadata = {}
 
         self._testing_mode = False
+        self._total_test = 0
+        self._cur_test = 0
 
         # Create Dash App.
-        self._app = Dash()
+        self._app = Dash(name="dynvis: Dynamic Program Visualization",
+                         prevent_initial_callbacks=True)
 
     def add_array(self,
                   arr,
@@ -338,9 +341,7 @@ class Visualizer:
         main_figure = self._graph_metadata[self._primary_name]["figure"]
 
         # Callback to change current heatmap based on slider value
-        @self.app.callback(Output("graph", "figure"),
-                           Input("slider", "value"),
-                           prevent_initial_call=True)
+        @self.app.callback(Output("graph", "figure"), Input("slider", "value"))
         def update_figure(t):
             return main_figure.frames[t]
 
@@ -349,8 +350,7 @@ class Visualizer:
         @self.app.callback(Output("slider", "value"),
                            Input("store-keypress", "data"),
                            Input("interval", "n_intervals"),
-                           State("slider", "value"),
-                           prevent_initial_call=True)
+                           State("slider", "value"))
         def update_slider(key_data, _n_interval, t):
             """Changes value of slider based on state of play/stop button."""
             if ctx.triggered_id == "interval":
@@ -388,11 +388,9 @@ class Visualizer:
         #         return dash.no_update
         #     return not self_testing_mode  # Toggle the state
 
-        @self.app.callback(Output("interval",
-                                  "max_intervals",
-                                  allow_duplicate=True),
-                           Input("self-test-button", "n_clicks"),
-                           prevent_initial_call=True)
+        @self.app.callback(
+            Output("interval", "max_intervals", allow_duplicate=True),
+            Input("self-test-button", "n_clicks"))
         def pause_playback_in_testing_mode(_n_clicks):
             """Pauses the playback in testing mode."""
             return 0
@@ -408,8 +406,7 @@ class Visualizer:
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("self-test-button", "n_clicks"),
-                           State("slider", "value"),
-                           prevent_initial_call=True)
+                           State("slider", "value"))
         def toggle_testing_mode(n_clicks, t):
             # Update state variable to set testing mode.
             self._testing_mode = n_clicks % 2 == 1
@@ -418,80 +415,85 @@ class Visualizer:
                 if t == len(values):
                     # TODO: notify user that there is no more testing
                     return dash.no_update
+                # Total number of tests.
+                self._total_test = len(modded[t + 1])
+                self._cur_test = 0
+
+                # Highlight the cell that is being tested on.
                 x, y = modded[t + 1][0]
                 fig.data[0]["z"][x][y] = CellType.WRITE
             return fig
 
-        # Tests if user input is correct.
-        @self.app.callback(Output("comparison-result", "children"),
-                           Output("current-write", "data",
-                                  allow_duplicate=True),
-                           Output("graph", "figure", allow_duplicate=True),
-                           Input("user-input", "value"),
-                           State("slider", "value"),
-                           State("current-write", "data"),
-                           State("graph", "figure"),
-                           prevent_initial_call=True)
-        def compare_input_and_frame(user_input, current_frame, current_write,
-                                    existing_figure):
-            # TODO: Was the isdigit comparison necessary?
-            if self._testing_mode and user_input != "":
-                next_frame = (current_frame + 1) % len(values)
-                x, y = modded[next_frame][current_write]
-                test = values[next_frame][x][y]
-                next_write = (current_write + 1) % len(modded[next_frame])
+        @self.app.callback(
+            Output("comparison-result", "children"),
+            Output("graph", "figure", allow_duplicate=True),
+            # Trigger this callback every time "enter" is pressed.
+            Input("user-input", "n_submit"),
+            State("user-input", "value"),
+            State("slider", "value"),
+        )
+        def compare_input_and_frame(_, user_input, t):
+            """Tests if user input is correct."""
+            if not self._testing_mode or user_input == "":
+                return dash.no_update
+            x, y = modded[t + 1][self._cur_test]
+            test = values[t + 1][x][y]
 
-                if int(user_input) == int(test):
-                    existing_figure["data"][0]["z"][x][y] = CellType.EMPTY
-                    return "Correct!", (next_write), existing_figure
-                return "Incorrect!", (current_write), existing_figure
-            return dash.no_update
+            if user_input == test:
+                fig = copy.deepcopy(main_figure.frames[t])
+                self._cur_test += 1
+                if self._cur_test < self._total_test:
+                    # Highlight next test.
+                    x, y = modded[t + 1][0]
+                    fig.data[0]["z"][x][y] = CellType.WRITE
+                else:
+                    # TODO: What should we do when we are done with the test on the current timestep?
+                    pass
+                return "Correct!", fig
+
+            return "Incorrect!", dash.no_update
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("graph", "clickData"),
-                           State("slider", "value"),
-                           State("graph", "figure"),
-                           prevent_initial_call=True)
-        def display_dependencies(click_data, value, figure):
-            # If in self_testing_mode or selected cell is empty, do nothing.
-            if self._testing_mode or figure["data"][0]["z"][
-                    click_data["points"][0]["y"]][click_data["points"][0]
-                                                  ["x"]] == CellType.EMPTY:
+                           State("slider", "value"))
+        def display_dependencies(click_data, t):
+            # Skip this call back in testing mode.
+            if self._testing_mode:
                 return dash.no_update
-            click = click_data["points"][0]
-            x = click["x"]
-            y = click["y"]
+
+            x = click_data["points"][0]["x"]
+            y = click_data["points"][0]["y"]
+
+            fig = copy.deepcopy(main_figure.frames[t])
 
             # If selected cell is empty, do nothing.
-            if figure["data"][0]["z"][y][x] == CellType.EMPTY:
+            if fig.data[0]["z"][y][x] == CellType.EMPTY:
                 return dash.no_update
 
+            # TODO: Clean this up:
             # Clear all highlight, read, and write cells to filled.
-            figure["data"][0]["z"] = list(
-                map(
-                    lambda x: list(
-                        map(
-                            lambda y: CellType.FILLED
-                            if y != CellType.EMPTY else y, x)),
-                    figure["data"][0]["z"]))
+            z = fig.data[0]["z"]
+            z[z != CellType.EMPTY] = CellType.FILLED
 
             # Highlight selected cell.
-            figure["data"][0]["z"][y][x] = CellType.WRITE
+            z[y][x] = CellType.WRITE
 
             # Highlight dependencies.
             deps = self._graph_metadata[self._primary_name]["t_read_matrix"]
-            d = deps[value][y][x]
-            for dy, dx in d:
-                figure["data"][0]["z"][dy][dx] = CellType.READ
+            d = deps[t][y][x]
+            print(list(d))
+            z[list(d)] = CellType.READ
+            # for dy, dx in d:
+            #     z[dy][dx] = CellType.READ
 
             # Highlight highlights.
             high = self._graph_metadata[
                 self._primary_name]["t_highlight_matrix"]
-            h = high[value][y][x]
+            h = high[t][y][x]
             for hy, hx in h:
-                figure["data"][0]["z"][hy][hx] = CellType.HIGHLIGHT
+                z[hy][hx] = CellType.HIGHLIGHT
 
-            return figure
+            return fig
 
     def show(self):
         """Visualizes the DPArrays.
@@ -505,7 +507,7 @@ class Visualizer:
             kwargs = metadata["figure_kwargs"]
             self._create_figure(arr, **kwargs)
 
-            # We need to re-accesss graph_metadata because self._create_figure
+            # We need to re-access graph_metadata because self._create_figure
             # changes its value.
             figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
             graphs.append(dcc.Graph(id="graph", figure=figure))
@@ -560,8 +562,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
