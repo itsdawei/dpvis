@@ -97,12 +97,8 @@ class Logger:
                 },
             })
 
-        update = None
-        if values is None:
-            update = dict(zip(idx_list, [None] * len(idx_list)))
-        else:
-            update = dict(zip(idx_list, values))
-        self._logs[-1]["idx"][array_name].update(update)
+        values = [None] * len(idx_list) if values is None else values
+        self._logs[-1]["idx"][array_name].update(dict(zip(idx_list, values)))
 
     def append_annotation(self, array_name, annotation, idx=None):
         """Appends an annotated operation to the log.
