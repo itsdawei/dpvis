@@ -161,7 +161,7 @@ class Logger:
             for name, shape in self._array_shapes.items()
         }
 
-        # Find the index of all the writes.
+        # For each consecutive sequence of Op.WRITE, find the last index.
         last_write_indices = []
         for i, log in enumerate(self._logs):
             if log["op"] != Op.WRITE:
@@ -169,6 +169,12 @@ class Logger:
             if last_write_indices and i == last_write_indices[-1] + 1:
                 continue
             last_write_indices.append(i)
+
+        # NOTE: If annotation is added after the last write, it will be group
+        # in a timestep without a write. This fixes that issue by forcing the
+        # last timestep to include everything after the last write as well.
+        # However, this may cause issues with backtracing.
+        last_write_indices[-1] = len(self.logs)
 
         # Split the logs into batches based on the last write indices.
         log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
@@ -178,8 +184,8 @@ class Logger:
             for name, shape in self._array_shapes.items()
         }
 
-        timesteps = []
         # Create a new timestep for each batch.
+        timesteps = []
         for batch in log_batches:
             timesteps.append({
                 name: {
@@ -194,6 +200,7 @@ class Logger:
                 op = log["op"]
                 for name, indices in log["idx"].items():
                     timesteps[-1][name][op] |= indices
+                    # For WRITE, track the changes to the DP array.
                     if op == Op.WRITE:
                         for idx, val in indices.items():
                             contents[name][idx] = val

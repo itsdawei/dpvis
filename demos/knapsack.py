@@ -30,8 +30,6 @@ def knapsack(items, capacity):
                     OPT[idx - 1, rem - item[0]] + item[1],
                 ]
                 OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
-                OPT.annotate_cell(idx, idx)
-                OPT.annotate_cell(idx+1, idx+1)
             # Edge case: adding item is not possible
             elif idx >= 1 and rem - item[0] < 0:
                 OPT[idx, rem] = OPT[idx - 1, rem]
