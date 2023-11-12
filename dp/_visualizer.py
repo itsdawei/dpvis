@@ -378,16 +378,6 @@ class Visualizer:
             # TODO: Remove this
             return json.dumps(click_data, indent=2)
 
-        # Define callback to toggle self_testing_mode
-        # @self.app.callback(Output("self-testing-mode", "data"),
-        #                    Input("self-test-button", "n_clicks"),
-        #                    State("self-testing-mode", "data"))
-        # def toggle_self_testing_mode(n_clicks, self_testing_mode):
-        #     # Do not update if the button wasn"t clicked
-        #     if n_clicks is None:
-        #         return dash.no_update
-        #     return not self_testing_mode  # Toggle the state
-
         @self.app.callback(
             Output("interval", "max_intervals", allow_duplicate=True),
             Input("self-test-button", "n_clicks"))
