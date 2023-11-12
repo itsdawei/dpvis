@@ -470,7 +470,6 @@ class Visualizer:
             if fig.data[0]["z"][y][x] == CellType.EMPTY:
                 return dash.no_update
 
-            # TODO: Clean this up:
             # Clear all highlight, read, and write cells to filled.
             z = fig.data[0]["z"]
             z[z != CellType.EMPTY] = CellType.FILLED
@@ -481,10 +480,8 @@ class Visualizer:
             # Highlight dependencies.
             deps = self._graph_metadata[self._primary_name]["t_read_matrix"]
             d = deps[t][y][x]
-            print(list(d))
-            z[list(d)] = CellType.READ
-            # for dy, dx in d:
-            #     z[dy][dx] = CellType.READ
+            for dy, dx in d:
+                z[dy][dx] = CellType.READ
 
             # Highlight highlights.
             high = self._graph_metadata[
