@@ -21,12 +21,6 @@ def test_read_write():
             "dp": {
                 0: 1
             }
-        },
-        "annotations": {
-            "dp": []
-        },
-        "cell_annotations": {
-            "dp": {}
         }
     }
     assert len(dp.logger.logs) == 1
@@ -39,12 +33,6 @@ def test_read_write():
                 0: 1,
                 1: 2
             }
-        },
-        "annotations": {
-            "dp": []
-        },
-        "cell_annotations": {
-            "dp": {}
         }
     }
 
@@ -56,12 +44,6 @@ def test_read_write():
                 0: 1,
                 1: 2
             }
-        },
-        "annotations": {
-            "dp": []
-        },
-        "cell_annotations": {
-            "dp": {}
         }
     }
     assert dp.logger.logs[1] == {
@@ -70,12 +52,6 @@ def test_read_write():
             "dp": {
                 1: None
             }
-        },
-        "annotations": {
-            "dp": []
-        },
-        "cell_annotations": {
-            "dp": {}
         }
     }
     assert len(dp.logger.logs) == 2
@@ -87,12 +63,6 @@ def test_read_write():
             "dp": {
                 2: 2
             }
-        },
-        "annotations": {
-            "dp": []
-        },
-        "cell_annotations": {
-            "dp": {}
         }
     }
     assert len(dp.logger.logs) == 3
@@ -115,12 +85,6 @@ def test_2d_read_write():
             "name": {
                 (0, 0): 1
             }
-        },
-        "annotations": {
-            "name": []
-        },
-        "cell_annotations": {
-            "name": {}
         }
     }
     assert dp.logger.logs[1] == {
@@ -129,12 +93,6 @@ def test_2d_read_write():
             "name": {
                 (0, 0): None
             }
-        },
-        "annotations": {
-            "name": []
-        },
-        "cell_annotations": {
-            "name": {}
         }
     }
     assert dp.logger.logs[2] == {
@@ -143,12 +101,6 @@ def test_2d_read_write():
             "name": {
                 (3, 6): 1
             }
-        },
-        "annotations": {
-            "name": []
-        },
-        "cell_annotations": {
-            "name": {}
         }
     }
 
@@ -457,12 +409,6 @@ def test_slice_reading(s):
         "op": Op.READ,
         "idx": {
             "dp_array": truth
-        },
-        "annotations": {
-            "dp_array": []
-        },
-        "cell_annotations": {
-            "dp_array": {}
         }
     }
 
@@ -479,12 +425,6 @@ def test_slice_reading_list_of_indices():
         "op": Op.READ,
         "idx": {
             "dp_array": truth
-        },
-        "annotations": {
-            "dp_array": []
-        },
-        "cell_annotations": {
-            "dp_array": {}
         }
     }
 
@@ -501,12 +441,6 @@ def test_slice_logging(s):
         "op": Op.WRITE,
         "idx": {
             "dp_array": truth
-        },
-        "annotations": {
-            "dp_array": []
-        },
-        "cell_annotations": {
-            "dp_array": {}
         }
     }
     assert len(dp.logger.logs) == 1
@@ -534,12 +468,6 @@ def test_2d_slice_logging(slice_1, slice_2):
         "op": Op.WRITE,
         "idx": {
             "dp_array": truth
-        },
-        "annotations": {
-            "dp_array": []
-        },
-        "cell_annotations": {
-            "dp_array": {}
         }
     }
     assert len(dp.logger.logs) == 1
@@ -560,12 +488,6 @@ def test_list_assignment():
                 6: 1,
                 8: 1,
             }
-        },
-        "annotations": {
-            "dp_array": []
-        },
-        "cell_annotations": {
-            "dp_array": {}
         }
     }
 

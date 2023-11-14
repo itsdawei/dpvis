@@ -43,14 +43,6 @@ def test_append(logger):
                 0: None
             },
             "dp2": {}
-        },
-        "annotations": {
-            "dp1": [],
-            "dp2": []
-        },
-        "cell_annotations": {
-            "dp1": {},
-            "dp2": {}
         }
     }
     logger.append("dp1", Op.READ, 1)
@@ -62,14 +54,6 @@ def test_append(logger):
                 1: None
             },
             "dp2": {},
-        },
-        "annotations": {
-            "dp1": [],
-            "dp2": []
-        },
-        "cell_annotations": {
-            "dp1": {},
-            "dp2": {}
         }
     }
     assert len(logger.logs) == 1
@@ -86,14 +70,6 @@ def test_append(logger):
             "dp2": {
                 0: None
             },
-        },
-        "annotations": {
-            "dp1": [],
-            "dp2": []
-        },
-        "cell_annotations": {
-            "dp1": {},
-            "dp2": {}
         }
     }
     assert len(logger.logs) == 1
@@ -110,14 +86,6 @@ def test_append(logger):
             "dp2": {
                 0: None
             },
-        },
-        "annotations": {
-            "dp1": [],
-            "dp2": []
-        },
-        "cell_annotations": {
-            "dp1": {},
-            "dp2": {}
         }
     }
     # Current time-step is updated.
@@ -128,14 +96,6 @@ def test_append(logger):
                 0: 1
             },
             "dp2": {},
-        },
-        "annotations": {
-            "dp1": [],
-            "dp2": []
-        },
-        "cell_annotations": {
-            "dp1": {},
-            "dp2": {}
         }
     }
     # Total time-step.
@@ -161,12 +121,6 @@ def test_same_ops_and_index(logger, op):
             "dp1": {
                 0: 2 if op == Op.WRITE else None
             },
-        },
-        "annotations": {
-            "dp1": [],
-        },
-        "cell_annotations": {
-            "dp1": {},
         }
     }
 
