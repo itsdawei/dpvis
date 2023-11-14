@@ -337,18 +337,19 @@ class Visualizer:
 
         # Update slider value based on store-keypress.
         # Store-keypress is changed in assets/custom.js.
-        @self.app.callback(Output("slider", "value"),
-                           Input("store-keypress", "data"),
-                           Input("interval", "n_intervals"),
-                           State("slider", "value"),
-                           State("test-info", "data"),)
-        def update_slider(key_data, _n_interval, t, info):
+        @self.app.callback(
+            Output("slider", "value"),
+            Input("store-keypress", "data"),
+            Input("interval", "n_intervals"),
+            State("test-info", "data"),
+            State("slider", "value"),
+        )
+        def update_slider(key_data, _, info, t):
             """Changes value of slider based on state of play/stop button."""
             if ctx.triggered_id == "interval":
-                # If there are no remaining tests, update.
-                if info["num_tests"] - info["cur_test"] < 1:
-                    return (t + 1) % len(values)
-                return t
+                if info["test_mode"]:
+                    return t
+                return (t + 1) % len(values)
             if key_data in [37, 39]:
                 return (t + key_data - 38) % len(values)
             return dash.no_update
@@ -382,15 +383,17 @@ class Visualizer:
             Output(component_id="slider-container", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
-            # Testing mode is on.
-            if info["num_tests"] - info["cur_test"] < 1:
-                return "Self-Testing Mode: OFF", {"display": "block"}
-            return "Self-Testing Mode: ON", {"display": "none"}
+            if info["test_mode"]:
+                return "Self-Testing Mode: ON", {"display": "none"}
+            return "Self-Testing Mode: OFF", {"display": "block"}
 
-        @self.app.callback(Output("test-info", "data"),
-                           Input("self-test-button", "n_clicks"),
-                           State("slider", "value"), State("test-info", "data"))
-        def toggle_testing_mode(_, t, info):
+        @self.app.callback(
+            Output("test-info", "data"),
+            Input("self-test-button", "n_clicks"),
+            State("test-info", "data"),
+            State("slider", "value"),
+        )
+        def toggle_test_mode(_, info, t):
             """Toggles self-testing mode.
 
             Args:
@@ -404,21 +407,26 @@ class Visualizer:
                 # TODO: notify user that there is no more testing
                 return dash.no_update
 
-            # If there are no tests to be performed, update the testing info.
-            if info["num_tests"] - info["cur_test"] < 1:
+            print(info)
+
+            if info["test_mode"]:
                 return {
+                    "test_mode": False,
                     "cur_test": 0,
-                    "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
+                    "num_tests": -1,
                 }
-            info["num_tests"] = -1
-            return info
+            return {
+                "test_mode": True,
+                "cur_test": 0,
+                "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
+            }
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             fig = copy.deepcopy(main_figure.frames[t])
 
-            if info["cur_test"] >= info["num_tests"]:
+            if not info["test_mode"]:
                 return fig
 
             # Highlight the cell that is being tested on.
@@ -434,29 +442,32 @@ class Visualizer:
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             State("user-input", "value"),
-            State("slider", "value"),
             State("test-info", "data"),
+            State("slider", "value"),
         )
-        def compare_input_and_frame(_, user_input, t, test_info):
+        def compare_input_and_frame(_, user_input, info, t):
             """Tests if user input is correct."""
-            if user_input == "":
+            # TODO: Hide the input box.
+            if not info["test_mode"]:
                 return dash.no_update
-            cur_test = test_info["cur_test"]
+
+            cur_test = info["cur_test"]
             x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
             test = values[t + 1][x][y]
 
             if user_input == test:
-                test_info["cur_test"] += 1
-                return "Correct!", test_info
+                info["cur_test"] += 1
+                info["test_mode"] = info["cur_test"] < info["num_tests"]
+                return "Correct!", info
 
             return "Incorrect!", dash.no_update
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("graph", "clickData"),
-                           State("slider", "value"))
-        def display_dependencies(click_data, t):
-            # Skip this call back in testing mode.
-            if self._testing_mode:
+                           State("slider", "value"), State("test-info", "data"))
+        def display_dependencies(click_data, t, info):
+            # Skip this callback in testing mode.
+            if info["test_mode"]:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
@@ -531,7 +542,6 @@ class Visualizer:
                          html.Button("Stop", id="stop"),
                      ],
                      style={"display": "block"}),
-            dcc.Store(id="store-keypress", data=0),
             dcc.Interval(id="interval",
                          interval=1000,
                          n_intervals=0,
@@ -547,15 +557,18 @@ class Visualizer:
                       type="number",
                       placeholder="",
                       debounce=True),
-            dcc.Store(id="store-clicked-z"),
             html.Div(id="comparison-result"),
             html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
             html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
-            dcc.Store(id="test-info", data={
-                "num_tests": -1,
-                "cur_test": 0
-            })
+            dcc.Store(id="store-keypress", data=0),
+            dcc.Store(id="store-clicked-z"),
+            dcc.Store(id="test-info",
+                      data={
+                          "test_mode": False,
+                          "num_tests": -1,
+                          "cur_test": 0
+                      }),
         ])
 
         self._attach_callbacks()
