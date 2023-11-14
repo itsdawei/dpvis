@@ -182,14 +182,15 @@ class Visualizer:
         # Initializes to CellType.EMPTY
         t_color_matrix = np.zeros((t, h, w))
         t_value_matrix = np.empty((t, h, w))
+        # For each cell, stores its dependency.
         t_read_matrix = np.empty((t, h, w), dtype="object")
-        t_write_matrix = np.empty((t, h, w), dtype="object")
         t_highlight_matrix = np.empty((t, h, w), dtype="object")
-        modded = []
+        # Boolean mask of which cell is written to at timestep t.
+        t_write_matrix = np.zeros((t, h, w), dtype="bool")
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
             mask = np.isnan(t_arr["contents"].astype(float))
-            t_color_matrix[i][np.where(~mask)] = CellType.FILLED
+            t_color_matrix[i][np.nonzero(~mask)] = CellType.FILLED
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.READ])] = CellType.READ
             t_color_matrix[i][_indices_to_np_indices(
@@ -197,7 +198,6 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_value_matrix[i] = t_arr["contents"]
-            modded.append(list(t_arr[Op.WRITE]))
 
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
@@ -205,9 +205,7 @@ class Visualizer:
                 # dependencies.
                 t_read_matrix[indices] = t_arr[Op.READ]
                 t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
-
-        t_color_matrix = np.array(t_color_matrix)
-        t_value_matrix = np.array(t_value_matrix)
+                t_write_matrix[i][write_idx] = 1
 
         metadata = {
             "t_color_matrix": t_color_matrix,
@@ -215,7 +213,6 @@ class Visualizer:
             "t_read_matrix": t_read_matrix,
             "t_write_matrix": t_write_matrix,
             "t_highlight_matrix": t_highlight_matrix,
-            "t_modded_matrix": modded,
         }
 
         self._graph_metadata[arr.array_name] = {
@@ -329,7 +326,8 @@ class Visualizer:
     def _attach_callbacks(self):
         """Attach callbacks."""
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
-        modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
+        t_write_matrix = self._graph_metadata[
+            self._primary_name]["t_write_matrix"]
         main_figure = self._graph_metadata[self._primary_name]["figure"]
 
         # Callback to change current heatmap based on slider value
@@ -408,7 +406,7 @@ class Visualizer:
             if info["num_tests"] - info["cur_test"] < 1:
                 return {
                     "cur_test": 0,
-                    "num_tests": len(modded[t + 1]),
+                    "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
                 }
             info["num_tests"] = -1
             return info
@@ -423,7 +421,7 @@ class Visualizer:
 
             # Highlight the cell that is being tested on.
             cur_test = info["cur_test"]
-            x, y = modded[t + 1][cur_test]
+            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
             fig.data[0]["z"][x][y] = CellType.WRITE
 
             return fig
@@ -442,7 +440,7 @@ class Visualizer:
             if user_input == "":
                 return dash.no_update
             cur_test = test_info["cur_test"]
-            x, y = modded[t + 1][cur_test]
+            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
             test = values[t + 1][x][y]
 
             if user_input == test:
