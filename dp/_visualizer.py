@@ -337,16 +337,18 @@ class Visualizer:
         def update_figure(t):
             return main_figure.frames[t]
 
-        # Update slider value baed on store-keypress.
+        # Update slider value based on store-keypress.
         # Store-keypress is changed in assets/custom.js.
         @self.app.callback(Output("slider", "value"),
                            Input("store-keypress", "data"),
                            Input("interval", "n_intervals"),
-                           State("slider", "value"))
-        def update_slider(key_data, _n_interval, t):
+                           State("slider", "value"),
+                           State("test-info", "data"),)
+        def update_slider(key_data, _n_interval, t, info):
             """Changes value of slider based on state of play/stop button."""
             if ctx.triggered_id == "interval":
-                if not self._testing_mode:
+                # If there are no remaining tests, update.
+                if info["num_tests"] - info["cur_test"] < 1:
                     return (t + 1) % len(values)
                 return t
             if key_data in [37, 39]:
