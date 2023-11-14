@@ -201,11 +201,9 @@ class Visualizer:
 
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
-                # Fill in corresponding hovertext cell with value and
-                # dependencies.
                 t_read_matrix[indices] = t_arr[Op.READ]
                 t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
-                t_write_matrix[i][write_idx] = 1
+                t_write_matrix[i][write_idx] = True
 
         metadata = {
             "t_color_matrix": t_color_matrix,
