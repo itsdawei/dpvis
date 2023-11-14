@@ -381,8 +381,7 @@ class Visualizer:
 
         @self.app.callback(
             Output("toggle-text", "children"),
-            Output(component_id="slider-container",
-                   component_property="style"),
+            Output(component_id="slider-container", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             # Testing mode is on.
@@ -392,8 +391,7 @@ class Visualizer:
 
         @self.app.callback(Output("test-info", "data"),
                            Input("self-test-button", "n_clicks"),
-                           State("slider", "value"),
-                           State("test-info", "data"))
+                           State("slider", "value"), State("test-info", "data"))
         def toggle_testing_mode(_, t, info):
             """Toggles self-testing mode.
 
@@ -412,16 +410,13 @@ class Visualizer:
             if info["num_tests"] - info["cur_test"] < 1:
                 return {
                     "cur_test": 0,
-                    "num_tests": len(modded[t+1]),
+                    "num_tests": len(modded[t + 1]),
                 }
             info["num_tests"] = -1
             return info
 
-        @self.app.callback(
-            Output("graph", "figure", allow_duplicate=True),
-            Input("test-info", "data"),
-            State("slider", "value")
-        )
+        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
+                           Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             fig = copy.deepcopy(main_figure.frames[t])
 
@@ -549,7 +544,7 @@ class Visualizer:
                 """),
                 html.Pre(id="click-data", style=styles["pre"]),
             ],
-                className="three columns"),
+                     className="three columns"),
             dcc.Input(id="user-input",
                       type="number",
                       placeholder="",
@@ -559,7 +554,10 @@ class Visualizer:
             html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
             html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
-            dcc.Store(id="test-info", data={"num_tests": -1, "cur_test": 0})
+            dcc.Store(id="test-info", data={
+                "num_tests": -1,
+                "cur_test": 0
+            })
         ])
 
         self._attach_callbacks()
