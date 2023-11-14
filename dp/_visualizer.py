@@ -414,7 +414,6 @@ class Visualizer:
                 return {
                     "cur_test": 0,
                     "num_tests": len(modded[t+1]),
-                    "queued_tests": [],
                 }
             info["num_tests"] = -1
             return info
