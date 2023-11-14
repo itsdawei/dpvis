@@ -207,8 +207,6 @@ class Visualizer:
         t_color_matrix = np.array(t_color_matrix)
         t_value_matrix = np.array(t_value_matrix)
 
-        __import__('pdb').set_trace()
-
         # Plotly heatmaps requires 2d input as data.
         if t_value_matrix.ndim == 2:
             t_color_matrix = np.expand_dims(t_color_matrix, 1)
@@ -335,7 +333,6 @@ class Visualizer:
 
     def _attach_callbacks(self):
         """Attach callbacks."""
-        heatmaps = self._graph_metadata[self._primary_name]["t_heatmaps"]
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
         modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
         colors = self._graph_metadata[self._primary_name]["t_color_matrix"]
