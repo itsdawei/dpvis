@@ -4,6 +4,7 @@
 
 ### API
 
+- Improve Front-end Callback Structure (#31)
 - Implement object-oriented API (#28)
 - Implemented self testing of values (#22)
 - Traceback solution verification and visualization (#24)
