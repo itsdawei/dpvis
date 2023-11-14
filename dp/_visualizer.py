@@ -122,8 +122,6 @@ class Visualizer:
         self._primary_name = None
         self._graph_metadata = {}
 
-        self._testing_mode = False
-
         # Create Dash App.
         self._app = Dash(name="dynvis: Dynamic Program Visualization",
                          prevent_initial_callbacks=True)
