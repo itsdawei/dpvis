@@ -339,27 +339,27 @@ class Visualizer:
             Output("slider", "value"),
             Input("store-keypress", "data"),
             Input("interval", "n_intervals"),
-            State("test-info", "data"),
             State("slider", "value"),
         )
-        def update_slider(key_data, _, info, t):
+        def update_slider(key_data, _, t):
             """Changes value of slider based on state of play/stop button."""
             if ctx.triggered_id == "interval":
-                if info["test_mode"]:
-                    return t
                 return (t + 1) % len(values)
             if key_data in [37, 39]:
                 return (t + key_data - 38) % len(values)
             return dash.no_update
 
         @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"))
-        def play_pause_playback(_start_clicks, _stop_clicks):
-            """Starts and stop interval from running."""
-            triggered_id = ctx.triggered_id
-            if triggered_id == "play":
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
+                           Input("self-test-button", "n_clicks"))
+        def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
+            """Starts and stop playback from running.
+
+            Pauses the playback when "stop" or "self-test-button" is pressed.
+            """
+            if ctx.triggered_id == "play":
                 return -1  # Runs interval indefinitely.
-            if triggered_id == "stop":
+            if ctx.triggered_id in ["stop", "self-test-button"]:
                 return 0  # Stops interval from running.
             return dash.no_update
 
@@ -368,13 +368,6 @@ class Visualizer:
         def display_click_data(click_data):
             # TODO: Remove this
             return json.dumps(click_data, indent=2)
-
-        @self.app.callback(
-            Output("interval", "max_intervals", allow_duplicate=True),
-            Input("self-test-button", "n_clicks"))
-        def pause_playback_in_testing_mode(_n_clicks):
-            """Pauses the playback in testing mode."""
-            return 0
 
         @self.app.callback(
             Output("toggle-text", "children"),
@@ -404,8 +397,6 @@ class Visualizer:
             if t == len(values):
                 # TODO: notify user that there is no more testing
                 return dash.no_update
-
-            print(info)
 
             if info["test_mode"]:
                 return {
