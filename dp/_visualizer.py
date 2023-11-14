@@ -453,8 +453,8 @@ class Visualizer:
 
         @self.app.callback(Output("graph", "figure", allow_duplicate=True),
                            Input("graph", "clickData"),
-                           State("slider", "value"), State("test-info", "data"))
-        def display_dependencies(click_data, t, info):
+                           State("test-info", "data"), State("slider", "value"))
+        def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["test_mode"]:
                 return dash.no_update
@@ -476,17 +476,12 @@ class Visualizer:
             z[y][x] = CellType.WRITE
 
             # Highlight dependencies.
-            deps = self._graph_metadata[self._primary_name]["t_read_matrix"]
-            d = deps[t][y][x]
-            for dy, dx in d:
-                z[dy][dx] = CellType.READ
+            d = self._graph_metadata[self._primary_name]["t_read_matrix"]
+            z[_indices_to_np_indices(d[t][y][x])] = CellType.READ
 
             # Highlight highlights.
-            high = self._graph_metadata[
-                self._primary_name]["t_highlight_matrix"]
-            h = high[t][y][x]
-            for hy, hx in h:
-                z[hy][hx] = CellType.HIGHLIGHT
+            h = self._graph_metadata[self._primary_name]["t_highlight_matrix"]
+            z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
 
             return fig
 
