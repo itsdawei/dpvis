@@ -328,12 +328,6 @@ class Visualizer:
             self._primary_name]["t_write_matrix"]
         main_figure = self._graph_metadata[self._primary_name]["figure"]
 
-        graph_callbacks = {
-            "state": [],
-        }
-        for arr in self._arrays:
-            graph_callbacks["state"].append(State(arr.array_name, "figure"))
-
         output_figure = [
             Output(arr.array_name, "figure", allow_duplicate=True)
             for arr in self._arrays
@@ -343,12 +337,10 @@ class Visualizer:
         def update_figure(t):
             """Update each graph based on the slider value."""
             return [
-                metadata["figure"].frame[t]
+                metadata["figure"].frames[t]
                 for metadata in self._graph_metadata.values()
             ]
 
-        # Update slider value based on store-keypress.
-        # Store-keypress is changed in assets/custom.js.
         @self.app.callback(
             Output("slider", "value"),
             Input("store-keypress", "data"),
@@ -356,7 +348,11 @@ class Visualizer:
             State("slider", "value"),
         )
         def update_slider(key_data, _, t):
-            """Changes value of slider based on state of play/stop button."""
+            """Update the value of slider based on state of play/stop button.
+
+            Update slider value based on store-keypress. Store-keypress is
+            changed in assets/custom.js.
+            """
             if ctx.triggered_id == "interval":
                 return (t + 1) % len(values)
             if key_data in [37, 39]:
@@ -378,7 +374,7 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("click-data", "children"),
-                           Input("graph", "clickData"))
+                           Input(self._primary_name, "clickData"))
         def display_click_data(click_data):
             # TODO: Remove this
             return json.dumps(click_data, indent=2)
@@ -424,8 +420,9 @@ class Visualizer:
                 "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
             }
 
-        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
-                           Input("test-info", "data"), State("slider", "value"))
+        @self.app.callback(
+            Output(self._primary_name, "figure", allow_duplicate=True),
+            Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             fig = copy.deepcopy(main_figure.frames[t])
 
@@ -465,9 +462,10 @@ class Visualizer:
 
             return "Incorrect!", dash.no_update
 
-        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
-                           Input("graph", "clickData"),
-                           State("test-info", "data"), State("slider", "value"))
+        @self.app.callback(
+            Output(self._primary_name, "figure", allow_duplicate=True),
+            Input(self._primary_name, "clickData"), State("test-info", "data"),
+            State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["test_mode"]:
@@ -505,20 +503,6 @@ class Visualizer:
         Create the figures for each DPArray, attach the callbacks, and render
         the graph.
         """
-
-        # def show(self):
-        #     graphs = []
-        #     graph_heatmaps = []
-        #     dependencies = []
-        #     highlights = []
-        #     for arr, kwargs in zip(self._arrays, self._figure_kwargs):
-        #         fig_dict = self._create_figure(arr, **kwargs)
-        #         graphs.append(
-        #             dcc.Graph(id=arr.array_name, figure=fig_dict["figure"]))
-        #         graph_heatmaps.append(fig_dict["heatmaps"])
-        #         dependencies.append(fig_dict["dependency_matrix"])
-        #         highlights.append(fig_dict["highlight_matrix"])
-
         graphs = []
         for name, metadata in self._graph_metadata.items():
             arr = metadata["arr"]
@@ -528,20 +512,13 @@ class Visualizer:
             # We need to re-access graph_metadata because self._create_figure
             # changes its value.
             figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
-            graphs.append(dcc.Graph(id="graph", figure=figure))
-
-        styles = {
-            "pre": {
-                "border": "thin lightgrey solid",
-                "overflowX": "scroll"
-            }
-        }
+            graphs.append(dcc.Graph(id=name, figure=figure))
 
         max_timestep = len(
             list(self._graph_metadata.values())[0]["t_heatmaps"]) - 1
 
         self.app.layout = html.Div([
-            graphs[0],
+            *graphs,
             html.Div(id="slider-container",
                      children=[
                          dcc.Slider(min=0,
@@ -562,7 +539,11 @@ class Visualizer:
                 dcc.Markdown("""
                     **SELF-TESTING**
                 """),
-                html.Pre(id="click-data", style=styles["pre"]),
+                html.Pre(id="click-data",
+                         style={
+                             "border": "thin lightgrey solid",
+                             "overflowX": "scroll"
+                         }),
             ],
                      className="three columns"),
             dcc.Input(id="user-input",
@@ -585,8 +566,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=True, use_reloader=True)
-        self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
