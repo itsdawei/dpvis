@@ -119,7 +119,7 @@ class Visualizer:
         """Initialize Visualizer object."""
         self._arrays = []
 
-        self._primary_name = None
+        self._primary = None
         self._graph_metadata = {}
 
         # Create Dash App.
@@ -137,14 +137,8 @@ class Visualizer:
             raise TypeError("Array must be DPArray")
 
         # First array is the primary array.
-        if self._primary_name is None:
-            self._primary_name = arr.array_name
-
-        self._arrays.append(arr)
-        logger = self._arrays[0].logger
-        if logger is not arr.logger:
-            raise ValueError("Added arrays should have the same"
-                             "logger")
+        if self._primary is None:
+            self._primary = arr.array_name
 
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
@@ -154,6 +148,11 @@ class Visualizer:
                 "colorscale_name": colorscale_name,
             }
         }
+
+        logger = self._graph_metadata[self._primary]["arr"].logger
+        if logger is not arr.logger:
+            raise ValueError("Added arrays should have the same"
+                             "logger")
 
     def _parse_timesteps(self, arr):
         """Parse the timesteps of the logger."""
@@ -323,10 +322,9 @@ class Visualizer:
 
     def _attach_callbacks(self):
         """Attach callbacks."""
-        values = self._graph_metadata[self._primary_name]["t_value_matrix"]
-        t_write_matrix = self._graph_metadata[
-            self._primary_name]["t_write_matrix"]
-        main_figure = self._graph_metadata[self._primary_name]["figure"]
+        values = self._graph_metadata[self._primary]["t_value_matrix"]
+        t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
+        main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
             Output(arr.array_name, "figure", allow_duplicate=True)
@@ -374,7 +372,7 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("click-data", "children"),
-                           Input(self._primary_name, "clickData"))
+                           Input(self._primary, "clickData"))
         def display_click_data(click_data):
             # TODO: Remove this
             return json.dumps(click_data, indent=2)
@@ -421,7 +419,7 @@ class Visualizer:
             }
 
         @self.app.callback(
-            Output(self._primary_name, "figure", allow_duplicate=True),
+            Output(self._primary, "figure", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             fig = copy.deepcopy(main_figure.frames[t])
@@ -463,8 +461,8 @@ class Visualizer:
             return "Incorrect!", dash.no_update
 
         @self.app.callback(
-            Output(self._primary_name, "figure", allow_duplicate=True),
-            Input(self._primary_name, "clickData"), State("test-info", "data"),
+            Output(self._primary, "figure", allow_duplicate=True),
+            Input(self._primary, "clickData"), State("test-info", "data"),
             State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
@@ -488,11 +486,11 @@ class Visualizer:
             z[y][x] = CellType.WRITE
 
             # Highlight dependencies.
-            d = self._graph_metadata[self._primary_name]["t_read_matrix"]
+            d = self._graph_metadata[self._primary]["t_read_matrix"]
             z[_indices_to_np_indices(d[t][y][x])] = CellType.READ
 
             # Highlight highlights.
-            h = self._graph_metadata[self._primary_name]["t_highlight_matrix"]
+            h = self._graph_metadata[self._primary]["t_highlight_matrix"]
             z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
 
             return fig
