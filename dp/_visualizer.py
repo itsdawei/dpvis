@@ -169,17 +169,26 @@ class Visualizer:
 
         name = arr.array_name
 
-        # Convert 1D to 2D.
-        for i, timestep in enumerate(timesteps):
-            pass
+        # Height and width of the array.
+        if len(arr.shape) == 1:
+            h, w = 1, *arr.shape
+            # Convert 1D timestep to 2D timestep.
+            for i, timestep in enumerate(timesteps):
+                t_arr = timestep[name]
+                t_arr["contents"] = np.expand_dims(t_arr["contents"], 0)
+                for op in Op:
+                    new_op_coords = {(0, idx) for idx in t_arr[op]}
+                    t_arr[op] = new_op_coords
+        else:
+            h, w = arr.shape
 
         # Constructing the color and value matrix for each timestep.
         # Initializes to CellType.EMPTY
-        t_color_matrix = np.zeros((t, *arr.shape))
-        t_value_matrix = np.empty((t, *arr.shape))
-        t_read_matrix = np.empty((t, *arr.shape), dtype="object")
-        t_write_matrix = np.empty((t, *arr.shape), dtype="object")
-        t_highlight_matrix = np.empty((t, *arr.shape), dtype="object")
+        t_color_matrix = np.zeros((t, h, w))
+        t_value_matrix = np.empty((t, h, w))
+        t_read_matrix = np.empty((t, h, w), dtype="object")
+        t_write_matrix = np.empty((t, h, w), dtype="object")
+        t_highlight_matrix = np.empty((t, h, w), dtype="object")
         modded = []
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
@@ -203,10 +212,6 @@ class Visualizer:
 
         t_color_matrix = np.array(t_color_matrix)
         t_value_matrix = np.array(t_value_matrix)
-
-        # Plotly heatmaps requires 2d input as data.
-        if t_value_matrix.ndim == 2:
-            modded = [[(idx, 0) for idx in t] for t in modded]
 
         metadata = {
             "t_color_matrix": t_color_matrix,
