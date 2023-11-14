@@ -3,8 +3,8 @@ import warnings
 
 import numpy as np
 
-from dp._logger import Logger, Op
 from dp._index_converter import _nd_slice_to_indices
+from dp._logger import Logger, Op
 
 
 class DPArray:
@@ -245,7 +245,7 @@ class DPArray:
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
                 element of the DP array, item[i] should be None.
-                
+
         Returns:
             self.dtype: Maximum value of the elements.
         """
@@ -269,7 +269,7 @@ class DPArray:
 
     def add_traceback_path(self, path):
         """Add a traceback path to this DPArray object.
-        
+
         Paths added to a DPArray object will be displayed when calling display()
         on that DPArray object. The path will appear on the last frame of the
         visualization window (slider is in the rightmost position).
