@@ -164,23 +164,22 @@ class Visualizer:
         timesteps = arr.get_timesteps()
         t = len(timesteps)
 
-        # Height and width of the array.
-        if len(arr.shape) == 1:
-            h, w = *arr.shape, 1
-        else:
-            h, w = arr.shape
-
         # Obtaining the dp_array timesteps object.
         timesteps = arr.get_timesteps()
 
         name = arr.array_name
 
+        # Convert 1D to 2D.
+        for i, timestep in enumerate(timesteps):
+            pass
+
         # Constructing the color and value matrix for each timestep.
-        t_color_matrix = np.zeros((t, h, w)) # Initialize to CellType.EMPTY
-        t_value_matrix = np.empty((t, h, w))
-        t_read_matrix = np.empty((t, h, w), dtype="object")
-        t_write_matrix = np.empty((t, h, w), dtype="object")
-        t_highlight_matrix = np.empty((t, h, w), dtype="object")
+        # Initializes to CellType.EMPTY
+        t_color_matrix = np.zeros((t, *arr.shape))
+        t_value_matrix = np.empty((t, *arr.shape))
+        t_read_matrix = np.empty((t, *arr.shape), dtype="object")
+        t_write_matrix = np.empty((t, *arr.shape), dtype="object")
+        t_highlight_matrix = np.empty((t, *arr.shape), dtype="object")
         modded = []
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
@@ -196,8 +195,6 @@ class Visualizer:
             modded.append(list(t_arr[Op.WRITE]))
 
             for write_idx in t_arr[Op.WRITE]:
-                if isinstance(write_idx, int):
-                    write_idx = (0, write_idx)
                 indices = (np.s_[i:], *write_idx)
                 # Fill in corresponding hovertext cell with value and
                 # dependencies.
@@ -209,8 +206,6 @@ class Visualizer:
 
         # Plotly heatmaps requires 2d input as data.
         if t_value_matrix.ndim == 2:
-            t_color_matrix = np.expand_dims(t_color_matrix, 1)
-            t_value_matrix = np.expand_dims(t_value_matrix, 1)
             modded = [[(idx, 0) for idx in t] for t in modded]
 
         metadata = {
@@ -335,7 +330,6 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary_name]["t_value_matrix"]
         modded = self._graph_metadata[self._primary_name]["t_modded_matrix"]
-        colors = self._graph_metadata[self._primary_name]["t_color_matrix"]
         main_figure = self._graph_metadata[self._primary_name]["figure"]
 
         # Callback to change current heatmap based on slider value
@@ -385,7 +379,8 @@ class Visualizer:
 
         @self.app.callback(
             Output("toggle-text", "children"),
-            Output(component_id="slider-container", component_property="style"),
+            Output(component_id="slider-container",
+                   component_property="style"),
             Input("self-test-button", "n_clicks"))
         def toggle_layout(n_clicks):
             if n_clicks % 2:
@@ -532,7 +527,7 @@ class Visualizer:
                 """),
                 html.Pre(id="click-data", style=styles["pre"]),
             ],
-                     className="three columns"),
+                className="three columns"),
             dcc.Input(id="user-input",
                       type="number",
                       placeholder="",
