@@ -262,7 +262,6 @@ class Visualizer:
                               t_value_matrix.astype("str"))
         deps_text = np.where(t_read_matrix == set(), "{}",
                              t_read_matrix.astype("str"))
-        # deps_text = np.where(t_read_matrix == None, "{}", t_read_matrix)
         extra_hovertext = np.char.add("<br>Value: ", value_text)
         extra_hovertext = np.char.add(extra_hovertext, "<br>Dependencies: ")
         extra_hovertext = np.char.add(extra_hovertext, deps_text)
