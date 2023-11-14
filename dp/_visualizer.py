@@ -117,8 +117,6 @@ class Visualizer:
 
     def __init__(self):
         """Initialize Visualizer object."""
-        self._arrays = []
-
         self._primary = None
         self._graph_metadata = {}
 
@@ -327,8 +325,8 @@ class Visualizer:
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
-            Output(arr.array_name, "figure", allow_duplicate=True)
-            for arr in self._arrays
+            Output(name, "figure", allow_duplicate=True)
+            for name in self._graph_metadata
         ]
 
         @self.app.callback(output_figure, Input("slider", "value"))
