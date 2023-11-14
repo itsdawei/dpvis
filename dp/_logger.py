@@ -174,10 +174,12 @@ class Logger:
         # in a timestep without a write. This fixes that issue by forcing the
         # last timestep to include everything after the last write as well.
         # However, this may cause issues with backtracing.
-        last_write_indices[-1] = len(self.logs)
+        last_write_indices[-1] = len(self.logs) - 1
 
         # Split the logs into batches based on the last write indices.
         log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
+        if log_batches[-1].size == 0:
+            log_batches = log_batches[:-1]
 
         contents = {
             name: np.full(shape, None)
