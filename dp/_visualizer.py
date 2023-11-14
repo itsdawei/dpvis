@@ -176,7 +176,7 @@ class Visualizer:
         name = arr.array_name
 
         # Constructing the color and value matrix for each timestep.
-        t_color_matrix = np.empty((t, h, w))
+        t_color_matrix = np.zeros((t, h, w)) # Initialize to CellType.EMPTY
         t_value_matrix = np.empty((t, h, w))
         t_read_matrix = np.empty((t, h, w), dtype="object")
         t_write_matrix = np.empty((t, h, w), dtype="object")
@@ -206,6 +206,8 @@ class Visualizer:
 
         t_color_matrix = np.array(t_color_matrix)
         t_value_matrix = np.array(t_value_matrix)
+
+        __import__('pdb').set_trace()
 
         # Plotly heatmaps requires 2d input as data.
         if t_value_matrix.ndim == 2:
