@@ -4,7 +4,7 @@
 
 ### API
 
-- Add support for displaying multiple arrays(#23)
+- Add support for displaying multiple arrays (#23, #32)
 - Improve Front-end Callback Structure (#31)
 - Implement object-oriented API (#28)
 - Implemented self testing of values (#22)
