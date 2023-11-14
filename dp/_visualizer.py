@@ -123,8 +123,6 @@ class Visualizer:
         self._graph_metadata = {}
 
         self._testing_mode = False
-        self._total_test = 0
-        self._cur_test = 0
 
         # Create Dash App.
         self._app = Dash(name="dynvis: Dynamic Program Visualization",
@@ -381,58 +379,79 @@ class Visualizer:
             Output("toggle-text", "children"),
             Output(component_id="slider-container",
                    component_property="style"),
-            Input("self-test-button", "n_clicks"))
-        def toggle_layout(n_clicks):
-            if n_clicks % 2:
-                return "Self-Testing Mode: ON", {"display": "none"}
-            return "Self-Testing Mode: OFF", {"display": "block"}
+            Input("test-info", "data"))
+        def toggle_layout(info):
+            # Testing mode is on.
+            if info["num_tests"] - info["cur_test"] < 1:
+                return "Self-Testing Mode: OFF", {"display": "block"}
+            return "Self-Testing Mode: ON", {"display": "none"}
 
-        @self.app.callback(Output("graph", "figure", allow_duplicate=True),
+        @self.app.callback(Output("test-info", "data"),
                            Input("self-test-button", "n_clicks"),
-                           State("slider", "value"))
-        def toggle_testing_mode(n_clicks, t):
-            # Update state variable to set testing mode.
-            self._testing_mode = n_clicks % 2 == 1
-            fig = copy.deepcopy(main_figure.frames[t])
-            if self._testing_mode:
-                if t == len(values):
-                    # TODO: notify user that there is no more testing
-                    return dash.no_update
-                # Total number of tests.
-                self._total_test = len(modded[t + 1])
-                self._cur_test = 0
+                           State("slider", "value"),
+                           State("test-info", "data"))
+        def toggle_testing_mode(_, t, info):
+            """Toggles self-testing mode.
 
-                # Highlight the cell that is being tested on.
-                x, y = modded[t + 1][0]
-                fig.data[0]["z"][x][y] = CellType.WRITE
+            Args:
+                n_clicks (int): This callback is triggered by clicking the
+                    self-test-button component.
+                t (int): The current timestep retrieved from the slider
+                    component.
+            """
+            # No tests to be performed on the last timestep.
+            if t == len(values):
+                # TODO: notify user that there is no more testing
+                return dash.no_update
+
+            # If there are no tests to be performed, update the testing info.
+            if info["num_tests"] - info["cur_test"] < 1:
+                return {
+                    "cur_test": 0,
+                    "num_tests": len(modded[t+1]),
+                    "queued_tests": [],
+                }
+            info["num_tests"] = -1
+            return info
+
+        @self.app.callback(
+            Output("graph", "figure", allow_duplicate=True),
+            Input("test-info", "data"),
+            State("slider", "value")
+        )
+        def highlight_tests(info, t):
+            fig = copy.deepcopy(main_figure.frames[t])
+
+            if info["cur_test"] >= info["num_tests"]:
+                return fig
+
+            # Highlight the cell that is being tested on.
+            cur_test = info["cur_test"]
+            x, y = modded[t + 1][cur_test]
+            fig.data[0]["z"][x][y] = CellType.WRITE
+
             return fig
 
         @self.app.callback(
             Output("comparison-result", "children"),
-            Output("graph", "figure", allow_duplicate=True),
+            Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             State("user-input", "value"),
             State("slider", "value"),
+            State("test-info", "data"),
         )
-        def compare_input_and_frame(_, user_input, t):
+        def compare_input_and_frame(_, user_input, t, test_info):
             """Tests if user input is correct."""
-            if not self._testing_mode or user_input == "":
+            if user_input == "":
                 return dash.no_update
-            x, y = modded[t + 1][self._cur_test]
+            cur_test = test_info["cur_test"]
+            x, y = modded[t + 1][cur_test]
             test = values[t + 1][x][y]
 
             if user_input == test:
-                fig = copy.deepcopy(main_figure.frames[t])
-                self._cur_test += 1
-                if self._cur_test < self._total_test:
-                    # Highlight next test.
-                    x, y = modded[t + 1][0]
-                    fig.data[0]["z"][x][y] = CellType.WRITE
-                else:
-                    # TODO: What should we do when we are done with the test on the current timestep?
-                    pass
-                return "Correct!", fig
+                test_info["cur_test"] += 1
+                return "Correct!", test_info
 
             return "Incorrect!", dash.no_update
 
@@ -537,7 +556,7 @@ class Visualizer:
             html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
             html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
-            dcc.Store(id="current-write", data=0)
+            dcc.Store(id="test-info", data={"num_tests": -1, "cur_test": 0})
         ])
 
         self._attach_callbacks()
