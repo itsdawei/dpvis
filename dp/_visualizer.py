@@ -73,6 +73,8 @@ def _get_colorbar_kwargs(name):
 
 
 def display(array,
+            recurrence=None,
+            code=None,
             row_labels=None,
             column_labels=None,
             colorscale_name="Sunset"):
@@ -90,8 +92,8 @@ def display(array,
     """
     visualizer = Visualizer()
     visualizer.add_array(array,
-                         recurrence=array.recurrence,
-                         code=array.code,
+                         recurrence=recurrence,
+                         code=code,
                          column_labels=column_labels,
                          row_labels=row_labels,
                          colorscale_name=colorscale_name)
