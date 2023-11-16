@@ -60,6 +60,7 @@ disable=useless-suppression,
         arguments-differ,
         wildcard-import,
         locally-disabled,
+        C0304,
 
 
 [REPORTS]
