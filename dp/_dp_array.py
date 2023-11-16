@@ -316,4 +316,3 @@ class DPArray:
     def array_name(self):
         """Returns the array name."""
         return self._array_name
-    
