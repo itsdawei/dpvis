@@ -20,10 +20,14 @@ class DPArray:
             used to reproduce frame-by-frame animation of the DP algorithm.
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
+        recurrence (str): Markdown of intended recurrence for the DPArray.
+        code (str): Markdown of the relevant code filling out the DPArray.
 
     Attributes:
         _arr (np.array): Contains the values of the DP array.
         _occupied_arr (np.array): A mask that indicates which index is filled.
+        _recurrence (str): Markdown string of the recurrence for the DPArray.
+        _code (str): Markdown of the relevant code filling out the DPArray.
     """
 
     def __init__(
@@ -33,6 +37,8 @@ class DPArray:
         *,
         logger=None,
         dtype=np.float64,
+        recurrence=None,
+        code=None,
     ):
         """Initializes the DPArray."""
         self._dtype = self._parse_dtype(dtype)
@@ -44,6 +50,9 @@ class DPArray:
         self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
+
+        self._recurrence = recurrence
+        self._code = code
 
     @staticmethod
     def _parse_dtype(dtype):
@@ -311,3 +320,27 @@ class DPArray:
     def array_name(self):
         """Returns the array name."""
         return self._array_name
+    
+    @property
+    def recurrence(self):
+        """Returns the recurrence."""
+        return self._recurrence
+
+    @property
+    def code(self):
+        """Returns the code."""
+        return self._code
+    
+    @recurrence.setter
+    def recurrence(self, rec_string):
+        """Sets the recurrence"""
+        if not isinstance(rec_string, str):
+            raise TypeError("Recurrence must be a string")
+        self._recurrence = rec_string
+    
+    @code.setter
+    def code(self, code_string):
+        """Sets the code"""
+        if not isinstance(code_string, str):
+            raise TypeError("Code must be a string")
+        self._code = code_string

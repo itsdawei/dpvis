@@ -7,6 +7,7 @@ import dash
 import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, ctx, dcc, html
+import dash_bootstrap_components as dbc
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp import DPArray
@@ -89,6 +90,8 @@ def display(array,
     """
     visualizer = Visualizer()
     visualizer.add_array(array,
+                         recurrence=array.recurrence,
+                         code=array.code,
                          column_labels=column_labels,
                          row_labels=row_labels,
                          colorscale_name=colorscale_name)
@@ -121,11 +124,16 @@ class Visualizer:
         self._graph_metadata = {}
 
         # Create Dash App.
+        # List of themes: https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
+        # If we use a dark theme, we need to make the layout background transparent
         self._app = Dash(name="dynvis: Dynamic Program Visualization",
+                         external_stylesheets=[dbc.themes.LUX],
                          prevent_initial_callbacks=True)
 
     def add_array(self,
                   arr,
+                  recurrence=None,
+                  code=None,
                   column_labels=None,
                   row_labels=None,
                   colorscale_name="Sunset"):
@@ -140,6 +148,8 @@ class Visualizer:
 
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
+            "recurrence": recurrence,
+            "code": code,
             "figure_kwargs": {
                 "column_labels": column_labels,
                 "row_labels": row_labels,
@@ -368,12 +378,32 @@ class Visualizer:
             if ctx.triggered_id in ["stop", "self-test-button"]:
                 return 0  # Stops interval from running.
             return dash.no_update
+        
+        # Source: https://dash-bootstrap-components.opensource.faculty.ai/docs/components/offcanvas/
+        @self.app.callback(
+            Output("sidebar", "is_open"), 
+            Output("page-content", "style"),
+            Input("toggle-sidebar", "n_clicks"),
+            Input("sidebar", "is_open"),
+            State("sidebar", "is_open"),
+        )
+        def toggle_sidebar(n_clicks, sidebar_is_open, is_open):
+            ctx = dash.callback_context
+            if not ctx.triggered:
+                # No input has fired yet, so we return the initial state
+                return dash.no_update
+            
+            if ctx.triggered_id == "toggle-sidebar" and not sidebar_is_open:
+                # Button clicked to open sidebar
+                return True, {"marginLeft": "400px"}
+            # Sidebar closed either by button or by 'x' on offcanvas sidebar
+            return False, {"marginLeft": 0}
 
-        @self.app.callback(Output("click-data", "children"),
-                           Input(self._primary, "clickData"))
-        def display_click_data(click_data):
-            # TODO: Remove this
-            return json.dumps(click_data, indent=2)
+        # @self.app.callback(Output("click-data", "children"),
+        #                    Input(self._primary, "clickData"))
+        # def display_click_data(click_data):
+        #     # TODO: Remove this
+        #     return json.dumps(click_data, indent=2)
 
         @self.app.callback(
             Output("toggle-text", "children"),
@@ -500,6 +530,8 @@ class Visualizer:
         the graph.
         """
         graphs = []
+        all_recurrences = ""
+        all_code = ""
         for name, metadata in self._graph_metadata.items():
             arr = metadata["arr"]
             kwargs = metadata["figure_kwargs"]
@@ -508,44 +540,60 @@ class Visualizer:
             # We need to re-access graph_metadata because self._create_figure
             # changes its value.
             figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
+            
+            # Set up showing the recurrence and code
+            if (self._graph_metadata[name]["recurrence"]):
+                all_recurrences += self._graph_metadata[name]["recurrence"] + "\n"
+            if (self._graph_metadata[name]["code"]):
+                all_code += self._graph_metadata[name]["code"] + "\n"
             graphs.append(dcc.Graph(id=name, figure=figure))
 
         max_timestep = len(
             list(self._graph_metadata.values())[0]["t_heatmaps"]) - 1
 
-        self.app.layout = html.Div([
+        sidebar_content = html.Div(
+                [
+                    dcc.Markdown(("Recurrences:", all_recurrences) if all_recurrences != "" 
+                                 else "No recurrence provided.", mathjax=True),
+                    dcc.Markdown(("Code:", all_code) if all_code != "" 
+                                 else "No code provided.", mathjax=True),
+                ],
+                style={"width": "250px"},
+            )
+
+        main_content = html.Div([
             *graphs,
             html.Div(id="slider-container",
-                     children=[
-                         dcc.Slider(min=0,
+                    children=[
+                        dcc.Slider(min=0,
                                     max=max_timestep,
                                     step=1,
                                     value=0,
                                     updatemode="drag",
                                     id="slider"),
-                         html.Button("Play", id="play"),
-                         html.Button("Stop", id="stop"),
-                     ],
-                     style={"display": "block"}),
+                        html.Button("Play", id="play"),
+                        html.Button("Stop", id="stop"),
+                    ],
+                    style={"display": "block"}),
             dcc.Interval(id="interval",
-                         interval=1000,
-                         n_intervals=0,
-                         max_intervals=0),
+                        interval=1000,
+                        n_intervals=0,
+                        max_intervals=0),
             html.Div([
                 dcc.Markdown("""
                     **SELF-TESTING**
                 """),
                 html.Pre(id="click-data",
-                         style={
-                             "border": "thin lightgrey solid",
-                             "overflowX": "scroll"
-                         }),
+                        style={
+                            "border": "thin lightgrey solid",
+                            "overflowX": "scroll"
+                        }),
             ],
-                     className="three columns"),
+                    className="three columns"),
             dcc.Input(id="user-input",
-                      type="number",
-                      placeholder="",
-                      debounce=True),
+                    type="number",
+                    placeholder="",
+                    debounce=True),
             html.Div(id="comparison-result"),
             html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
@@ -553,12 +601,34 @@ class Visualizer:
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="store-clicked-z"),
             dcc.Store(id="test-info",
-                      data={
-                          "test_mode": False,
-                          "num_tests": -1,
-                          "cur_test": 0
-                      }),
-        ])
+                    data={
+                        "test_mode": False,
+                        "num_tests": -1,
+                        "cur_test": 0
+                    }),
+            html.Button("Recurrence and Code", id="toggle-sidebar", n_clicks=0),
+        ], 
+        id="page-content",
+        style={"marginLeft": 0},)
+
+        self.app.layout = dbc.Container(
+            [
+                main_content,
+                
+                dbc.Offcanvas(
+                    sidebar_content,
+                    id="sidebar",
+                    title="Sidebar",
+                    backdrop=False,
+                    scrollable=True,
+                    is_open=False,
+                    style={"position": "fixed",
+                           "top": 0,
+                           "left": 0},
+                ),
+            ],
+            fluid=True,
+        )
 
         self._attach_callbacks()
 
