@@ -20,14 +20,10 @@ class DPArray:
             used to reproduce frame-by-frame animation of the DP algorithm.
         dtype (str or data-type): Data type of the DPArray. We only support
             ``"f"`` / ``np.float32`` and ``"d"`` / ``np.float64``.
-        recurrence (str): Markdown of intended recurrence for the DPArray.
-        code (str): Markdown of the relevant code filling out the DPArray.
 
     Attributes:
         _arr (np.array): Contains the values of the DP array.
         _occupied_arr (np.array): A mask that indicates which index is filled.
-        _recurrence (str): Markdown string of the recurrence for the DPArray.
-        _code (str): Markdown of the relevant code filling out the DPArray.
     """
 
     def __init__(
