@@ -8,7 +8,6 @@ import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, ctx, dcc, html
-from dash_bootstrap_templates import load_figure_template
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp import DPArray
