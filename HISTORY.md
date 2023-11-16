@@ -4,6 +4,7 @@
 
 ### API
 
+- Working sidebar and recurrences (#33)
 - Add support for displaying multiple arrays (#23, #32)
 - Improve Front-end Callback Structure (#31)
 - Implement object-oriented API (#28)
