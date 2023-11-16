@@ -33,8 +33,6 @@ class DPArray:
         *,
         logger=None,
         dtype=np.float64,
-        recurrence=None,
-        code=None,
     ):
         """Initializes the DPArray."""
         self._dtype = self._parse_dtype(dtype)
@@ -46,9 +44,6 @@ class DPArray:
         self._logger.add_array(array_name, shape)
 
         self._array_name = array_name
-
-        self._recurrence = recurrence
-        self._code = code
 
     @staticmethod
     def _parse_dtype(dtype):
