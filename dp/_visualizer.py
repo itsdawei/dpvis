@@ -386,16 +386,8 @@ class Visualizer:
             Output("sidebar", "is_open"),
             Output("page-content", "style"),
             Input("toggle-sidebar", "n_clicks"),
-            Input("sidebar", "is_open"),
-            State("sidebar", "is_open"),
-        )
-        def toggle_sidebar(_n_clicks, sidebar_is_open, _is_open):
-            # TODO: Entirely possible that _n_clicks and _is_open are not necessary
-            ctx = dash.callback_context
-            if not ctx.triggered:
-                # No input has fired yet, so we return the initial state
-                return dash.no_update
-
+            Input("sidebar", "is_open"))
+        def toggle_sidebar(_, sidebar_is_open):
             if ctx.triggered_id == "toggle-sidebar" and not sidebar_is_open:
                 # Button clicked to open sidebar
                 return True, {"marginLeft": "400px"}
@@ -538,19 +530,20 @@ class Visualizer:
         for name, metadata in self._graph_metadata.items():
             arr = metadata["arr"]
             kwargs = metadata["figure_kwargs"]
+
+            # Set up showing the recurrence and code
+            if metadata["recurrence"]:
+                all_recurrences += metadata[
+                    "recurrence"] + "\n"
+            if metadata["code"]:
+                all_code += metadata["code"] + "\n"
+
             self._create_figure(arr, **kwargs)
 
             # We need to re-access graph_metadata because self._create_figure
             # changes its value.
-            # TODO: Can this be metadata?
             figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
 
-            # Set up showing the recurrence and code
-            if metadata["recurrence"]:
-                all_recurrences += metadata[name][
-                    "recurrence"] + "\n"
-            if metadata["code"]:
-                all_code += metadata["code"] + "\n"
             graphs.append(dcc.Graph(id=name, figure=figure))
 
         max_timestep = len(
