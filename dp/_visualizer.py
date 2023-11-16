@@ -4,10 +4,11 @@ import copy
 from enum import IntEnum
 
 import dash
+import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, ctx, dcc, html
-import dash_bootstrap_components as dbc
+from dash_bootstrap_templates import load_figure_template
 from plotly.colors import get_colorscale, sample_colorscale
 
 from dp import DPArray
@@ -73,10 +74,10 @@ def _get_colorbar_kwargs(name):
 
 
 def display(array,
-            recurrence=None,
-            code=None,
             row_labels=None,
             column_labels=None,
+            recurrence=None,
+            code=None,
             colorscale_name="Sunset"):
     """Creates an interactive display of the given DPArray in a webpage.
 
@@ -85,19 +86,19 @@ def display(array,
 
     Args:
         array (DPArray): DParray to be visualized.
-        recurrence (str): Markdown of intended recurrence for the DPArray.
-        code (str): Markdown of the relevant code filling out the DPArray.
         row_labels (list of str): Row labels of the DP array.
         column_labels (list of str): Column labels of the DP array.
+        recurrence (str): Markdown of intended recurrence for the DPArray.
+        code (str): Markdown of the relevant code filling out the DPArray.
         colorscale_name (str): Name of built-in colorscales in plotly. See
             plotly.colors.named_colorscales for the built-in colorscales.
     """
     visualizer = Visualizer()
     visualizer.add_array(array,
-                         recurrence=recurrence,
-                         code=code,
                          column_labels=column_labels,
                          row_labels=row_labels,
+                         recurrence=recurrence,
+                         code=code,
                          colorscale_name=colorscale_name)
     visualizer.show()
 
@@ -127,20 +128,21 @@ class Visualizer:
         self._primary = None
         self._graph_metadata = {}
 
-        # Create Dash App.
-        # List of themes:
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
+        themes = [dbc.themes.LUX]
+
+        # Create Dash App.
         self._app = Dash(name="dynvis: Dynamic Program Visualization",
-                         external_stylesheets=[dbc.themes.LUX],
+                         external_stylesheets=themes,
                          prevent_initial_callbacks=True)
 
     def add_array(self,
                   arr,
-                  recurrence=None,
-                  code=None,
                   column_labels=None,
                   row_labels=None,
+                  recurrence=None,
+                  code=None,
                   colorscale_name="Sunset"):
         """Add a DPArray to the visualization."""
         # TODO: @David Docstrings
