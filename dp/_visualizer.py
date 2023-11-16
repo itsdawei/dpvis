@@ -557,6 +557,12 @@ class Visualizer:
                                  else "No recurrence provided.", mathjax=True),
                     dcc.Markdown(("Code:", all_code) if all_code != "" 
                                  else "No code provided.", mathjax=True),
+                    dcc.Input(id="user-input",
+                              type="number",
+                              placeholder="",
+                              debounce=True),
+                    html.Div(id="comparison-result"),
+                    html.Button("Test Myself!", id="self-test-button"),
                 ],
                 style={"width": "250px"},
             )
@@ -590,12 +596,6 @@ class Visualizer:
                         }),
             ],
                     className="three columns"),
-            dcc.Input(id="user-input",
-                    type="number",
-                    placeholder="",
-                    debounce=True),
-            html.Div(id="comparison-result"),
-            html.Button("Test Myself!", id="self-test-button"),
             html.Div(id="next-prompt"),
             html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
             dcc.Store(id="store-keypress", data=0),
@@ -606,7 +606,7 @@ class Visualizer:
                         "num_tests": -1,
                         "cur_test": 0
                     }),
-            html.Button("Recurrence and Code", id="toggle-sidebar", n_clicks=0),
+            html.Button("Self Testing", id="toggle-sidebar", n_clicks=0),
         ], 
         id="page-content",
         style={"marginLeft": 0},)
