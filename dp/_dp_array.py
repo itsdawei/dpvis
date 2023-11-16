@@ -320,7 +320,7 @@ class DPArray:
     def array_name(self):
         """Returns the array name."""
         return self._array_name
-    
+
     @property
     def recurrence(self):
         """Returns the recurrence."""
@@ -330,14 +330,14 @@ class DPArray:
     def code(self):
         """Returns the code."""
         return self._code
-    
+
     @recurrence.setter
     def recurrence(self, rec_string):
         """Sets the recurrence"""
         if not isinstance(rec_string, str):
             raise TypeError("Recurrence must be a string")
         self._recurrence = rec_string
-    
+
     @code.setter
     def code(self, code_string):
         """Sets the code"""
