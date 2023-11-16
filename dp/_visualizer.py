@@ -382,11 +382,10 @@ class Visualizer:
 
         # Source:
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/components/offcanvas/
-        @self.app.callback(
-            Output("sidebar", "is_open"),
-            Output("page-content", "style"),
-            Input("toggle-sidebar", "n_clicks"),
-            Input("sidebar", "is_open"))
+        @self.app.callback(Output("sidebar", "is_open"),
+                           Output("page-content", "style"),
+                           Input("toggle-sidebar", "n_clicks"),
+                           Input("sidebar", "is_open"))
         def toggle_sidebar(_, sidebar_is_open):
             if ctx.triggered_id == "toggle-sidebar" and not sidebar_is_open:
                 # Button clicked to open sidebar
@@ -533,8 +532,7 @@ class Visualizer:
 
             # Set up showing the recurrence and code
             if metadata["recurrence"]:
-                all_recurrences += metadata[
-                    "recurrence"] + "\n"
+                all_recurrences += metadata["recurrence"] + "\n"
             if metadata["code"]:
                 all_code += metadata["code"] + "\n"
 
