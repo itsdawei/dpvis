@@ -616,7 +616,6 @@ class Visualizer:
 
         main = html.Div(
             [
-                *graphs,
                 html.Div(id="slider-container",
                          children=[
                              dcc.Slider(min=0,
@@ -629,6 +628,7 @@ class Visualizer:
                              html.Button("Stop", id="stop"),
                          ],
                          style={"display": "block"}),
+                *graphs,
                 dcc.Interval(id="interval",
                              interval=1000,
                              n_intervals=0,
