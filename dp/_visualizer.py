@@ -537,17 +537,17 @@ class Visualizer:
         #     class_name="d-grid gap-2 d-md-flex justify-content-md-end",
         # )
 
+        questions = [
+            "What is the next cell?",
+            "What are its dependencies?",
+            "What is its value?",
+        ]
+
         test_select_checkbox = dbc.Row([
             dbc.Col(
                 dbc.Checklist(
-                    [
-                        "What is the next cell?", "What are its dependencies?",
-                        "What is its value?"
-                    ],
-                    [
-                        "What is the next cell?", "What are its dependencies?",
-                        "What is its value?"
-                    ],
+                    questions,
+                    questions,
                     id="test-select-checkbox",
                 )),
             dbc.Col(dbc.Button("Test Myself!",
