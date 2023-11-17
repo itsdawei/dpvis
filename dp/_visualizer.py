@@ -458,7 +458,6 @@ class Visualizer:
         )
         def compare_input_and_frame(_, user_input, info, t):
             """Tests if user input is correct."""
-            # TODO: Hide the input box.
             if not info["test_mode"]:
                 return dash.no_update
 
