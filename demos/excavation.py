@@ -61,8 +61,8 @@ def excavate(v, M):
     # Recover a traceback path.
     current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
-    solution = [
-    ]  # Format: tuple(mining site, optimal number of levels to mine).
+    # Solution format: tuple(mining site, optimal number of levels to mine).
+    solution = []
 
     # While the path is not fully constructed.
     while current != (0, 0):
