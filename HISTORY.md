@@ -4,7 +4,7 @@
 
 ### API
 
-- Add annotation functionality on the backend (#27)
+- Add annotation functionality on the backend (#36)
 - Traceback solution verification and visualization (#24)
 - Display dependencies on click (#25, #26)
 - Migrate from graph objects to Dash (#20)
