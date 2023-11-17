@@ -71,6 +71,7 @@ def knapsack(items, capacity):
 
     path = path[::-1]
     solution = solution[::-1]
+    print(f'Traceback Solution: {solution}')
     OPT.add_traceback_path(path)
 
     # Define labels.
