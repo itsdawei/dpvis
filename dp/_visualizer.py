@@ -495,7 +495,7 @@ class Visualizer:
             html.Div(id="slider-container",
                      children=[
                          dcc.Slider(min=0,
-                                    max=max_timestep,
+                                    max=max_timestep - 1,
                                     step=1,
                                     value=0,
                                     updatemode="drag",
