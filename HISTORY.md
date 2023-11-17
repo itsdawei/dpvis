@@ -4,6 +4,7 @@
 
 ### API
 
+- Make `create_figure` return a `Figure` object (#34)
 - Add support for displaying multiple arrays (#23, #32)
 - Improve Front-end Callback Structure (#31)
 - Implement object-oriented API (#28)
