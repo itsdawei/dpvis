@@ -1,8 +1,8 @@
 """This file provides the Logger class."""
 from enum import IntEnum
-from colorama import Fore, Style
 
 import numpy as np
+from colorama import Fore, Style
 
 
 class Op(IntEnum):
@@ -24,15 +24,18 @@ class Logger:
             ...
         },
         "annotations": {
-            array_name_1: [annotation1, annotation2, ...],
+            array_name_1: annotation1,
             ...
         }
         "cell_annotations": {
-            array_name_1: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
-            array_name_2: {idx1: [annotation1], idx2: [annotation2, annotation3], ...},
+            array_name_1: {idx1: annotation1, idx2: annotation2, ...},
+            ...
         }
     }
     note that values are None for READ and HIGHLIGHT.
+
+    The fields "annotations" and "cell_annotations" are optional and are
+    only included if append_annotation was called.
 
     Attributes:
         _logs (list): Contains the logs.
@@ -102,46 +105,52 @@ class Logger:
                     # array_name: {idx1: value1, idx2: value2, ...}
                     name: {} for name in self._array_shapes
                 },
-                "annotations": {
-                    name: [] for name in self._array_shapes
-                },
-                "cell_annotations": {
-                    name : {} for name in self._array_shapes
-                }
             })
-        self._logs[-1]["idx"][array_name].update(
-            dict(zip(idx_list, values) \
-                if values is not None \
-                else zip(idx_list, [None] * len(idx_list))))
-        
+
+        values = [None] * len(idx_list) if values is None else values
+        self._logs[-1]["idx"][array_name].update(dict(zip(idx_list, values)))
+
     def append_annotation(self, array_name, annotation, idx=None):
         """Appends an annotated operation to the log.
 
         Args:
-            array_name (str): The name of the array associated with this operation.
+            array_name (str): Name of the array associated with this operation.
             operation (Operation): Type of operation performed.
             annotation (str): Annotations associated with this operation.
             idx (int): Index of the array.
 
         Raises:
             ValueError: Array name not recognized by logger. 
-            AttributeError: Appending annotations to an empty logger.
+            ValueError: Index out of bounds.
         """
         if array_name not in self._array_shapes:
             raise ValueError(f"Array name {array_name} not recognized by"
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
-        if len(self._logs) == 0:
-            raise AttributeError("Cannot append annotations to an empty logger.")
         
+        # if index out of bounds
+        if idx is not None and idx >= self._array_shapes[array_name]:
+            raise ValueError(f"Index {idx} out of bounds for array {array_name}.")
+
+
+                # "annotations": {
+                #     name: [] for name in self._array_shapes
+                # },
+                # "cell_annotations": {
+                #     name : {} for name in self._array_shapes
+                # }
+
+        # create or overwrite annotation
         if idx is None:
-            # append to annotations
-            self._logs[-1]["annotations"][array_name].append(annotation)
+            if "annotations" not in self._logs[-1]:
+                self._logs[-1]["annotations"] = {}
+            self._logs[-1]["annotations"][array_name] = annotation
         else:
-            # append to cell_annotations
-            if idx not in self._logs[-1]["cell_annotations"][array_name]:
-                self._logs[-1]["cell_annotations"][array_name][idx] = []
-            self._logs[-1]["cell_annotations"][array_name][idx].append(annotation)
+            if "cell_annotations" not in self._logs[-1]:
+                self._logs[-1]["cell_annotations"] = {
+                    name: {} for name in self._array_shapes
+                }
+            self._logs[-1]["cell_annotations"][array_name][idx] = annotation
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
@@ -153,6 +162,9 @@ class Logger:
             list of timestep dicts
             timestep: {
                 "array_name": {
+                    "annotations": array annotations at this timestep which are
+                        not associated with any cell but the entire array.
+                    "cell_annotations": array cell annotations at this timestep,
                     "contents": array contents at this timestep,
                     Op.READ: [idx1, idx2, ...],
                     Op.WRITE: [idx1, idx2, ...],
@@ -163,45 +175,71 @@ class Logger:
                 },
             }
         """
-        timesteps = []
         array_contents = {
             name: np.full(shape, None)
             for name, shape in self._array_shapes.items()
         }
 
-        new_timestep = True
-        for log in self._logs:
-            if new_timestep:
-                timesteps.append({
-                    name: {
-                        "annotations": log["annotations"][name],
-                        "cell_annotations": log["cell_annotations"][name],
-                        "contents": array_contents[name].copy(),
-                        Op.READ: set(),
-                        Op.WRITE: set(),
-                        Op.HIGHLIGHT: set(),
-                    } for name in self._array_shapes
-                })
-                new_timestep = False
+        # For each consecutive sequence of Op.WRITE, find the last index.
+        last_write_indices = []
+        for i, log in enumerate(self._logs):
+            if log["op"] != Op.WRITE:
+                continue
+            if last_write_indices and i == last_write_indices[-1] + 1:
+                continue
+            last_write_indices.append(i)
 
-            if log["op"] == Op.WRITE:
-                for name, idx in log["idx"].items():
-                    timesteps[-1][name][log["op"]] = set(idx.keys())
-                    for i, v in idx.items():
-                        array_contents[name][i] = v
-                    timesteps[-1][name]["contents"] = \
-                        array_contents[name].copy()
-                new_timestep = True
-            else:
-                # NON-WRITE / READ and HIGHLIGHT operations
-                for name, idx in log["idx"].items():
-                    timesteps[-1][name][log["op"]] |= set(idx.keys())
+        # NOTE: If annotation is added after the last write, it will be group
+        # in a timestep without a write. This fixes that issue by forcing the
+        # last timestep to include everything after the last write as well.
+        # However, this may cause issues with backtracing.
+        # last_write_indices[-1] = len(self.logs) - 1
+
+        # Split the logs into batches based on the last write indices.
+        log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
+        if log_batches[-1].size == 0:
+            log_batches = log_batches[:-1]
+
+        contents = {
+            name: np.full(shape, None)
+            for name, shape in self._array_shapes.items()
+        }
+
+        # Create a new timestep for each batch.
+        timesteps = []
+        for batch in log_batches:
+            timesteps.append({
+                name: {
+                    "contents": array_contents[name].copy(),
+                    Op.READ: set(),
+                    Op.WRITE: set(),
+                    Op.HIGHLIGHT: set(),
+                } for name in self._array_shapes
+            })
+            for log in batch:
+                op = log["op"]
+                for name, indice_dict in log["idx"].items():
+                    timesteps[-1][name][op] |= indice_dict.keys()
+                    # For WRITE, track the changes to the DP array.
+                    if op == Op.WRITE:
+                        for idx, val in indice_dict.items():
+                            contents[name][idx] = val
+                            array_contents[name][idx] = val
+                        timesteps[-1][name]["contents"] = contents[name].copy()
+
+                if "annotations" in log:
+                    for name, annotation in log["annotations"].items():
+                        timesteps[-1][name]["annotations"] = annotation
+                
+                if "cell_annotations" in log:
+                    for name, cell_annotations in log["cell_annotations"].items():
+                        timesteps[-1][name]["cell_annotations"] = cell_annotations
 
         return timesteps
 
     def print_timesteps(self):
         """Prints the timesteps in color. Currently works for 1D arrays only.
-        
+
         Raises:
             ValueError: If the array shapes are not 1D.
         """
