@@ -564,52 +564,49 @@ class Visualizer:
             for metadata in self._graph_metadata.values()
         ]
 
+        alerts = [
+            dbc.Alert("You are in self-testing mode",
+                      id="test-mode-toast",
+                      is_open=False,
+                      color="info",
+                      style={
+                          "position": "fixed",
+                          "bottom": 10,
+                          "left": 10,
+                          "width": 350,
+                      }),
+            dbc.Alert("Correct!",
+                      id="correct",
+                      is_open=False,
+                      color="success",
+                      duration=3000,
+                      fade=True,
+                      className="alert-auto position-fixed w-25",
+                      style={
+                          "bottom": 10,
+                          "left": 10,
+                          "z-index": 9999,
+                      }),
+            dbc.Alert("Incorrect!",
+                      id="incorrect",
+                      is_open=False,
+                      color="danger",
+                      duration=3000,
+                      fade=True,
+                      className="alert-auto position-fixed w-25",
+                      style={
+                          "bottom": 10,
+                          "left": 10,
+                          "z-index": 9999,
+                      })
+        ]
+
         sidebar = html.Div([
+            *description_md,
             test_select_checkbox,
             dbc.Row([
                 dbc.Input(id="user-input", type="number", placeholder=""),
             ]),
-            dbc.Alert(
-                "You are in self-testing mode",
-                id="test-mode-toast",
-                is_open=False,
-                color="info",
-                style={
-                    "position": "fixed",
-                    "bottom": 10,
-                    "left": 10,
-                    "width": 350,
-                },
-            ),
-            dbc.Alert(
-                "Correct!",
-                id="correct",
-                is_open=False,
-                color="success",
-                duration=3000,
-                fade=True,
-                className="alert-auto position-fixed w-25",
-                style={
-                    "bottom": 10,
-                    "left": 10,
-                    "z-index": 9999,
-                },
-            ),
-            dbc.Alert(
-                "Incorrect!",
-                id="incorrect",
-                is_open=False,
-                color="danger",
-                duration=3000,
-                fade=True,
-                className="alert-auto position-fixed w-25",
-                style={
-                    "bottom": 10,
-                    "left": 10,
-                    "z-index": 9999,
-                },
-            ),
-            *description_md,
         ],
                            id="side-bar",
                            className="border border-warning")
@@ -652,6 +649,7 @@ class Visualizer:
                     dbc.Col(main),
                 ],
                         class_name="g-0"),
+                *alerts,
             ],
             fluid=True,
             class_name="p-2",
