@@ -1,7 +1,7 @@
 import numpy as np
 
-from dp import DPArray, display
-from dp._verify import verify_traceback_path
+from dp import DPArray
+from dp._visualizer import Visualizer
 
 
 def matrix_traversal(M):
@@ -12,7 +12,12 @@ def matrix_traversal(M):
     path to (n, m). The agent is only able to move South or Eest from its
     current position. 
     """
-    OPT = DPArray(shape=M.shape)
+    OPT = DPArray(shape=M.shape, array_name="OPT")
+
+    V = DPArray(shape=M.shape, array_name="V", logger=OPT.logger)
+    for i in range(M.shape[0]):
+        for j in range(M.shape[1]):
+            V[i, j] = M[i, j]
 
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
@@ -36,7 +41,7 @@ def matrix_traversal(M):
 
             # We take the better path between the optimal path to (i-1, j) and
             # (i, j-1).
-            OPT[i, j] = M[i, j] + OPT.min(indices=indices, elements=elements)
+            OPT[i, j] = V[i, j] + OPT.min(indices=indices, elements=elements)
 
     # Make a copy data in OPT to prevent visualization of future operations.
     arr = OPT.arr
@@ -61,7 +66,12 @@ def matrix_traversal(M):
     # Add labels to the visualization.
     row_labels = [str(i) for i in range(M.shape[0])]
     column_labels = [str(j) for j in range(M.shape[1])]
-    display(OPT, row_labels=row_labels, column_labels=column_labels)
+    visualizer = Visualizer()
+    visualizer.add_array(OPT,
+                         column_labels=column_labels,
+                         row_labels=row_labels)
+    visualizer.add_array(V)
+    visualizer.show()
 
     return OPT[M.shape[0] - 1, M.shape[1] - 1]
 

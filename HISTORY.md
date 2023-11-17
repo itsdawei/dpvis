@@ -3,6 +3,11 @@
 ## 0.1.0
 
 ### API
+
+- Make `create_figure` return a `Figure` object (#34)
+- Add support for displaying multiple arrays (#23, #32)
+- Improve Front-end Callback Structure (#31)
+- Implement object-oriented API (#28)
 - Implemented self testing of values (#22)
 - Traceback solution verification and visualization (#24)
 - Display dependencies on click (#25, #26)
@@ -13,27 +18,29 @@
 - Enable plotly builtin colorscales for visualizer (#21)
 - Implement highlighting for visualizer (#19)
 - Enable writing with slices (#18)
-- Implement ``visualize`` module for 1D and 2D arrays (#16)
+- Implement `visualize` module for 1D and 2D arrays (#16)
 - Raises warning when accessing array out-of-bounds (#15)
 - Enable reading with slices (#14)
 - Implement method to print timesteps of the logger (#13)
-- Add max/min method in ``DPArray``(#12, #17)
-- Implement method to convert ``Logger`` object to a timestep action on the
+- Add max/min method in `DPArray`(#12, #17)
+- Implement method to convert `Logger` object to a timestep action on the
   array (#11)
-- Add ``Value`` field to Logger class for tracking (#10)
+- Add `Value` field to Logger class for tracking (#10)
 - Add Logger to DPArray class (#4)
-- Create ``Logger`` class (#4)
-- Remove integer support in ``DPArray``(#6)
-- Create ``DPArray`` class (#3)
+- Create `Logger` class (#4)
+- Remove integer support in `DPArray`(#6)
+- Create `DPArray` class (#3)
 - Initial project setup (#1, #2)
 
 ### Documentation
+
 - Excavation and Matrix Traversal examples (#19, #21)
 - Documentation with mkdocs (#7)
 
 ### Improvements
+
 - Migrate to poetry (#21)
 - Setup automated test-runners (#5)
-    - Reduce GitHub Action usage (#9)
-    - mkdocs (#7)
-    - pytest (#5)
+  - Reduce GitHub Action usage (#9)
+  - mkdocs (#7)
+  - pytest (#5)
