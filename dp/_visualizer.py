@@ -373,7 +373,7 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-mode-toast", "is_open"),
-            Output(component_id="slider-container", component_property="style"),
+            Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["test_mode"]:
@@ -586,48 +586,63 @@ class Visualizer:
                            id="side-bar",
                            className="border border-warning")
 
-        main = html.Div(
-            [
-                html.Div(id="slider-container",
-                         children=[
-                             dcc.Slider(min=0,
-                                        max=max_timestep,
-                                        step=1,
-                                        value=0,
-                                        updatemode="drag",
-                                        id="slider"),
-                             html.Button("Play", id="play"),
-                             html.Button("Stop", id="stop"),
-                         ],
-                         style={"display": "block"}),
-                *graphs,
-                dcc.Interval(id="interval",
-                             interval=1000,
-                             n_intervals=0,
-                             max_intervals=0),
-                dcc.Store(id="store-keypress", data=0),
-                dcc.Store(id="test-info",
-                          data={
-                              "test_mode": False,
-                              "num_tests": -1,
-                              "cur_test": 0
-                          }),
-            ],
-            id="page-content",
-            className="border border-warning",
-        )
+        main = [
+            *graphs,
+            dcc.Interval(id="interval",
+                         interval=1000,
+                         n_intervals=0,
+                         max_intervals=0),
+        ]
+
+        playback_control = [
+            dbc.Col(dbc.Button("Play", id="play"), width="auto"),
+            dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
+            dbc.Col(dcc.Slider(
+                min=0,
+                max=max_timestep,
+                step=1,
+                value=0,
+                updatemode="drag",
+                id="slider",
+            ),
+                    width=True),
+        ]
+
+        datastores = [
+            dcc.Store(id="store-keypress", data=0),
+            dcc.Store(id="test-info",
+                      data={
+                          "test_mode": False,
+                          "num_tests": -1,
+                          "cur_test": 0
+                      }),
+        ]
 
         self.app.layout = dbc.Container(
             [
-                dbc.Row([
-                    dbc.Col(sidebar, width="auto"),
-                    dbc.Col(main),
-                ],
-                        class_name="g-0"),
+                dbc.Row(
+                    [
+                        dbc.Col(sidebar, width="auto"),
+                        dbc.Col([
+                            dbc.Row(
+                                playback_control,
+                                id="playback-control",
+                                class_name="g-0",
+                                align="center",
+                                # style={"display": "block"}
+                            ),
+                            dbc.Row(
+                                main,
+                                id="page-content",
+                                className="border border-warning",
+                            )
+                        ])
+                    ],
+                    class_name="g-0"),
                 *alerts,
+                *datastores,
             ],
             fluid=True,
-            class_name="p-2",
         )
 
         self._attach_callbacks()
