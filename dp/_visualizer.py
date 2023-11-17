@@ -377,8 +377,8 @@ class Visualizer:
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["test_mode"]:
-                return True, {"display": "none"}
-            return False, {"display": "block"}
+                return True, {"visibility": "hidden"}
+            return False, {"visibility": "visible"}
 
         @self.app.callback(
             Output("test-info", "data"),
@@ -577,35 +577,31 @@ class Visualizer:
         ]
 
         sidebar = html.Div([
-            *description_md,
-            test_select_checkbox,
-            dbc.Row([
+            dbc.Stack([
+                *description_md,
+                test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
-            ]),
-        ],
-                           id="side-bar",
-                           className="border border-warning")
-
-        main = [
-            *graphs,
-            dcc.Interval(id="interval",
-                         interval=1000,
-                         n_intervals=0,
-                         max_intervals=0),
-        ]
+            ],
+                      id="sidebar",
+                      className="border border-warning"),
+        ])
 
         playback_control = [
             dbc.Col(dbc.Button("Play", id="play"), width="auto"),
             dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
             dbc.Col(dcc.Slider(
                 min=0,
-                max=max_timestep-1,
+                max=max_timestep - 1,
                 step=1,
                 value=0,
                 updatemode="drag",
                 id="slider",
             ),
                     width=True),
+            dcc.Interval(id="interval",
+                         interval=1000,
+                         n_intervals=0,
+                         max_intervals=0),
         ]
 
         datastores = [
@@ -629,10 +625,9 @@ class Visualizer:
                                 id="playback-control",
                                 class_name="g-0",
                                 align="center",
-                                # style={"display": "block"}
                             ),
                             dbc.Row(
-                                main,
+                                dbc.Stack(graphs),
                                 id="page-content",
                                 className="border border-warning",
                             )
