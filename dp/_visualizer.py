@@ -171,9 +171,6 @@ class Visualizer:
         timesteps = arr.get_timesteps()
         t = len(timesteps)
 
-        # Obtaining the dp_array timesteps object.
-        timesteps = arr.get_timesteps()
-
         name = arr.array_name
 
         # Height and width of the array.
@@ -216,17 +213,12 @@ class Visualizer:
                 t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
                 t_write_matrix[i][write_idx] = True
 
-        metadata = {
+        return {
             "t_color_matrix": t_color_matrix,
             "t_value_matrix": t_value_matrix,
             "t_read_matrix": t_read_matrix,
             "t_write_matrix": t_write_matrix,
             "t_highlight_matrix": t_highlight_matrix,
-        }
-
-        self._graph_metadata[arr.array_name] = {
-            **self._graph_metadata[arr.array_name],
-            **metadata
         }
 
     def _create_figure(self,
@@ -248,17 +240,14 @@ class Visualizer:
             Plotly figure: Figure of DPArray as it is filled out by the
                 recurrence.
         """
-        self._parse_timesteps(arr)
+        name = arr.array_name
+        self._graph_metadata[name].update(self._parse_timesteps(arr))
 
-        t_value_matrix = self._graph_metadata[arr.array_name]["t_value_matrix"]
-        t_color_matrix = self._graph_metadata[arr.array_name]["t_color_matrix"]
-        t_read_matrix = self._graph_metadata[arr.array_name]["t_read_matrix"]
+        t_value_matrix = self._graph_metadata[name]["t_value_matrix"]
+        t_color_matrix = self._graph_metadata[name]["t_color_matrix"]
+        t_read_matrix = self._graph_metadata[name]["t_read_matrix"]
 
-        if len(arr.shape) == 1:
-            h, = arr.shape
-            w = 1
-        else:
-            h, w = arr.shape
+        h, w = t_value_matrix.shape[1], t_value_matrix.shape[2]
 
         # Extra hovertext info:
         # <br>Value: {value_text}<br>Dependencies: {deps_text}
@@ -323,14 +312,7 @@ class Visualizer:
         figure.update_coloraxes(showscale=False)
         figure.update_layout(clickmode="event+select")
 
-        metadata = {
-            "figure": figure,
-            "t_heatmaps": t_heatmaps,
-        }
-        self._graph_metadata[arr.array_name] = {
-            **self._graph_metadata[arr.array_name],
-            **metadata,
-        }
+        return figure
 
     def _attach_callbacks(self):
         """Attach callbacks."""
@@ -513,20 +495,13 @@ class Visualizer:
         the graph.
         """
         graphs = []
-        for name, metadata in self._graph_metadata.items():
+        for name, metadata in self._graph_metadata.copy().items():
             arr = metadata["arr"]
-            kwargs = metadata["figure_kwargs"]
-
-            self._create_figure(arr, **kwargs)
-
-            # We need to re-access graph_metadata because self._create_figure
-            # changes its value.
-            figure = self._graph_metadata[name]["figure"]  # pylint: disable=unnecessary-dict-index-lookup
-
+            figure = self._create_figure(arr, **metadata["figure_kwargs"])
             graphs.append(dcc.Graph(id=name, figure=figure))
+            self._graph_metadata[name]["figure"] = figure
 
-        max_timestep = len(
-            list(self._graph_metadata.values())[0]["t_heatmaps"]) - 1
+        max_timestep = len(self._graph_metadata[self._primary]["figure"].frames)
 
         # button = html.Div(
         #     [
