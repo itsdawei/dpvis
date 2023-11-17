@@ -69,8 +69,9 @@ def matrix_traversal(M):
     visualizer = Visualizer()
     visualizer.add_array(OPT,
                          column_labels=column_labels,
-                         row_labels=row_labels)
-    visualizer.add_array(V)
+                         row_labels=row_labels,
+                         description="Hello 1")
+    visualizer.add_array(V, description="Hello 2")
     visualizer.show()
 
     return OPT[M.shape[0] - 1, M.shape[1] - 1]

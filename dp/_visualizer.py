@@ -75,8 +75,7 @@ def _get_colorbar_kwargs(name):
 def display(array,
             row_labels=None,
             column_labels=None,
-            recurrence=None,
-            code=None,
+            description=None,
             colorscale_name="Sunset"):
     """Creates an interactive display of the given DPArray in a webpage.
 
@@ -96,8 +95,7 @@ def display(array,
     visualizer.add_array(array,
                          column_labels=column_labels,
                          row_labels=row_labels,
-                         recurrence=recurrence,
-                         code=code,
+                         description=description,
                          colorscale_name=colorscale_name)
     visualizer.show()
 
@@ -132,16 +130,17 @@ class Visualizer:
         themes = [dbc.themes.LUX]
 
         # Create Dash App.
-        self._app = Dash(name="dynvis: Dynamic Program Visualization",
-                         external_stylesheets=themes,
-                         prevent_initial_callbacks=True)
+        self._app = Dash(
+            __name__,
+            # name="dynvis: Dynamic Program Visualization",
+            external_stylesheets=themes,
+            prevent_initial_callbacks=True)
 
     def add_array(self,
                   arr,
                   column_labels=None,
                   row_labels=None,
-                  recurrence=None,
-                  code=None,
+                  description="",
                   colorscale_name="Sunset"):
         """Add a DPArray to the visualization."""
         # TODO: @David Docstrings
@@ -154,8 +153,7 @@ class Visualizer:
 
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
-            "recurrence": recurrence,
-            "code": code,
+            "description": description,
             "figure_kwargs": {
                 "column_labels": column_labels,
                 "row_labels": row_labels,
@@ -385,19 +383,6 @@ class Visualizer:
                 return 0  # Stops interval from running.
             return dash.no_update
 
-        # Source:
-        # https://dash-bootstrap-components.opensource.faculty.ai/docs/components/offcanvas/
-        @self.app.callback(Output("sidebar", "is_open"),
-                           Output("page-content", "style"),
-                           Input("toggle-sidebar", "n_clicks"),
-                           Input("sidebar", "is_open"))
-        def toggle_sidebar(_, sidebar_is_open):
-            if ctx.triggered_id == "toggle-sidebar" and not sidebar_is_open:
-                # Button clicked to open sidebar
-                return True, {"marginLeft": "400px"}
-            # Sidebar closed either by button or by 'x' on offcanvas sidebar
-            return False, {"marginLeft": 0}
-
         # @self.app.callback(Output("click-data", "children"),
         #                    Input(self._primary, "clickData"))
         # def display_click_data(click_data):
@@ -405,13 +390,13 @@ class Visualizer:
         #     return json.dumps(click_data, indent=2)
 
         @self.app.callback(
-            Output("toggle-text", "children"),
+            Output("test-mode-toast", "is_open"),
             Output(component_id="slider-container", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["test_mode"]:
-                return "Self-Testing Mode: ON", {"display": "none"}
-            return "Self-Testing Mode: OFF", {"display": "block"}
+                return True, {"display": "none"}
+            return False, {"display": "block"}
 
         @self.app.callback(
             Output("test-info", "data"),
@@ -462,7 +447,8 @@ class Visualizer:
             return fig
 
         @self.app.callback(
-            Output("comparison-result", "children"),
+            Output("correct", "is_open"),
+            Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
@@ -483,9 +469,8 @@ class Visualizer:
             if user_input == test:
                 info["cur_test"] += 1
                 info["test_mode"] = info["cur_test"] < info["num_tests"]
-                return "Correct!", info
-
-            return "Incorrect!", dash.no_update
+                return True, False, info
+            return False, True, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -529,17 +514,9 @@ class Visualizer:
         the graph.
         """
         graphs = []
-        all_recurrences = ""
-        all_code = ""
         for name, metadata in self._graph_metadata.items():
             arr = metadata["arr"]
             kwargs = metadata["figure_kwargs"]
-
-            # Set up showing the recurrence and code
-            if metadata["recurrence"]:
-                all_recurrences += metadata["recurrence"] + "\n"
-            if metadata["code"]:
-                all_code += metadata["code"] + "\n"
 
             self._create_figure(arr, **kwargs)
 
@@ -552,27 +529,93 @@ class Visualizer:
         max_timestep = len(
             list(self._graph_metadata.values())[0]["t_heatmaps"]) - 1
 
-        sidebar_content = html.Div(
-            [
-                dcc.Markdown(
-                    ("Recurrences:", all_recurrences)
-                    if all_recurrences != "" else "No recurrence provided.",
-                    mathjax=True),
-                dcc.Markdown(
-                    ("Code:",
-                     all_code) if all_code != "" else "No code provided.",
-                    mathjax=True),
-                dcc.Input(id="user-input",
-                          type="number",
-                          placeholder="",
-                          debounce=True),
-                html.Div(id="comparison-result"),
-                html.Button("Test Myself!", id="self-test-button"),
-            ],
-            style={"width": "250px"},
-        )
+        # button = html.Div(
+        #     [
+        #         dbc.Button("Button 1", class_name="me-md-2"),
+        #         dbc.Button("Button 2", class_name="me-md-2"),
+        #         dbc.Button("Button 3"),
+        #     ],
+        #     class_name="d-grid gap-2 d-md-flex justify-content-md-end",
+        # )
 
-        main_content = html.Div(
+        test_select_checkbox = dbc.Row([
+            dbc.Col(
+                dbc.Checklist(
+                    [
+                        "What is the next cell?", "What are its dependencies?",
+                        "What is its value?"
+                    ],
+                    [
+                        "What is the next cell?", "What are its dependencies?",
+                        "What is its value?"
+                    ],
+                    id="test-select-checkbox",
+                )),
+            dbc.Col(dbc.Button("Test Myself!",
+                               id="self-test-button",
+                               class_name="h-100",
+                               color="info"),
+                    width="auto")
+        ])
+
+        description_md = [
+            dcc.Markdown(metadata["description"],
+                         mathjax=True,
+                         className="border border-primary")
+            for metadata in self._graph_metadata.values()
+        ]
+
+        sidebar = html.Div([
+            test_select_checkbox,
+            dbc.Row([
+                dbc.Input(id="user-input", type="number", placeholder=""),
+            ]),
+            dbc.Alert(
+                "You are in self-testing mode",
+                id="test-mode-toast",
+                is_open=False,
+                color="info",
+                style={
+                    "position": "fixed",
+                    "bottom": 10,
+                    "left": 10,
+                    "width": 350,
+                },
+            ),
+            dbc.Alert(
+                "Correct!",
+                id="correct",
+                is_open=False,
+                color="success",
+                duration=3000,
+                fade=True,
+                className="alert-auto position-fixed w-25",
+                style={
+                    "bottom": 10,
+                    "left": 10,
+                    "z-index": 9999,
+                },
+            ),
+            dbc.Alert(
+                "Incorrect!",
+                id="incorrect",
+                is_open=False,
+                color="danger",
+                duration=3000,
+                fade=True,
+                className="alert-auto position-fixed w-25",
+                style={
+                    "bottom": 10,
+                    "left": 10,
+                    "z-index": 9999,
+                },
+            ),
+            *description_md,
+        ],
+                           id="side-bar",
+                           className="border border-warning")
+
+        main = html.Div(
             [
                 *graphs,
                 html.Div(id="slider-container",
@@ -591,19 +634,6 @@ class Visualizer:
                              interval=1000,
                              n_intervals=0,
                              max_intervals=0),
-                html.Div([
-                    dcc.Markdown("""
-                    **SELF-TESTING**
-                """),
-                    html.Pre(id="click-data",
-                             style={
-                                 "border": "thin lightgrey solid",
-                                 "overflowX": "scroll"
-                             }),
-                ],
-                         className="three columns"),
-                html.Div(id="next-prompt"),
-                html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
                 dcc.Store(id="store-keypress", data=0),
                 dcc.Store(id="store-clicked-z"),
                 dcc.Store(id="test-info",
@@ -612,30 +642,21 @@ class Visualizer:
                               "num_tests": -1,
                               "cur_test": 0
                           }),
-                html.Button("Self Testing", id="toggle-sidebar", n_clicks=0),
             ],
             id="page-content",
-            style={"marginLeft": 0},
+            className="border border-warning",
         )
 
         self.app.layout = dbc.Container(
             [
-                main_content,
-                dbc.Offcanvas(
-                    sidebar_content,
-                    id="sidebar",
-                    title="Sidebar",
-                    backdrop=False,
-                    scrollable=True,
-                    is_open=False,
-                    style={
-                        "position": "fixed",
-                        "top": 0,
-                        "left": 0
-                    },
-                ),
+                dbc.Row([
+                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col(main),
+                ],
+                        class_name="g-0"),
             ],
             fluid=True,
+            class_name="p-2",
         )
 
         self._attach_callbacks()
