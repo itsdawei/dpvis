@@ -634,7 +634,6 @@ class Visualizer:
                              n_intervals=0,
                              max_intervals=0),
                 dcc.Store(id="store-keypress", data=0),
-                dcc.Store(id="store-clicked-z"),
                 dcc.Store(id="test-info",
                           data={
                               "test_mode": False,
