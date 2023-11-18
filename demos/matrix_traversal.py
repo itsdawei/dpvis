@@ -67,10 +67,12 @@ def matrix_traversal(M):
     row_labels = [str(i) for i in range(M.shape[0])]
     column_labels = [str(j) for j in range(M.shape[1])]
     visualizer = Visualizer()
+    # TODO: @Aditya add a better description for each array
     visualizer.add_array(OPT,
                          column_labels=column_labels,
-                         row_labels=row_labels)
-    visualizer.add_array(V)
+                         row_labels=row_labels,
+                         description="Description for DPArray.")
+    visualizer.add_array(V, description="Description for costs array.")
     visualizer.show()
 
     return OPT[M.shape[0] - 1, M.shape[1] - 1]

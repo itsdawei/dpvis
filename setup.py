@@ -14,13 +14,14 @@ install_requires = [
     "numpy>=1.17.0",
     "plotly>=5.17.0",
     "dash>=2.14.0",
+    "dash-bootstrap-components>=1.5.0",
 ]
 
 extras_require = {
     "dev": [
         "pip>=20.3",
-        "pylint==2.17.5",
-        "yapf==0.40.1",
+        "pylint==2.17.6",
+        "yapf==0.40.2",
 
         # Testing
         "pytest==7.0.1",
