@@ -219,8 +219,7 @@ class Visualizer:
         # List of dictionaries. Empty if no annotations.
         # t_annotations: [{array_name: annotation}, ...]
         # t_cell_annotations: [{array_name: {cell_idx: annotation}}, ...]
-        t_annotations = np.array(
-            [t[name]["annotations"] for t in timesteps])
+        t_annotations = np.array([t[name]["annotations"] for t in timesteps])
         t_cell_annotations = np.array(
             [t[name]["cell_annotations"] for t in timesteps])
 
@@ -344,18 +343,18 @@ class Visualizer:
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
         # html.P(annotation, style={"textAlign": "center"})
-        t_annotations = [
-            [
-                html.P(
-                    f"{name} : " + arr["t_annotations"][t],
-                    style={"textAlign": "center",
-                           "width": "auto"},
-                )
-                for name,arr in self._graph_metadata.items()
-                if arr["t_annotations"][t] is not None
-            ]
-            for t in range(len(values))
-            ]
+        t_annotations = [[
+            html.P(
+                f"{name} : " + arr["t_annotations"][t],
+                style={
+                    "textAlign": "center",
+                    "width": "auto"
+                },
+            )
+            for name, arr in self._graph_metadata.items()
+            if arr["t_annotations"][t] is not None
+        ]
+                         for t in range(len(values))]
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
@@ -370,17 +369,16 @@ class Visualizer:
                 self._show_figure_trace(metadata["figure"], t)
                 for metadata in self._graph_metadata.values()
             ]
-        
+
         # update annotation toast based on slider value
-        @self.app.callback(
-            Output("array-annotation-toast", "is_open"),
-            Output("array-annotation-toast", "children"),
-            Input("slider", "value"))
+        @self.app.callback(Output("array-annotation-toast", "is_open"),
+                           Output("array-annotation-toast", "children"),
+                           Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
             if t_annotations[t] is None or t_annotations[t] == []:
                 return False, ""
-            
+
             return True, t_annotations[t]
 
         @self.app.callback(
@@ -619,12 +617,12 @@ class Visualizer:
         ]
 
         array_annotations = dbc.Alert(
-                [],
-                id="array-annotation-toast",
-                color="secondary",
-                is_open=False,
-                className="border",
-                )
+            [],
+            id="array-annotation-toast",
+            color="secondary",
+            is_open=False,
+            className="border",
+        )
 
         sidebar = html.Div([
             dbc.Stack([
@@ -640,14 +638,15 @@ class Visualizer:
         playback_control = [
             dbc.Col(dbc.Button("Play", id="play"), width="auto"),
             dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
-            dbc.Col(dcc.Slider(
-                min=0,
-                max=max_timestep - 1,
-                step=1,
-                value=0,
-                updatemode="drag",
-                id="slider",
-            )),
+            dbc.Col(
+                dcc.Slider(
+                    min=0,
+                    max=max_timestep - 1,
+                    step=1,
+                    value=0,
+                    updatemode="drag",
+                    id="slider",
+                )),
             dcc.Interval(id="interval",
                          interval=1000,
                          n_intervals=0,
@@ -666,24 +665,23 @@ class Visualizer:
 
         self.app.layout = dbc.Container(
             [
-                dbc.Row(
-                    [
-                        dbc.Col(sidebar, width="auto"),
-                        dbc.Col([
-                            dbc.Row(
-                                playback_control,
-                                id="playback-control",
-                                class_name="g-0",
-                                align="center",
-                            ),
-                            dbc.Row(
-                                dbc.Stack(graphs),
-                                id="page-content",
-                                className="border border-warning",
-                            ),
-                        ])
-                    ],
-                    class_name="g-3"),
+                dbc.Row([
+                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col([
+                        dbc.Row(
+                            playback_control,
+                            id="playback-control",
+                            class_name="g-0",
+                            align="center",
+                        ),
+                        dbc.Row(
+                            dbc.Stack(graphs),
+                            id="page-content",
+                            className="border border-warning",
+                        ),
+                    ])
+                ],
+                        class_name="g-3"),
                 *alerts,
                 *datastores,
             ],

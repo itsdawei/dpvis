@@ -629,6 +629,7 @@ def test_annotation():
         Op.HIGHLIGHT: set(),
     }.items()
 
+
 def test_2d_cell_annotation():
     dp = DPArray((3, 3), "dp")
     dp[0, 0] = 1
