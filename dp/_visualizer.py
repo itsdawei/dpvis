@@ -408,7 +408,7 @@ class Visualizer:
             if info["tests"]:
                 return {
                     "tests": [],
-                }, False
+                }
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
@@ -684,18 +684,15 @@ class Visualizer:
                          n_intervals=0,
                          max_intervals=0),
         ]
-        """Test-Dict Documentation:
-            Keys:
-                truth: the value of the things being looked for.
-                render: what should be rendered at the beginning of this test
-        """
-        """Test-Info:
-            Keys:
-                tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
-        """
+
         datastores = [
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="test-info", data={
+                # [W, V1, V2, ..., Vn, R]
+                # Each element is the test states for the current timestep.
+                # - W: Click on all writes.
+                # - Vi: Entered the value for the ith write.
+                # - R: Click on all reads.
                 "tests": [],
             }),
         ]
