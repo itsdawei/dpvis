@@ -464,7 +464,7 @@ class Visualizer:
         def display_tests(info, t):
             alert = dbc.Alert(is_open=False,
                               color="danger",
-                              class_name="alert-auto position-fixed w-25")
+                              class_name="alert-auto")
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
 
@@ -486,8 +486,7 @@ class Visualizer:
             return fig.update_traces(z=z, selector=t), alert
 
         @self.app.callback(
-            Output("correct", "is_open"),
-            Output("incorrect", "is_open"),
+            Output("correct-alert", "children"),
             Output("test-info", "data", allow_duplicate=True),
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
@@ -519,19 +518,27 @@ class Visualizer:
             test = info["tests"][0]
             truths = test["truth"]
 
-            is_correct = False
-            # Check that [x, y] is a row of truths.
+            # The alert for correct or incorrect input.
+            correct_alert = dbc.Alert("Incorrect!",
+                                      color="danger",
+                                      is_open=True,
+                                      duration=3000,
+                                      fade=True,
+                                      className="alert-auto")
+
+            # If answer is correct, remove from truth and render the test
+            # values. Also updates alert.
             if answer in truths:
-                # Remove from truth and update render the test values.
                 truths.remove(answer)
                 info["tests"][0]["render"].append(answer)
-                is_correct = True
+                correct_alert.children = "Correct!"
+                correct_alert.color = "success"
 
-            # If all truths have been found, pop test from queue.
+            # If all truths have been found, pop from test queue.
             if not truths:
                 info["tests"].pop(0)
 
-            return is_correct, not is_correct, info, None
+            return correct_alert, info, None
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -611,36 +618,13 @@ class Visualizer:
         ]
 
         alerts = [
-            dbc.Alert("Correct!",
-                      id="correct",
-                      is_open=False,
-                      color="success",
-                      duration=3000,
-                      fade=True,
-                      className="alert-auto position-fixed w-25",
-                      style={
-                          "bottom": 10,
-                          "left": 10,
-                          "z-index": 9999,
-                      }),
-            dbc.Alert("Incorrect!",
-                      id="incorrect",
-                      is_open=False,
-                      color="danger",
-                      duration=3000,
-                      fade=True,
-                      className="alert-auto position-fixed w-25",
-                      style={
-                          "bottom": 10,
-                          "left": 10,
-                          "z-index": 9999,
-                      }),
-            html.Div(id="test-instructions",
+            html.Div(id="correct-alert",
+                     className="position-fixed z-9999 w-25",
                      style={
-                         "bottom": 80,
+                         "bottom": 10,
                          "left": 10,
-                         "z-index": 9999,
                      }),
+            html.Div(id="test-instructions", className="bottom-50 z-9999 w-25"),
         ]
 
         sidebar = html.Div([
