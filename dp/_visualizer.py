@@ -141,8 +141,8 @@ class Visualizer:
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
             "figure_kwargs": {
-                "column_labels": column_labels,
-                "row_labels": row_labels,
+                "column_labels": column_labels or [],
+                "row_labels": row_labels or [],
                 "colorscale_name": colorscale_name,
             }
         }
@@ -211,11 +211,7 @@ class Visualizer:
         return figure.update_traces(visible=False).update_traces(visible=True,
                                                                  selector=i)
 
-    def _create_figure(self,
-                       arr,
-                       colorscale_name="Sunset",
-                       row_labels=None,
-                       column_labels=None):
+    def _create_figure(self, arr, colorscale_name="Sunset"):
         """Create a figure for an array.
 
         Args:
@@ -223,19 +219,20 @@ class Visualizer:
             show (bool): Whether to show figure. Defaults to true.
             colorscale_name (str): Name of built-in colorscales in plotly. See
                 plotly.colors.named_colorscales for the built-in colorscales.
-            row_labels (list of str): Row labels of the DP array.
-            column_labels (list of str): Column labels of the DP array.
 
         Returns:
             Plotly figure: Figure of DPArray as it is filled out by the
                 recurrence.
         """
         name = arr.array_name
-        self._graph_metadata[name].update(self._parse_timesteps(arr))
+        metadata = self._graph_metadata[name]
+        kwargs = metadata["figure_kwargs"]
 
-        t_value_matrix = self._graph_metadata[name]["t_value_matrix"]
-        t_color_matrix = self._graph_metadata[name]["t_color_matrix"]
-        t_read_matrix = self._graph_metadata[name]["t_read_matrix"]
+        metadata.update(self._parse_timesteps(arr))
+
+        t_value_matrix = metadata["t_value_matrix"]
+        t_color_matrix = metadata["t_color_matrix"]
+        t_read_matrix = metadata["t_read_matrix"]
 
         h, w = t_value_matrix.shape[1], t_value_matrix.shape[2]
 
@@ -252,9 +249,39 @@ class Visualizer:
         # Remove extra info for empty cells.
         extra_hovertext[t_color_matrix == CellType.EMPTY] = ""
 
-        # Create heatmaps.
-        t_heatmaps = [
-            go.Heatmap(
+        # Create the figure.
+        # column_alias = row_alias = None
+        column_alias = dict(enumerate(kwargs["column_labels"]))
+        row_alias = dict(enumerate(kwargs["row_labels"]))
+        figure = go.Figure(
+            layout={
+                "title": arr.array_name,
+                "title_x": 0.5,
+                "xaxis": {
+                    "tickmode": "array",
+                    "tickvals": np.arange(w),
+                    "labelalias": column_alias,
+                    "showgrid": False,
+                    "zeroline": False,
+                },
+                "yaxis": {
+                    "tickmode": "array",
+                    "tickvals": np.arange(h),
+                    "labelalias": row_alias,
+                    "showgrid": False,
+                    "zeroline": False
+                },
+                "coloraxis": {
+                    "showscale": False
+                },
+                "clickmode": "event+select",
+            })
+        # figure.update_coloraxes(showscale=False)
+        # figure.update_layout(clickmode="event+select")
+
+        for color, val, extra in zip(t_color_matrix, value_text,
+                                     extra_hovertext):
+            figure.add_heatmap(
                 z=color,
                 text=val,
                 texttemplate="%{text}",
@@ -265,44 +292,9 @@ class Visualizer:
                 xgap=1,
                 ygap=1,
                 visible=False,
-            ) for color, val, extra in zip(t_color_matrix, value_text,
-                                           extra_hovertext)
-        ]
+            )
 
-        # Create the figure.
-        column_alias = row_alias = None
-        if column_labels:
-            column_alias = dict(enumerate(column_labels))
-        if row_labels:
-            row_alias = dict(enumerate(row_labels))
-        figure = go.Figure(layout={
-            "title": arr.array_name,
-            "title_x": 0.5,
-            "xaxis": {
-                "tickmode": "array",
-                "tickvals": np.arange(w),
-                "labelalias": column_alias,
-                "showgrid": False,
-                "zeroline": False,
-            },
-            "yaxis": {
-                "tickmode": "array",
-                "tickvals": np.arange(h),
-                "labelalias": row_alias,
-                "showgrid": False,
-                "zeroline": False
-            },
-        },)
-        figure.update_coloraxes(showscale=False)
-        figure.update_layout(clickmode="event+select")
-
-        for h in t_heatmaps:
-            figure.add_trace(h)
-
-        # Show the first heatmap.
-        self._show_figure_trace(figure, 0)
-
-        return figure
+        return self._show_figure_trace(figure, 0)
 
     def _attach_callbacks(self):
         """Attach callbacks."""
@@ -489,7 +481,7 @@ class Visualizer:
         graphs = []
         for name, metadata in self._graph_metadata.copy().items():
             arr = metadata["arr"]
-            figure = self._create_figure(arr, **metadata["figure_kwargs"])
+            figure = self._create_figure(arr)
             graphs.append(dcc.Graph(id=name, figure=figure))
             self._graph_metadata[name]["figure"] = figure
 
