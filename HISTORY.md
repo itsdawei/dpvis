@@ -4,6 +4,7 @@
 
 ### API
 
+- Add to Test Queue Based on Selected Tests Checklist (#41)
 - Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)
 - Add sidebar in UI (#33)

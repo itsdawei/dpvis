@@ -417,6 +417,7 @@ class Visualizer:
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
             # TODO: Populate test_q in separate callback.
+            # Populate test_q according to what tests are selected.
             test_q = []
 
             # Filling out write test.
