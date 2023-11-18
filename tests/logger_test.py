@@ -6,6 +6,8 @@ from dp import Logger, Op
 
 # pylint: disable=redefined-outer-name
 
+# Note: .items() >= are used to compare dicts since there are arrays in them.
+# See https://stackoverflow.com/questions/9323749/how-to-check-if-one-dictionary-is-a-subset-of-another-larger-dictionary.
 
 @pytest.fixture
 def logger():
