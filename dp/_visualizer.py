@@ -598,13 +598,21 @@ class Visualizer:
                          max_intervals=0),
         ]
 
+        """Test-Info:
+            Attributes:
+                tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
+                curr: a counter to indicate which test is being worked on
+                truth: a list of all remaining answers for the test type
+                render: a list of (index, color) tuples that indicate what indices should be rendered and in which color
+        """
         datastores = [
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="test-info",
                       data={
-                          "test_mode": False,
-                          "num_tests": -1,
-                          "cur_test": 0
+                          "truth": [], 
+                          "curr": 0,
+                          "render":[],
+                          "tests":[]
                       }),
         ]
 
