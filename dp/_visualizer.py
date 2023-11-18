@@ -376,13 +376,12 @@ class Visualizer:
         #     return json.dumps(click_data, indent=2)
 
         @self.app.callback(
-            Output("test-mode-toast", "is_open"),
             Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["tests"]:
-                return True, {"visibility": "hidden"}
-            return False, {"visibility": "visible"}
+                return {"visibility": "hidden"}
+            return {"visibility": "visible"}
 
         @self.app.callback(
             Output("test-info", "data"),
@@ -611,16 +610,6 @@ class Visualizer:
         ]
 
         alerts = [
-            dbc.Alert("You are in self-testing mode",
-                      id="test-mode-toast",
-                      is_open=False,
-                      color="info",
-                      style={
-                          "position": "fixed",
-                          "bottom": 10,
-                          "left": 10,
-                          "width": 350,
-                      }),
             dbc.Alert("Correct!",
                       id="correct",
                       is_open=False,
