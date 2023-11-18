@@ -20,7 +20,7 @@ In this quickstart guide we use three operations in the [`DPArray`]() class:
 
 This guide illustrates the basic usages of [`DPArray`]() in the context of generating the first `n` values of the Fibonacci sequence using dynamic programming. The Fibonacci sequence is defined recursively. The first two elements `arr(0)` and `arr(1)` are `0` and `1`, respectively. The `i`th element of the Fibonacci sequence is defined as `arr(i) = arr(i - 1) + arr(i - 2)`.
 
-The following function returns a [`DPArray`]() of shape `n` that contains the fisrt `n` numbers in the Fibonacci sequence. Note that we will use the `display` import later to visualize this dynamic programming algorithm.
+The following function returns a one-dimensional [`DPArray`]() of shape `n` that contains the fisrt `n` numbers in the Fibonacci sequence. Note that we will use the `display` import later to visualize this dynamic programming algorithm.
 
         # Import the DPArray class.
         from dp import DPArray, display
@@ -44,9 +44,22 @@ The following function returns a [`DPArray`]() of shape `n` that contains the fi
 
 ### Visualizing the Dynamic Programming Algorithm
 
-The DPArray class stores information about any program and can be used to produce an interactive visualization of a dynmic programming algorithm. To visualize how the above algorithm constructs an array containing the first `10` Fibonacci numbers, follow the above code with
+The DPArray class stores information about any program and can be used to produce an interactive visualization of a dynmic programming algorithm. To visualize how the above algorithm constructs an array containing the first `10` Fibonacci numbers, write the following below the `fib` function.
 
         # Use the fib algorithm to find the first 10 Fibonacci numbers.
         dp_array = fib(10)
         # Display the array in an interactive visualization
         display(dp_array)
+
+To run the above code from the console (Use the comman `python <filename>` or `python3 <filename>`). Some lines of will be printed to the console. One of which will include a url: `Dash is running on http://127.0.0.1:<port number>/`. Copy and paste the link into any web browser and a visualization of the Fibonacci dynamic programming algorithm will appear.
+
+![Image of Fibonacci visualization](/images/fib_quickstart_guide.png)
+
+This visualization window displays the values in the [`DPArray`]() as they are filled out in the `fib` function. Using the slider below the array, you can step through different iterations of the `fib` algorithm and see how the [`DPArray`]() is updated.
+
+![Image of Fibonacci visualization](/images/fib_quickstart_guide2.png)
+
+Notice the two pink read cells at indices `1` and `2` in the above image. The values in these cells where used to calculate the value in the purple write cell at index `3`. Notice that this is a visualization of the recursive definiton for the Fibonacci sequence!
+
+        fib(3) = fib(2) + f(1)
+        fib(3) = 1.0 + 1.0
