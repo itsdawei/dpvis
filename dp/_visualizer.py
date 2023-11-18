@@ -760,7 +760,7 @@ class Visualizer:
                             className="border border-warning",
                         ),
                     ],
-                    width=8),
+                            width=8),
                 ],
                         class_name="g-3"),
                 *alerts,
