@@ -14,24 +14,23 @@ def knapsack(items, capacity):
     OPT[0, :] = 0
     OPT[:, 0] = 0
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val).
-    for idx, item in enumerate(items):
+    for i, item in enumerate(items):
         for rem in range(capacity + 1):
             # Base case: 0 value if there are no items left or
             # if there is no space.
-            if idx == 0 or rem == 0:
+            if i == 0 or rem == 0:
                 continue
 
-            # Item is not added
-            indices = [(idx - 1, rem)]
-            elements = [OPT[idx - 1, rem]]
+            # Not enough capacity to add item.
+            indices = [(i - 1, rem)]
+            elements = [OPT[i - 1, rem]]
 
-            # If adding item is possible
+            # Enough capacity to add item.
             if rem - item[0] >= 0:
-                # Item is added
-                indices.append((idx - 1, rem - item[0]))
-                elements.append(OPT[idx - 1, rem - item[0]] + item[1])
-            
-            OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
+                indices.append((i - 1, rem - item[0]))
+                elements.append(OPT[i - 1, rem - item[0]] + item[1])
+
+            OPT[i, rem] = OPT.max(indices=indices, elements=elements)
 
     # Make a copy of data in OPT to prevent visualization of future operations.
     arr = OPT.arr
@@ -43,20 +42,20 @@ def knapsack(items, capacity):
 
     # While the path is not fully constructed.
     while current[0] != 0 and current[1] != 0:
-        idx = current[0]
+        i = current[0]
         rem = current[1]
-        item = items[idx]
+        item = items[i]
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
-        if rem - item[0] >= 0 and arr[idx - 1, rem] < arr[idx - 1, rem - item[0]] + item[1]:
-            current = (idx - 1, rem - item[0])
+        if rem - item[0] >= 0 and arr[i - 1, rem] < arr[i - 1, rem - item[0]] + item[1]:
+            current = (i - 1, rem - item[0])
             path.append(current)
-            solution.append(idx)
+            solution.append(i)
 
         # Case 2: there is no capacity for item or not adding item is more optimal
         else:
-            current = (idx - 1, rem)
+            current = (i - 1, rem)
             path.append(current)
 
     path = path[::-1]
