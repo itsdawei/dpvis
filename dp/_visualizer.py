@@ -290,8 +290,7 @@ class Visualizer:
         cell_annotation_text = metadata["t_cell_annotations"]
         for t, timestep in enumerate(cell_annotation_text):
             for j, cell_annotation in timestep.items():
-                extra_hovertext[t][j] += "<br>Note: "
-                extra_hovertext[t][j] += cell_annotation
+                extra_hovertext[t][j] += "<br>" + cell_annotation
 
         # Create the figure.
         # column_alias = row_alias = None
@@ -319,6 +318,9 @@ class Visualizer:
                     "showscale": False
                 },
                 "clickmode": "event+select",
+                "hoverlabel": {
+                    "namelength": -1,
+                },
             })
 
         for color, val, extra in zip(t_color_matrix, value_text,

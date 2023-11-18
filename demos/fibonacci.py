@@ -17,6 +17,8 @@ def fib(n):
     for i in range(2, n):
         arr[i] = arr[i - 1] + arr[i - 2]
         arr.annotate(f"calcularting arr[{i}]")
+        arr.annotate("used to calculate the next cell", idx=i - 1)
+        arr.annotate("used to calculate the next cell", idx=i - 2)
         arr.annotate(f"arr[{i - 1}] + arr[{i - 2}]", idx=i)
 
     # Return the dp array
