@@ -731,7 +731,6 @@ class Visualizer:
             dcc.Store(id="dep-set", data=[]),
             dcc.Store(id="tests-set",data=[]),
             dcc.Store(id="skip-flag",data=True)
-        ])
         ]
 
         self.app.layout = dbc.Container(
