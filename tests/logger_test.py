@@ -207,7 +207,6 @@ def test_to_timesteps_two_arrays():
         Op.WRITE: {0, 1},
         Op.HIGHLIGHT: set(),
     }.items()
-    print(timesteps[1])
     assert timesteps[1]["dp1"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),

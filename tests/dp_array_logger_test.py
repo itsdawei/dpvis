@@ -542,8 +542,6 @@ def test_to_timestep_2d():
     _ = dp[1, 1]
     timesteps1 = dp.get_timesteps()
     assert len(timesteps1) == 2
-    print(dp.arr)
-    print(timesteps1[1]["dp"]["contents"])
     assert np.all(timesteps1[1]["dp"]["contents"] ==
                   [[1, None, None], [None, 2, None], [None, None, None]])
     assert timesteps1[1]["dp"].items() >= {

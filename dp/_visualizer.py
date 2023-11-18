@@ -343,7 +343,14 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
-        t_annotations = self._graph_metadata[self._primary]["t_annotations"]
+        t_annotations = [
+            "\n".join([
+                f"{name} : " + arr["t_annotations"][t]
+                for name,arr in self._graph_metadata.items()
+                if arr["t_annotations"][t] is not None
+            ])
+            for t in range(len(values))
+            ]
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
@@ -366,8 +373,9 @@ class Visualizer:
             Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
-            if t_annotations[t] == "":
+            if t_annotations[t] is None:
                 return False, ""
+            
             return True, t_annotations[t]
 
         @self.app.callback(
@@ -605,11 +613,25 @@ class Visualizer:
                       })
         ]
 
+        array_annotations = dbc.Alert(
+                [html.P("", 
+                        id="array-annotation-text",
+                        style={
+                            "width": "100%",
+                            "textAlign": "center",
+                        })],
+                id="array-annotation-toast",
+                color="secondary",
+                is_open=False,
+                className="border"
+                )
+
         sidebar = html.Div([
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
+                array_annotations,
             ],
                       id="sidebar",
                       className="border border-warning"),
@@ -642,20 +664,6 @@ class Visualizer:
                       }),
         ]
 
-        array_annotations = [
-            dbc.Alert(
-                      [html.P("", id="array-annotation-text")],
-                      id="array-annotation-toast",
-                      is_open=False,
-                      color="light",
-                      style={
-                          "position": "fixed",
-                          "bottom": 10,
-                          "left": 10,
-                          "width": 350,
-                      }),
-        ]
-
         self.app.layout = dbc.Container(
             [
                 dbc.Row(
@@ -673,11 +681,6 @@ class Visualizer:
                                 id="page-content",
                                 className="border border-warning",
                             ),
-                            dbc.Row(
-                                array_annotations,
-                                id="array-annotation",
-                                className="border border-warning",
-                            )
                         ])
                     ],
                     class_name="g-3"),

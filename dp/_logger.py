@@ -177,12 +177,6 @@ class Logger:
                 continue
             last_write_indices.append(i)
 
-        # NOTE: If annotation is added after the last write, it will be group
-        # in a timestep without a write. This fixes that issue by forcing the
-        # last timestep to include everything after the last write as well.
-        # However, this may cause issues with backtracing.
-        # last_write_indices[-1] = len(self.logs) - 1
-
         # Split the logs into batches based on the last write indices.
         log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
         if log_batches[-1].size == 0:
