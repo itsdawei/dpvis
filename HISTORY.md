@@ -4,6 +4,7 @@
 
 ### API
 
+- Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)
 - Add sidebar in UI (#33)
 - Show extra description of the DP (#33)
