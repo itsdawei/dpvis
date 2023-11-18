@@ -321,6 +321,7 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
+        t_read_matrix = self._graph_metadata[self._primary]["t_read_matrix"]
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
@@ -412,8 +413,30 @@ class Visualizer:
             
             # Testing mode off -> on
 
-            #Populate according to radio box
+            # TODO: Populate according to radio box
             filled_tests = []
+
+            import pdb; pdb.set_trace()
+
+            # Creating a list of indices of the reads and writes in the next timestep
+            all_writes = np.transpose(np.nonzero(t_write_matrix[t + 1]))
+            all_reads = np.transpose(np.nonzero(t_read_matrix[t + 1]))
+
+            # Filling out write test
+            # The truth list is a list of indices that are written to in the next cell.
+            filled_tests.append({"truth": all_writes,
+                                 "render": []})
+            
+            # Filling out all value tests
+            for value_idx in all_writes:
+                filled_tests.append({"truth": [values[t + 1][value_idx]],
+                                     "render": [value_idx]})
+            
+            # Filling out read test.
+            filled_tests.append({"truth": all_reads,
+                                 "render": []})
+            
+            import pdb; pdb.set_trace()
 
             return {
                 "tests": filled_tests,
@@ -603,12 +626,16 @@ class Visualizer:
                          max_intervals=0),
         ]
 
+        """Test-Dict Documentation:
+            Keys:
+                truth: the value of the things being looked for.
+                render: what should be rendered at the beginning of this test
+        """
+
         """Test-Info:
             Keys:
                 tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
                 curr: a counter to indicate which test is being worked on
-                truth: a list of all remaining answers for the test type
-                render: a list of (index, color) tuples that indicate what indices should be rendered and in which color
         """
         datastores = [
             dcc.Store(id="store-keypress", data=0),
