@@ -488,14 +488,13 @@ class Visualizer:
             Output("correct", "is_open"),
             Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
-            # For manually resetting ClickData
+            # For manually resetting clickData,
             Output(self._primary, "clickData"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
-            # State("slider", "value"),
         )
         def validator(_, click_data, user_input, info):
             """Tests if user input is correct."""
