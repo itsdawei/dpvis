@@ -386,7 +386,6 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-info", "data"),
-            Output("instruction-alert","is_open"),
             Input("self-test-button", "n_clicks"),
             State("test-info", "data"),
             State("slider", "value"),
@@ -441,7 +440,7 @@ class Visualizer:
                     "truth": [values[t + 1][x][y]],
                     "render": [(x, y)],
                     "expected_triggered_id": "user-input",
-                    "tip": "What is the value of cell (" + str(x) + "," + str(y) + ")"
+                    "tip": f"What is the value of cell ({x}, {y})?"
                 })
 
             # Filling out read test.
@@ -454,7 +453,7 @@ class Visualizer:
 
             return {
                 "tests": test_q,
-            }, True
+            }
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
