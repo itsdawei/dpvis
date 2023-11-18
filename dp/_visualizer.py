@@ -434,16 +434,6 @@ class Visualizer:
                        "in any order)"
             })
 
-            # Filling out all value tests
-            for x, y in zip(*np.nonzero(write_mask)):
-                test_q.append({
-                    "truth": [values[t + 1][x][y]],
-                    "render": [(x, y)],
-                    "color": CellType.WRITE,
-                    "expected_triggered_id": "user-input",
-                    "tip": f"What is the value of cell ({x}, {y})?"
-                })
-
             # Filling out read test.
             test_q.append({
                 "truth": all_reads,
@@ -453,6 +443,16 @@ class Visualizer:
                 "tip": "What cells are read for the next timestep? (Click "
                        "in any order)"
             })
+
+            # Filling out all value tests
+            for x, y in zip(*np.nonzero(write_mask)):
+                test_q.append({
+                    "truth": [values[t + 1][x][y]],
+                    "render": [(x, y)],
+                    "color": CellType.WRITE,
+                    "expected_triggered_id": "user-input",
+                    "tip": f"What is the value of cell ({x}, {y})?"
+                })
 
             return {"tests": test_q}
 
@@ -538,7 +538,7 @@ class Visualizer:
             State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
-            if info["tests"]:
+            if info["tests"] or not click_data:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
@@ -727,8 +727,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
