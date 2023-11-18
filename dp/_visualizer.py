@@ -238,10 +238,10 @@ class Visualizer:
                 recurrence.
         """
         name = arr.array_name
+        self._graph_metadata[name].update(self._parse_timesteps(arr))
+
         metadata = self._graph_metadata[name]
         kwargs = metadata["figure_kwargs"]
-
-        metadata.update(self._parse_timesteps(arr))
 
         t_value_matrix = metadata["t_value_matrix"]
         t_color_matrix = metadata["t_color_matrix"]
