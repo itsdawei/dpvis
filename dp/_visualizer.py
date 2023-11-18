@@ -466,8 +466,8 @@ class Visualizer:
         @self.app.callback(
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
-            Input(self._primary, "clickData"),
             Input("user-input", "n_submit"),
+            Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
             # State("slider", "value"),
@@ -479,13 +479,12 @@ class Visualizer:
                 return dash.no_update
 
             curr = info["curr"]
-
             if ctx.triggered_id == self._primary:
                 # Click test (Write, Read)
+                __import__('pdb').set_trace()
                 x = click_data["points"][0]["x"]
                 y = click_data["points"][0]["y"]
 
-                __import__('pdb').set_trace()
                 if (x, y) == info["truth"]:
                     # Remove from truth and and update render the test values.
                     # info["truth"]
