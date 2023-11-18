@@ -403,14 +403,12 @@ class Visualizer:
             if t == len(values):
                 # TODO: notify user that there is no more testing
                 return dash.no_update
+
+            # Turn off testing mode.
             if info["tests"]:
-                # Testing mode on -> off
                 return {
                     "tests": [],
                 }, False
-
-
-            # Testing mode off -> on
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
@@ -430,8 +428,10 @@ class Visualizer:
             test_q.append({
                 "truth": all_writes,
                 "render": [],
+                "color": CellType.WRITE,
                 "expected_triggered_id": self._primary,
-                "tip": "What cells are written to in the next frame? (Click in any order)"
+                "tip": "What cells are written to in the next frame? (Click "
+                       "in any order)"
             })
 
             # Filling out all value tests
@@ -439,6 +439,7 @@ class Visualizer:
                 test_q.append({
                     "truth": [values[t + 1][x][y]],
                     "render": [(x, y)],
+                    "color": CellType.WRITE,
                     "expected_triggered_id": "user-input",
                     "tip": f"What is the value of cell ({x}, {y})?"
                 })
@@ -447,19 +448,21 @@ class Visualizer:
             test_q.append({
                 "truth": all_reads,
                 "render": [],
+                "color": CellType.READ,
                 "expected_triggered_id": self._primary,
-                "tip": "What cells are read for the next timestep? (Click in any order)"
+                "tip": "What cells are read for the next timestep? (Click "
+                       "in any order)"
             })
 
-            return {
-                "tests": test_q,
-            }
+            return {"tests": test_q}
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
             Output("instruction-alert", "children"),
-            Output("instruction-alert", "is_open", allow_duplicate=True),
-            Input("test-info", "data"), State("slider", "value"))
+            Output("instruction-alert", "is_open"),
+            Input("test-info", "data"),
+            State("slider", "value"),
+        )
         def highlight_tests(info, t):
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), "", False
@@ -467,12 +470,19 @@ class Visualizer:
             fig = copy.deepcopy(main_figure)
             z = fig.data[t].z
 
+            # Uncolor READ/WRITE/HIGHLIGHT.
+            z = z.astype("bool").astype("int")
+
             # Highlight the cell that is being tested on.
             cur_render = info["tests"][0]["render"]
-            for (x, y) in cur_render:
-                z[x][y] = CellType.WRITE
+            for x, y in cur_render:
+                z[x][y] = info["tests"][0]["color"]
 
-            return fig.update_traces(z=z, selector=t) , info["tests"][0]["tip"], True
+            return (
+                fig.update_traces(z=z, selector=t),
+                info["tests"][0]["tip"],
+                True,
+            )
 
         @self.app.callback(
             Output("correct", "is_open"),
