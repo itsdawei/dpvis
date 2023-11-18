@@ -388,8 +388,9 @@ class Visualizer:
             Input("self-test-button", "n_clicks"),
             State("test-info", "data"),
             State("slider", "value"),
+            State("test-select-checkbox", "value")
         )
-        def toggle_test_mode(_, info, t):
+        def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
             Args:
@@ -424,35 +425,39 @@ class Visualizer:
             # Filling out write test.
             # The truth list is a list of indices that are written to in the
             # next cell.
-            test_q.append({
-                "truth": all_writes,
-                "render": [],
-                "color": CellType.WRITE,
-                "expected_triggered_id": self._primary,
-                "tip": "What cells are written to in the next frame? (Click "
-                       "in any order)"
-            })
-
-            # Filling out read test.
-            test_q.append({
-                "truth": all_reads,
-                "render": [],
-                "color": CellType.READ,
-                "expected_triggered_id": self._primary,
-                "tip": "What cells are read for the next timestep? (Click "
-                       "in any order)"
-            })
-
-            # Filling out all value tests.
-            for x, y in zip(*np.nonzero(write_mask)):
+            if "What is the next cell?" in selected_tests:
                 test_q.append({
-                    "truth": [values[t + 1][x][y]],
-                    "render": [(x, y)],
+                    "truth": all_writes,
+                    "render": [],
                     "color": CellType.WRITE,
-                    "expected_triggered_id": "user-input",
-                    "tip": f"What is the value of cell ({x}, {y})?"
+                    "expected_triggered_id": self._primary,
+                    "tip": "What cells are written to in the next frame? (Click "
+                        "in any order)"
                 })
 
+            if "What are its dependencies?" in selected_tests:
+                # Filling out read test.
+                test_q.append({
+                    "truth": all_reads,
+                    "render": [],
+                    "color": CellType.READ,
+                    "expected_triggered_id": self._primary,
+                    "tip": "What cells are read for the next timestep? (Click "
+                        "in any order)"
+                })
+
+            if "What is its value?" in selected_tests:
+                # Filling out all value tests.
+                for x, y in zip(*np.nonzero(write_mask)):
+                    test_q.append({
+                        "truth": [values[t + 1][x][y]],
+                        "render": [(x, y)],
+                        "color": CellType.WRITE,
+                        "expected_triggered_id": "user-input",
+                        "tip": f"What is the value of cell ({x}, {y})?"
+                    })
+                    
+            # If no tests selected, self-testing mode is automatically turned off
             return {"tests": test_q}
 
         @self.app.callback(
