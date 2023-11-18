@@ -469,18 +469,19 @@ class Visualizer:
                 return self._show_figure_trace(main_figure, t), alert
 
             fig = copy.deepcopy(main_figure)
-            z = fig.data[t].z
 
             # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
-            z = z.astype("bool").astype("int")
+            z = fig.data[t].z.astype("bool").astype("int")
 
-            # Highlight the cell that is being tested on.
-            cur_render = info["tests"][0]["render"]
-            for x, y in cur_render:
-                z[x][y] = info["tests"][0]["color"]
+            # Highlight the revelant cells as specified by "render".
+            test = info["tests"][0]
+            render = test["render"]
+            for x, y in render:
+                z[x][y] = test["color"]
 
+            # Bring up test-specific instructions.
             alert.is_open = True
-            alert.children = info["tests"][0]["tip"]
+            alert.children = test["tip"]
 
             return fig.update_traces(z=z, selector=t), alert
 
