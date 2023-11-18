@@ -1,9 +1,10 @@
 """This file provides the visualizer for the DPArray class."""
 import copy
-import json
+# import json
 from enum import IntEnum
 
 import dash
+import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objs as go
 from dash import Dash, Input, Output, State, ctx, dcc, html
@@ -74,6 +75,7 @@ def _get_colorbar_kwargs(name):
 def display(array,
             row_labels=None,
             column_labels=None,
+            description=None,
             colorscale_name="Sunset"):
     """Creates an interactive display of the given DPArray in a webpage.
 
@@ -84,6 +86,7 @@ def display(array,
         array (DPArray): DParray to be visualized.
         row_labels (list of str): Row labels of the DP array.
         column_labels (list of str): Column labels of the DP array.
+        description (str): Markdown of the description for the DPArray.
         colorscale_name (str): Name of built-in colorscales in plotly. See
             plotly.colors.named_colorscales for the built-in colorscales.
     """
@@ -91,6 +94,7 @@ def display(array,
     visualizer.add_array(array,
                          column_labels=column_labels,
                          row_labels=row_labels,
+                         description=description,
                          colorscale_name=colorscale_name)
     visualizer.show()
 
@@ -120,14 +124,22 @@ class Visualizer:
         self._primary = None
         self._graph_metadata = {}
 
+        # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
+        # If we use a dark theme, make the layout background transparent
+        themes = [dbc.themes.LUX]
+
         # Create Dash App.
-        self._app = Dash(name="dynvis: Dynamic Program Visualization",
-                         prevent_initial_callbacks=True)
+        self._app = Dash(
+            __name__,
+            # name="dynvis: Dynamic Program Visualization",
+            external_stylesheets=themes,
+            prevent_initial_callbacks=True)
 
     def add_array(self,
                   arr,
                   column_labels=None,
                   row_labels=None,
+                  description="",
                   colorscale_name="Sunset"):
         """Add a DPArray to the visualization."""
         # TODO: @David Docstrings
@@ -140,6 +152,7 @@ class Visualizer:
 
         self._graph_metadata[arr.array_name] = {
             "arr": arr,
+            "description": description,
             "figure_kwargs": {
                 "column_labels": column_labels,
                 "row_labels": row_labels,
@@ -351,20 +364,20 @@ class Visualizer:
                 return 0  # Stops interval from running.
             return dash.no_update
 
-        @self.app.callback(Output("click-data", "children"),
-                           Input(self._primary, "clickData"))
-        def display_click_data(click_data):
-            # TODO: Remove this
-            return json.dumps(click_data, indent=2)
+        # @self.app.callback(Output("click-data", "children"),
+        #                    Input(self._primary, "clickData"))
+        # def display_click_data(click_data):
+        #     # TODO: Remove this
+        #     return json.dumps(click_data, indent=2)
 
         @self.app.callback(
-            Output("toggle-text", "children"),
-            Output(component_id="slider-container", component_property="style"),
+            Output("test-mode-toast", "is_open"),
+            Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["test_mode"]:
-                return "Self-Testing Mode: ON", {"display": "none"}
-            return "Self-Testing Mode: OFF", {"display": "block"}
+                return True, {"visibility": "hidden"}
+            return False, {"visibility": "visible"}
 
         @self.app.callback(
             Output("test-info", "data"),
@@ -415,7 +428,8 @@ class Visualizer:
             return fig
 
         @self.app.callback(
-            Output("comparison-result", "children"),
+            Output("correct", "is_open"),
+            Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
@@ -425,7 +439,6 @@ class Visualizer:
         )
         def compare_input_and_frame(_, user_input, info, t):
             """Tests if user input is correct."""
-            # TODO: Hide the input box.
             if not info["test_mode"]:
                 return dash.no_update
 
@@ -436,9 +449,8 @@ class Visualizer:
             if user_input == test:
                 info["cur_test"] += 1
                 info["test_mode"] = info["cur_test"] < info["num_tests"]
-                return "Correct!", info
-
-            return "Incorrect!", dash.no_update
+                return True, False, info
+            return False, True, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -490,52 +502,132 @@ class Visualizer:
 
         max_timestep = len(self._graph_metadata[self._primary]["figure"].frames)
 
-        self.app.layout = html.Div([
-            *graphs,
-            html.Div(id="slider-container",
-                     children=[
-                         dcc.Slider(min=0,
-                                    max=max_timestep - 1,
-                                    step=1,
-                                    value=0,
-                                    updatemode="drag",
-                                    id="slider"),
-                         html.Button("Play", id="play"),
-                         html.Button("Stop", id="stop"),
-                     ],
-                     style={"display": "block"}),
+        questions = [
+            "What is the next cell?",
+            "What are its dependencies?",
+            "What is its value?",
+        ]
+
+        test_select_checkbox = dbc.Row([
+            dbc.Col(
+                dbc.Checklist(
+                    questions,
+                    questions,
+                    id="test-select-checkbox",
+                )),
+            dbc.Col(dbc.Button("Test Myself!",
+                               id="self-test-button",
+                               class_name="h-100",
+                               color="info"),
+                    width="auto")
+        ])
+
+        description_md = [
+            dcc.Markdown(metadata["description"],
+                         mathjax=True,
+                         className="border border-primary")
+            for metadata in self._graph_metadata.values()
+        ]
+
+        alerts = [
+            dbc.Alert("You are in self-testing mode",
+                      id="test-mode-toast",
+                      is_open=False,
+                      color="info",
+                      style={
+                          "position": "fixed",
+                          "bottom": 10,
+                          "left": 10,
+                          "width": 350,
+                      }),
+            dbc.Alert("Correct!",
+                      id="correct",
+                      is_open=False,
+                      color="success",
+                      duration=3000,
+                      fade=True,
+                      className="alert-auto position-fixed w-25",
+                      style={
+                          "bottom": 10,
+                          "left": 10,
+                          "z-index": 9999,
+                      }),
+            dbc.Alert("Incorrect!",
+                      id="incorrect",
+                      is_open=False,
+                      color="danger",
+                      duration=3000,
+                      fade=True,
+                      className="alert-auto position-fixed w-25",
+                      style={
+                          "bottom": 10,
+                          "left": 10,
+                          "z-index": 9999,
+                      })
+        ]
+
+        sidebar = html.Div([
+            dbc.Stack([
+                *description_md,
+                test_select_checkbox,
+                dbc.Input(id="user-input", type="number", placeholder=""),
+            ],
+                      id="sidebar",
+                      className="border border-warning"),
+        ])
+
+        playback_control = [
+            dbc.Col(dbc.Button("Play", id="play"), width="auto"),
+            dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
+            dbc.Col(dcc.Slider(
+                min=0,
+                max=max_timestep - 1,
+                step=1,
+                value=0,
+                updatemode="drag",
+                id="slider",
+            )),
             dcc.Interval(id="interval",
                          interval=1000,
                          n_intervals=0,
                          max_intervals=0),
-            html.Div([
-                dcc.Markdown("""
-                    **SELF-TESTING**
-                """),
-                html.Pre(id="click-data",
-                         style={
-                             "border": "thin lightgrey solid",
-                             "overflowX": "scroll"
-                         }),
-            ],
-                     className="three columns"),
-            dcc.Input(id="user-input",
-                      type="number",
-                      placeholder="",
-                      debounce=True),
-            html.Div(id="comparison-result"),
-            html.Button("Test Myself!", id="self-test-button"),
-            html.Div(id="next-prompt"),
-            html.Div(id="toggle-text", children="Self-Testing Mode: OFF"),
+        ]
+
+        datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store(id="store-clicked-z"),
             dcc.Store(id="test-info",
                       data={
                           "test_mode": False,
                           "num_tests": -1,
                           "cur_test": 0
                       }),
-        ])
+        ]
+
+        self.app.layout = dbc.Container(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(sidebar, width="auto"),
+                        dbc.Col([
+                            dbc.Row(
+                                playback_control,
+                                id="playback-control",
+                                class_name="g-0",
+                                align="center",
+                            ),
+                            dbc.Row(
+                                dbc.Stack(graphs),
+                                id="page-content",
+                                className="border border-warning",
+                            )
+                        ])
+                    ],
+                    class_name="g-3"),
+                *alerts,
+                *datastores,
+            ],
+            fluid=True,
+        )
 
         self._attach_callbacks()
 
