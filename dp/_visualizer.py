@@ -356,7 +356,8 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
+                           Input("play", "n_clicks"), Input(
+                               "stop", "n_clicks"),
                            Input("self-test-button", "n_clicks"))
         def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
             """Starts and stop playback from running.
@@ -377,7 +378,8 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-mode-toast", "is_open"),
-            Output(component_id="playback-control", component_property="style"),
+            Output(component_id="playback-control",
+                   component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["tests"]:
@@ -424,7 +426,6 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-
             # Filling out write test
             # The truth list is a list of indices that are written to in the
             # next cell.
@@ -463,6 +464,8 @@ class Visualizer:
             return fig.update_traces(z=z, selector=t)
 
         @self.app.callback(
+            Output("correct", "is_open"),
+            Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
@@ -474,41 +477,35 @@ class Visualizer:
         def validator(_, click_data, user_input, info):
             """Tests if user input is correct."""
             if not info["tests"]:
-                # Not in testing mode -> don't do anything
                 return dash.no_update
 
             curr = info["curr"]
+            truths = info["tests"][curr]["truth"]
+            answer = None
             if ctx.triggered_id == self._primary:
-                # Click test (Write, Read)
-                __import__('pdb').set_trace()
+                # Click on graph.
                 x = click_data["points"][0]["x"]
                 y = click_data["points"][0]["y"]
+                answer = [y, x]
+            else:
+                # Enter number.
+                answer = user_input
 
-                if (x, y) == info["truth"]:
-                    # Remove from truth and and update render the test values.
-                    # info["truth"]
-                    pass
+            is_correct = False
+            # Check that [x, y] is a row of truths.
+            if answer in truths:
+                # Remove from truth and update render the test values.
+                truths.remove(answer)
+                info["tests"][curr]["render"].append(answer)
+                is_correct = True
 
-            if not info["tests"][curr]["truth"]:
-                # Current test complete, increment curr
-                curr += 1
+            # Current test completes, increment curr.
+            if not truths:
+                info["curr"] += 1
 
-            if ctx.triggered_id == "user-input":
-                # Text box test (Value)
-                pass
+            return is_correct, not is_correct, info
 
-            # cur_test = info["cur_test"]
-            # x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            # test = values[t + 1][x][y]
-            return dash.no_update
-
-            # if user_input == test:
-            #     info["cur_test"] += 1
-            #     info["test_mode"] = info["cur_test"] < info["num_tests"]
-            #     return True, False, info
-            # return False, True, dash.no_update
-
-        @self.app.callback(
+        @ self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
             Input(self._primary, "clickData"), State("test-info", "data"),
             State("slider", "value"))
@@ -517,29 +514,29 @@ class Visualizer:
             if info["tests"]:
                 return dash.no_update
 
-            x = click_data["points"][0]["x"]
-            y = click_data["points"][0]["y"]
+            x=click_data["points"][0]["x"]
+            y=click_data["points"][0]["y"]
 
-            fig = copy.deepcopy(main_figure)
-            z = fig.data[t].z
+            fig=copy.deepcopy(main_figure)
+            z=fig.data[t].z
 
             # If selected cell is empty, do nothing.
             if z[y][x] == CellType.EMPTY:
                 return dash.no_update
 
             # Clear all highlight, read, and write cells to filled.
-            z[z != CellType.EMPTY] = CellType.FILLED
+            z[z != CellType.EMPTY]=CellType.FILLED
 
             # Highlight selected cell.
-            z[y][x] = CellType.WRITE
+            z[y][x]=CellType.WRITE
 
             # Highlight dependencies.
-            d = self._graph_metadata[self._primary]["t_read_matrix"]
-            z[_indices_to_np_indices(d[t][y][x])] = CellType.READ
+            d=self._graph_metadata[self._primary]["t_read_matrix"]
+            z[_indices_to_np_indices(d[t][y][x])]=CellType.READ
 
             # Highlight highlights.
-            h = self._graph_metadata[self._primary]["t_highlight_matrix"]
-            z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
+            h=self._graph_metadata[self._primary]["t_highlight_matrix"]
+            z[_indices_to_np_indices(h[t][y][x])]=CellType.HIGHLIGHT
 
             return fig.update_traces(z=z, selector=t)
 
@@ -549,22 +546,22 @@ class Visualizer:
         Create the figures for each DPArray, attach the callbacks, and render
         the graph.
         """
-        graphs = []
+        graphs=[]
         for name, metadata in self._graph_metadata.copy().items():
-            arr = metadata["arr"]
-            figure = self._create_figure(arr)
+            arr=metadata["arr"]
+            figure=self._create_figure(arr)
             graphs.append(dcc.Graph(id=name, figure=figure))
-            self._graph_metadata[name]["figure"] = figure
+            self._graph_metadata[name]["figure"]=figure
 
-        max_timestep = len(self._graph_metadata[self._primary]["figure"].data)
+        max_timestep=len(self._graph_metadata[self._primary]["figure"].data)
 
-        questions = [
+        questions=[
             "What is the next cell?",
             "What are its dependencies?",
             "What is its value?",
         ]
 
-        test_select_checkbox = dbc.Row([
+        test_select_checkbox=dbc.Row([
             dbc.Col(
                 dbc.Checklist(
                     questions,
@@ -578,14 +575,14 @@ class Visualizer:
                     width="auto")
         ])
 
-        description_md = [
+        description_md=[
             dcc.Markdown(metadata["description"],
                          mathjax=True,
                          className="border border-primary")
             for metadata in self._graph_metadata.values()
         ]
 
-        alerts = [
+        alerts=[
             dbc.Alert("You are in self-testing mode",
                       id="test-mode-toast",
                       is_open=False,
@@ -622,7 +619,7 @@ class Visualizer:
                       })
         ]
 
-        sidebar = html.Div([
+        sidebar=html.Div([
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
@@ -632,7 +629,7 @@ class Visualizer:
                       className="border border-warning"),
         ])
 
-        playback_control = [
+        playback_control=[
             dbc.Col(dbc.Button("Play", id="play"), width="auto"),
             dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
             dbc.Col(
@@ -659,7 +656,7 @@ class Visualizer:
                 tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
                 curr: a counter to indicate which test is being worked on
         """
-        datastores = [
+        datastores=[
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="test-info", data={
                 "tests": [],
@@ -667,7 +664,7 @@ class Visualizer:
             }),
         ]
 
-        self.app.layout = dbc.Container(
+        self.app.layout=dbc.Container(
             [
                 dbc.Row([
                     dbc.Col(sidebar, width="auto"),
@@ -697,7 +694,7 @@ class Visualizer:
         # self.app.run_server(debug=True, use_reloader=True)
         self.app.run_server(debug=False, use_reloader=True)
 
-    @property
+    @ property
     def app(self):
         """Returns the Dash app object."""
         return self._app
