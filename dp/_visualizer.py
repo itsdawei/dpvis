@@ -488,6 +488,8 @@ class Visualizer:
             Output("correct", "is_open"),
             Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
+            # For manually resetting ClickData
+            Output(self._primary, "clickData"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
@@ -529,7 +531,7 @@ class Visualizer:
             if not truths:
                 info["tests"].pop(0)
 
-            return is_correct, not is_correct, info
+            return is_correct, not is_correct, info, None
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -687,14 +689,16 @@ class Visualizer:
 
         datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store(id="test-info", data={
-                # [W, V1, V2, ..., Vn, R]
-                # Each element is the test states for the current timestep.
-                # - W: Click on all writes.
-                # - Vi: Entered the value for the ith write.
-                # - R: Click on all reads.
-                "tests": [],
-            }),
+            dcc.Store(
+                id="test-info",
+                data={
+                    # [W, V1, V2, ..., Vn, R]
+                    # Each element is the test states for the current timestep.
+                    # - W: Click on all writes.
+                    # - Vi: Entered the value for the ith write.
+                    # - R: Click on all reads.
+                    "tests": [],
+                }),
         ]
 
         self.app.layout = dbc.Container(
