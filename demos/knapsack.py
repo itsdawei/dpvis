@@ -10,9 +10,10 @@ def knapsack(items, capacity):
     # Initialize DPArray.
     OPT = DPArray((len(items), capacity + 1))
 
-    # Put in base cases.
+    # Base cases.
     OPT[0, :] = 0
     OPT[:, 0] = 0
+
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val).
     for i, item in enumerate(items):
         for rem in range(capacity + 1):
