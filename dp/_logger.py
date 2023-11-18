@@ -107,7 +107,8 @@ class Logger:
                 },
             })
 
-        values = [None] * len(idx_list) if values is None else values
+        if values is None:
+            values = [None] * len(idx_list)
         self._logs[-1]["idx"][array_name].update(dict(zip(idx_list, values)))
 
     def append_annotation(self, array_name, annotation, idx=None):
@@ -128,7 +129,7 @@ class Logger:
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
 
-        # create or overwrite annotation
+        # Create or overwrite annotation.
         if idx is None:
             if "annotations" not in self._logs[-1]:
                 self._logs[-1]["annotations"] = {}
@@ -143,9 +144,6 @@ class Logger:
     def to_timesteps(self):
         """Converts the logs to timesteps.
         
-        Raises:
-            ValueError: If the logs are not in the correct format.
-
         Returns:
             list of timestep dicts
             timestep: {
@@ -162,6 +160,9 @@ class Logger:
                     ...
                 },
             }
+
+        Raises:
+            ValueError: If the logs are not in the correct format.
         """
         array_contents = {
             name: np.full(shape, None)
