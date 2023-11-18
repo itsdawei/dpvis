@@ -2,7 +2,6 @@
 import copy
 # import json
 from enum import IntEnum
-from queue import Queue
 
 import dash
 import dash_bootstrap_components as dbc
@@ -422,12 +421,12 @@ class Visualizer:
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
             # TODO: Populate according to radio box
-            test_q = Queue()
+            test_q = []
 
             # Filling out write test
             # The truth list is a list of indices that are written to in the
             # next cell.
-            test_q.put({
+            test_q.append({
                 "truth": all_writes,
                 "render": [],
                 "expected_triggered_id": self._primary
@@ -435,14 +434,14 @@ class Visualizer:
 
             # Filling out all value tests
             for x, y in zip(*np.nonzero(write_mask)):
-                test_q.put({
+                test_q.append({
                     "truth": [values[t + 1][x][y]],
                     "render": [(x, y)],
                     "expected_triggered_id": "user-input"
                 })
 
             # Filling out read test.
-            test_q.put({
+            test_q.append({
                 "truth": all_reads,
                 "render": [],
                 "expected_triggered_id": self._primary
@@ -463,8 +462,7 @@ class Visualizer:
             z = fig.data[t].z
 
             # Highlight the cell that is being tested on.
-            cur_test = info["curr"]
-            cur_render = info["tests"][cur_test]["render"]
+            cur_render = info["tests"][0]["render"]
             for (x, y) in cur_render:
                 z[x][y] = CellType.WRITE
 
@@ -486,16 +484,16 @@ class Visualizer:
             if not info["tests"]:
                 return dash.no_update
 
-            answer = None
-            if ctx.triggered_id != info["tests"][curr]["expected_triggered_id"]:
+            if ctx.triggered_id != info["tests"][0]["expected_triggered_id"]:
                 # Wrong type of input: no update
                 return dash.no_update
 
             if ctx.triggered_id == self._primary:
                 # Click on graph.
-                x = click_data["points"][0]["x"]
-                y = click_data["points"][0]["y"]
-                answer = [y, x]
+                answer = [
+                    click_data["points"][0]["y"],
+                    click_data["points"][0]["x"],
+                ]
             else:
                 # Enter number.
                 answer = user_input
@@ -513,7 +511,7 @@ class Visualizer:
 
             # If all truths have been found, pop test from queue.
             if not truths:
-                info["tests"].get()
+                info["tests"].pop(0)
 
             print(answer)
 
