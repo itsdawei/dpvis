@@ -1,7 +1,7 @@
 import numpy as np
-from dp._visualizer import Visualizer
 
 from dp import DPArray
+from dp._visualizer import Visualizer
 
 
 def excavate(v, M):
@@ -72,24 +72,27 @@ def excavate(v, M):
 
     # While the path is not fully constructed.
     while current != (0, 0):
-        i = current[0]  # Mines still available.
-        m = current[1]  # Months still available.
+        i = current[0]  # Mining sites available.
+        m = current[1]  # Months remaining.
 
-        # Find the predecessor of current
-        next_mine = (i - 1, m)  # Mine no levels of mine i
+        # Find the predecessor of current.
+        # Mine zero levels from ith site.
+        pred = (i - 1, m)
+        # (i, number of layers to mine from the (i+1)st site)
+        opt_action = (i, 0)
         next_value = arr[i - 1, m] + np.sum(v[i - 1, :0])
-        solution_entry = (i, 0)
 
-        # Variable l is the number of levels to mine at mining site i.
+        # The number of levels to mine at the ith site.
         for l in range(1, m + 1):
-            if next_value < arr[i - 1, m - l] + np.sum(v[i - 1, :l]):
-                next_mine = (i - 1, m - l)  # Mine l levels of mine i
-                next_value = arr[i - 1, m - l] + np.sum(v[i - 1, :l])
-                solution_entry = (i, l)
+            new_value = arr[i - 1, m - l] + np.sum(v[i - 1, :l])
+            if next_value < new_value:
+                pred = (i - 1, m - l)  # Mine l levels from the ith site.
+                opt_action = (i, l)
+                next_value = new_value
 
-        path.append(next_mine)
-        solution.append(solution_entry)
-        current = next_mine
+        path.append(pred)
+        solution.append(opt_action)
+        current = pred
 
     path = path[::-1]
     solution = solution[::-1]
@@ -97,8 +100,6 @@ def excavate(v, M):
 
     # Define labels.
     row_labels = [f"{i}th Mine" for i in range(v.shape[0] + 1)]
-    if len(row_labels) > 0:
-        row_labels[0] = "0th Mine"
     if len(row_labels) > 1:
         row_labels[1] = "1st Mine"
     if len(row_labels) > 2:
