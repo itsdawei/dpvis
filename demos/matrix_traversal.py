@@ -57,7 +57,6 @@ def matrix_traversal(M):
     # Reverse the path and solution so they starts at (0, 0).
     path = path[::-1]
     solution = solution[::-1]
-    print(f'Traceback Solution: {solution}')
 
     # Add the path to OPT so it will be displayed.
     OPT.add_traceback_path(path)
