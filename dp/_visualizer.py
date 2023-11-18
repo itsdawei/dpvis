@@ -642,8 +642,8 @@ class Visualizer:
                       fade=True,
                       className="alert-auto position-fixed w-25",
                       style={
-                          "bottom": 200,
-                          "left": 200,
+                          "bottom": 80,
+                          "left": 10,
                           "z-index": 9999,
                       })
         ]
