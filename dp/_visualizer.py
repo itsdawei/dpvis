@@ -429,7 +429,8 @@ class Visualizer:
             test_q.append({
                 "truth": all_writes,
                 "render": [],
-                "expected_triggered_id": self._primary
+                "expected_triggered_id": self._primary,
+                "tip": "What cells are written to in the next frame? (Click in any order)"
             })
 
             # Filling out all value tests
@@ -437,14 +438,16 @@ class Visualizer:
                 test_q.append({
                     "truth": [values[t + 1][x][y]],
                     "render": [(x, y)],
-                    "expected_triggered_id": "user-input"
+                    "expected_triggered_id": "user-input",
+                    "tip": "What is the value of cell (" + str(x) + "," + str(y) + ")"
                 })
 
             # Filling out read test.
             test_q.append({
                 "truth": all_reads,
                 "render": [],
-                "expected_triggered_id": self._primary
+                "expected_triggered_id": self._primary,
+                "tip": "What cells are read for the next timestep? (Click in any order)"
             })
 
             return {
