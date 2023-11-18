@@ -429,17 +429,18 @@ class Visualizer:
             # Filling out write test
             # The truth list is a list of indices that are written to in the
             # next cell.
-            filled_tests.append({"truth": all_writes, "render": []})
+            filled_tests.append({"truth": all_writes, "render": [], "expected_triggered_id": self._primary,})
 
             # Filling out all value tests
             for x, y in zip(*np.nonzero(write_mask)):
                 filled_tests.append({
                     "truth": [values[t + 1][x][y]],
-                    "render": [(x, y)]
+                    "render": [(x, y)],
+                    "expected_triggered_id": "user-input",
                 })
 
             # Filling out read test.
-            filled_tests.append({"truth": all_reads, "render": []})
+            filled_tests.append({"truth": all_reads, "render": [], "expected_triggered_id": self._primary,})
 
             return {
                 "tests": filled_tests,
@@ -483,6 +484,10 @@ class Visualizer:
             curr = info["curr"]
             truths = info["tests"][curr]["truth"]
             answer = None
+            if ctx.triggered_id != info["tests"][curr]["expected_triggered_id"]:
+                # Wrong type of input: no update
+                return dash.no_update
+            
             if ctx.triggered_id == self._primary:
                 # Click on graph.
                 x = click_data["points"][0]["x"]
