@@ -630,3 +630,19 @@ def test_annotation():
         Op.WRITE: set(),
         Op.HIGHLIGHT: set(),
     }.items()
+
+def test_2d_cell_annotation():
+    dp = DPArray((3, 3), "dp")
+    dp[0, 0] = 1
+    dp[1, 1] = 2
+    dp.annotate("hello world", idx=(0, 0))
+
+    timestep0 = dp.get_timesteps()[0]
+    assert timestep0["dp"].items() >= {
+        Op.READ: set(),
+        Op.WRITE: {(0, 0), (1, 1)},
+        Op.HIGHLIGHT: set(),
+        "cell_annotations": {
+            (0, 0): "hello world"
+        }
+    }.items()
