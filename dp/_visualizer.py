@@ -403,16 +403,21 @@ class Visualizer:
                 # TODO: notify user that there is no more testing
                 return dash.no_update
 
-            if info["test_mode"]:
+            if info["tests"]:
+                # Testing mode on -> off
                 return {
-                    "test_mode": False,
-                    "cur_test": 0,
-                    "num_tests": -1,
+                    "tests": [],
+                    "curr": 0,
                 }
+            
+            # Testing mode off -> on
+
+            #Populate according to radio box
+            filled_tests = []
+
             return {
-                "test_mode": True,
-                "cur_test": 0,
-                "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
+                "tests": filled_tests,
+                "curr": 0,
             }
 
         @self.app.callback(
@@ -442,7 +447,7 @@ class Visualizer:
             State("test-info", "data"),
             State("slider", "value"),
         )
-        def compare_input_and_frame(_, user_input, info, t):
+        def validator(_, user_input, info, t):
             """Tests if user input is correct."""
             if not info["test_mode"]:
                 return dash.no_update
@@ -609,10 +614,8 @@ class Visualizer:
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="test-info",
                       data={
-                          "truth": [], 
-                          "curr": 0,
-                          "render":[],
-                          "tests":[]
+                        "tests":[],
+                        "curr": 0,
                       }),
         ]
 
