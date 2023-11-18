@@ -486,8 +486,8 @@ class Visualizer:
             return fig.update_traces(z=z, selector=t), alert
 
         @self.app.callback(
-            Output("correct-alert", "children"),
             Output("test-info", "data", allow_duplicate=True),
+            Output("correct-alert", "children"),
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
             # Trigger this callback every time "enter" is pressed.
@@ -497,12 +497,12 @@ class Visualizer:
             State("test-info", "data"),
         )
         def validate(_, click_data, user_input, info):
-            """Tests if user input is correct."""
+            """Validates the user input."""
             if not info["tests"]:
                 return dash.no_update
 
-            if ctx.triggered_id != info["tests"][0]["expected_triggered_id"]:
-                # Wrong type of input: no update.
+            test = info["tests"][0]
+            if ctx.triggered_id != test["expected_triggered_id"]:
                 return dash.no_update
 
             if ctx.triggered_id == self._primary:
@@ -515,22 +515,20 @@ class Visualizer:
                 # Enter number.
                 answer = user_input
 
-            test = info["tests"][0]
-            truths = test["truth"]
-
             # The alert for correct or incorrect input.
             correct_alert = dbc.Alert("Incorrect!",
                                       color="danger",
                                       is_open=True,
                                       duration=3000,
                                       fade=True,
-                                      className="alert-auto")
+                                      class_name="alert-auto")
 
             # If answer is correct, remove from truth and render the test
             # values. Also updates alert.
+            truths = test["truth"]
             if answer in truths:
                 truths.remove(answer)
-                info["tests"][0]["render"].append(answer)
+                test["render"].append(answer)
                 correct_alert.children = "Correct!"
                 correct_alert.color = "success"
 
@@ -538,7 +536,8 @@ class Visualizer:
             if not truths:
                 info["tests"].pop(0)
 
-            return correct_alert, info, None
+            # Updates test info, the alert, and resets clickData.
+            return info, correct_alert, None
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
