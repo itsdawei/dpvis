@@ -458,8 +458,9 @@ class Visualizer:
 
             # Highlight the cell that is being tested on.
             cur_test = info["curr"]
-            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            z[x][y] = CellType.WRITE
+            cur_render = info["tests"][cur_test]["render"]
+            for (x,y) in cur_render:
+                z[x][y] = CellType.WRITE
 
             return fig.update_traces(z=z, selector=t)
 
@@ -691,8 +692,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=True, use_reloader=True)
-        self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=False, use_reloader=True)
 
     @ property
     def app(self):
