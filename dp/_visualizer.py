@@ -631,7 +631,7 @@ class Visualizer:
                             )
                         ])
                     ],
-                    class_name="g-0"),
+                    class_name="g-3"),
                 *alerts,
                 *datastores,
             ],
