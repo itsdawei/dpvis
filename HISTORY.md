@@ -3,7 +3,7 @@
 ## 0.1.0
 
 ### API
-
+- Restructure self-testing code (#38)
 - Make `create_figure` return a `Figure` object (#34, #35)
 - Add support for displaying multiple arrays (#23, #32)
 - Improve Front-end Callback Structure (#31)
