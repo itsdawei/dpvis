@@ -403,9 +403,7 @@ class Visualizer:
 
             # Turn off testing mode.
             if info["tests"]:
-                return {
-                    "tests": [],
-                }
+                return {"tests": []}
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
