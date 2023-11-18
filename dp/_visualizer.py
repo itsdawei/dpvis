@@ -405,7 +405,6 @@ class Visualizer:
             if t == len(values):
                 # TODO: notify user that there is no more testing
                 return dash.no_update
-
             if info["tests"]:
                 # Testing mode on -> off
                 return {
@@ -420,7 +419,7 @@ class Visualizer:
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t+1]
-            all_writes = np.transpose(np.nonzero(write_mask))
+            all_writes = [tuple(idx) for idx in np.transpose(np.nonzero(write_mask))]
 
             # Create list of dependencies for t+1.
             # Any all writes have the same reads on the same timestep, so we
@@ -433,9 +432,10 @@ class Visualizer:
                                  "render": []})
 
             # Filling out all value tests
-            for value_idx in all_writes:
-                filled_tests.append({"truth": [values[t + 1][value_idx]],
-                                     "render": [value_idx]})
+            for write_idx in all_writes:
+                print(write_idx)
+                filled_tests.append({"truth": [values[t + 1][write_idx]],
+                                     "render": [write_idx]})
 
             # Filling out read test.
             filled_tests.append({"truth": all_reads,
@@ -450,7 +450,7 @@ class Visualizer:
             Output(self._primary, "figure", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
-            if not info["test_mode"]:
+            if not info["tests"]:
                 return self._show_figure_trace(main_figure, t)
 
             fig = copy.deepcopy(main_figure)
@@ -464,29 +464,56 @@ class Visualizer:
             return fig.update_traces(z=z, selector=t)
 
         @self.app.callback(
-            Output("correct", "is_open"),
-            Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
+            Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
-            State("slider", "value"),
+            # State("slider", "value"),
         )
-        def validator(_, user_input, info, t):
+        def validator(_, click_data, user_input, info):
             """Tests if user input is correct."""
-            if not info["test_mode"]:
+
+            if not info["tests"]:
+                # Not in testing mode -> don't do anything
                 return dash.no_update
+            
+            curr = info["curr"]
 
-            cur_test = info["cur_test"]
-            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            test = values[t + 1][x][y]
+            if ctx.triggered_id == self._primary:
+                # Click test (Write, Read)
+                x = click_data["points"][0]["x"]
+                y = click_data["points"][0]["y"]
 
-            if user_input == test:
-                info["cur_test"] += 1
-                info["test_mode"] = info["cur_test"] < info["num_tests"]
-                return True, False, info
-            return False, True, dash.no_update
+                l = (tuple(i) for i in info["truth"])
+                import pdb; pdb.set_trace()
+                if (x, y) ==info["truth"]:
+                    # Remove from truth and and update render the test values
+                    # info["truth"]
+
+
+                    if not info["tests"][curr]["truth"]:
+                        # Current test complete, increment curr
+                        curr += 1
+
+
+
+            if ctx.triggered_id == "user-input":
+                # Text box test (Value)
+                pass
+                
+
+            # cur_test = info["cur_test"]
+            # x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
+            # test = values[t + 1][x][y]
+            return dash.no_update
+
+            # if user_input == test:
+            #     info["cur_test"] += 1
+            #     info["test_mode"] = info["cur_test"] < info["num_tests"]
+            #     return True, False, info
+            # return False, True, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -494,7 +521,7 @@ class Visualizer:
             State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
-            if info["test_mode"]:
+            if info["tests"]:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
