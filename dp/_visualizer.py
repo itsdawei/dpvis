@@ -416,7 +416,7 @@ class Visualizer:
             filled_tests = []
 
             # Create list of write indices for t+1.
-            write_mask = t_write_matrix[t+1]
+            write_mask = t_write_matrix[t + 1]
             all_writes = np.transpose(np.nonzero(write_mask))
 
             # Create list of dependencies for t+1.
@@ -426,13 +426,16 @@ class Visualizer:
 
 
             # Filling out write test
-            # The truth list is a list of indices that are written to in the next cell.
+            # The truth list is a list of indices that are written to in the
+            # next cell.
             filled_tests.append({"truth": all_writes, "render": []})
 
             # Filling out all value tests
-            for value_idx in all_writes:
-                filled_tests.append({"truth": [values[t + 1][value_idx]],
-                                     "render": [value_idx]})
+            for x, y in zip(*np.nonzero(write_mask)):
+                filled_tests.append({
+                    "truth": [values[t + 1][x][y]],
+                    "render": [(x, y)]
+                })
 
             # Filling out read test.
             filled_tests.append({"truth": all_reads, "render": []})
@@ -446,7 +449,7 @@ class Visualizer:
             Output(self._primary, "figure", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
-            if not info["test_mode"]:
+            if not info["tests"]:
                 return self._show_figure_trace(main_figure, t)
 
             fig = copy.deepcopy(main_figure)
@@ -462,19 +465,18 @@ class Visualizer:
         @self.app.callback(
             Output("test-info", "data", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
-            Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
+            Input("user-input", "n_submit"),
             State("user-input", "value"),
             State("test-info", "data"),
             # State("slider", "value"),
         )
         def validator(_, click_data, user_input, info):
             """Tests if user input is correct."""
-
             if not info["tests"]:
                 # Not in testing mode -> don't do anything
                 return dash.no_update
-            
+
             curr = info["curr"]
 
             if ctx.triggered_id == self._primary:
@@ -482,23 +484,19 @@ class Visualizer:
                 x = click_data["points"][0]["x"]
                 y = click_data["points"][0]["y"]
 
-                l = (tuple(i) for i in info["truth"])
-                import pdb; pdb.set_trace()
-                if (x, y) ==info["truth"]:
-                    # Remove from truth and and update render the test values
+                __import__('pdb').set_trace()
+                if (x, y) == info["truth"]:
+                    # Remove from truth and and update render the test values.
                     # info["truth"]
+                    pass
 
-
-                    if not info["tests"][curr]["truth"]:
-                        # Current test complete, increment curr
-                        curr += 1
-
-
+            if not info["tests"][curr]["truth"]:
+                # Current test complete, increment curr
+                curr += 1
 
             if ctx.triggered_id == "user-input":
                 # Text box test (Value)
                 pass
-                
 
             # cur_test = info["cur_test"]
             # x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
