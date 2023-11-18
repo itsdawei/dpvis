@@ -207,6 +207,10 @@ class Visualizer:
             "t_highlight_matrix": t_highlight_matrix,
         }
 
+    def _show_figure_trace(self, figure, i):
+        return figure.update_traces(visible=False).update_traces(visible=True,
+                                                                 selector=i)
+
     def _create_figure(self,
                        arr,
                        colorscale_name="Sunset",
@@ -260,43 +264,43 @@ class Visualizer:
                 **_get_colorbar_kwargs(colorscale_name),
                 xgap=1,
                 ygap=1,
+                visible=False,
             ) for color, val, extra in zip(t_color_matrix, value_text,
                                            extra_hovertext)
         ]
 
-        # Rendering all the frames for the animation.
-        frames = [go.Frame(data=heatmap) for heatmap in t_heatmaps]
-
         # Create the figure.
         column_alias = row_alias = None
         if column_labels:
-            column_alias = {i: column_labels[i] for i in range(w)}
+            column_alias = dict(enumerate(column_labels))
         if row_labels:
-            row_alias = {i: row_labels[i] for i in range(h)}
-        figure = go.Figure(
-            data=t_heatmaps[0],
-            frames=frames,
-            layout={
-                "title": arr.array_name,
-                "title_x": 0.5,
-                "xaxis": {
-                    "tickmode": "array",
-                    "tickvals": np.arange(w),
-                    "labelalias": column_alias,
-                    "showgrid": False,
-                    "zeroline": False,
-                },
-                "yaxis": {
-                    "tickmode": "array",
-                    "tickvals": np.arange(h),
-                    "labelalias": row_alias,
-                    "showgrid": False,
-                    "zeroline": False
-                },
+            row_alias = dict(enumerate(row_labels))
+        figure = go.Figure(layout={
+            "title": arr.array_name,
+            "title_x": 0.5,
+            "xaxis": {
+                "tickmode": "array",
+                "tickvals": np.arange(w),
+                "labelalias": column_alias,
+                "showgrid": False,
+                "zeroline": False,
             },
-        )
+            "yaxis": {
+                "tickmode": "array",
+                "tickvals": np.arange(h),
+                "labelalias": row_alias,
+                "showgrid": False,
+                "zeroline": False
+            },
+        },)
         figure.update_coloraxes(showscale=False)
         figure.update_layout(clickmode="event+select")
+
+        for h in t_heatmaps:
+            figure.add_trace(h)
+
+        # Show the first heatmap.
+        self._show_figure_trace(figure, 0)
 
         return figure
 
@@ -315,7 +319,7 @@ class Visualizer:
         def update_figure(t):
             """Update each graph based on the slider value."""
             return [
-                metadata["figure"].frames[t]
+                self._show_figure_trace(metadata["figure"], t)
                 for metadata in self._graph_metadata.values()
             ]
 
@@ -402,17 +406,18 @@ class Visualizer:
             Output(self._primary, "figure", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
-            fig = copy.deepcopy(main_figure.frames[t])
-
             if not info["test_mode"]:
-                return fig
+                return self._show_figure_trace(main_figure, t)
+
+            fig = copy.deepcopy(main_figure)
+            z = fig.data[t].z
 
             # Highlight the cell that is being tested on.
             cur_test = info["cur_test"]
             x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            fig.data[0]["z"][x][y] = CellType.WRITE
+            z[x][y] = CellType.WRITE
 
-            return fig
+            return fig.update_traces(z=z, selector=t)
 
         @self.app.callback(
             Output("comparison-result", "children"),
@@ -452,14 +457,14 @@ class Visualizer:
             x = click_data["points"][0]["x"]
             y = click_data["points"][0]["y"]
 
-            fig = copy.deepcopy(main_figure.frames[t])
+            fig = copy.deepcopy(main_figure)
+            z = fig.data[t].z
 
             # If selected cell is empty, do nothing.
-            if fig.data[0]["z"][y][x] == CellType.EMPTY:
+            if z[y][x] == CellType.EMPTY:
                 return dash.no_update
 
             # Clear all highlight, read, and write cells to filled.
-            z = fig.data[0]["z"]
             z[z != CellType.EMPTY] = CellType.FILLED
 
             # Highlight selected cell.
@@ -473,7 +478,7 @@ class Visualizer:
             h = self._graph_metadata[self._primary]["t_highlight_matrix"]
             z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
 
-            return fig
+            return fig.update_traces(z=z, selector=t)
 
     def show(self):
         """Visualizes the DPArrays.
@@ -488,7 +493,7 @@ class Visualizer:
             graphs.append(dcc.Graph(id=name, figure=figure))
             self._graph_metadata[name]["figure"] = figure
 
-        max_timestep = len(self._graph_metadata[self._primary]["figure"].frames)
+        max_timestep = len(self._graph_metadata[self._primary]["figure"].data)
 
         self.app.layout = html.Div([
             *graphs,
