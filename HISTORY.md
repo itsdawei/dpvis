@@ -6,7 +6,7 @@
 
 - Make `create_figure` return a `Figure` object (#34, #35)
 - Add support for displaying multiple arrays (#23, #32)
-- Improve Front-end Callback Structure (#31)
+- Improve Front-end Callback Structure (#31, #37)
 - Implement object-oriented API (#28)
 - Implemented self testing of values (#22)
 - Traceback solution verification and visualization (#24)

@@ -276,8 +276,6 @@ class Visualizer:
                 },
                 "clickmode": "event+select",
             })
-        # figure.update_coloraxes(showscale=False)
-        # figure.update_layout(clickmode="event+select")
 
         for color, val, extra in zip(t_color_matrix, value_text,
                                      extra_hovertext):
