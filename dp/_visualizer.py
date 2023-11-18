@@ -371,15 +371,15 @@ class Visualizer:
             ]
 
         # update annotation toast based on slider value
-        @self.app.callback(Output("array-annotation-toast", "is_open"),
-                           Output("array-annotation-toast", "children"),
+        @self.app.callback(Output("array-annotation", "style"),
+                           Output("array-annotation", "children"),
                            Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
             if t_annotations[t] is None or t_annotations[t] == []:
-                return False, ""
+                return {"display": "none"}, []
 
-            return True, t_annotations[t]
+            return {"display": "block"}, t_annotations[t]
 
         @self.app.callback(
             Output("slider", "value"),
@@ -616,12 +616,13 @@ class Visualizer:
                       })
         ]
 
-        array_annotations = dbc.Alert(
-            [],
-            id="array-annotation-toast",
-            color="secondary",
-            is_open=False,
-            className="border",
+        array_annotations = dbc.Card(
+            dbc.CardBody(
+                [],
+                id="array-annotation",
+            ),
+            color="info", 
+            outline=True,
         )
 
         sidebar = html.Div([
@@ -666,7 +667,7 @@ class Visualizer:
         self.app.layout = dbc.Container(
             [
                 dbc.Row([
-                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col(sidebar, width=4),
                     dbc.Col([
                         dbc.Row(
                             playback_control,
@@ -679,7 +680,8 @@ class Visualizer:
                             id="page-content",
                             className="border border-warning",
                         ),
-                    ])
+                    ],
+                    width=8),
                 ],
                         class_name="g-3"),
                 *alerts,

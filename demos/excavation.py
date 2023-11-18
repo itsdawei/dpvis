@@ -61,7 +61,7 @@ def excavate(v, M):
             # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
 
-            OPT.annotate(f"OPT[{i}, {m}] = {OPT[i, m]} stress test stress test stress test")
+            OPT.annotate(f"OPT[{i}, {m}] = {OPT[i, m]}")
             V.annotate(f"V[{i - 1}, :{m}] = {V[i - 1, :m]}")
 
     # TODO: Implement backtracking.
