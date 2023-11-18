@@ -621,7 +621,7 @@ class Visualizer:
                 [],
                 id="array-annotation",
             ),
-            color="info", 
+            color="info",
             outline=True,
         )
 

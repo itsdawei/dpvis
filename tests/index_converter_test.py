@@ -1,3 +1,4 @@
+"""Tests for the methods in _index_converter.py."""
 import numpy as np
 import pytest
 
