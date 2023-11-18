@@ -456,6 +456,7 @@ class Visualizer:
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
+            Output("instruction-alert", "children"),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             if not info["tests"]:
@@ -469,7 +470,7 @@ class Visualizer:
             for (x, y) in cur_render:
                 z[x][y] = CellType.WRITE
 
-            return fig.update_traces(z=z, selector=t)
+            return fig.update_traces(z=z, selector=t) , info["tests"][0]["tip"]
 
         @self.app.callback(
             Output("correct", "is_open"),
@@ -634,7 +635,7 @@ class Visualizer:
                       id="instruction-alert",
                       is_open=True,
                       color="danger",
-                      duration=3000,
+                      duration=None,
                       fade=True,
                       className="alert-auto position-fixed w-25",
                       style={
