@@ -28,8 +28,9 @@ def knapsack(items, capacity):
 
             # Enough capacity to add item.
             if rem - item[0] >= 0:
-                indices.append((i - 1, rem - item[0]))
-                elements.append(OPT[i - 1, rem - item[0]] + item[1])
+                index = (i - 1, rem - item[0])
+                indices.append(index)
+                elements.append(OPT[index] + item[1])
 
             OPT[i, rem] = OPT.max(indices=indices, elements=elements)
 
@@ -39,17 +40,17 @@ def knapsack(items, capacity):
     # Recover a traceback path.
     current = (arr.shape[0] - 1, arr.shape[1] - 1)
     path = [current]
-    solution = []  # Format: list of items.
+    solution = []  # List of items.
 
     # While the path is not fully constructed.
     while current[0] != 0 and current[1] != 0:
-        i = current[0]
-        rem = current[1]
+        i, rem = current
         item = items[i]
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
-        if rem - item[0] >= 0 and arr[i - 1, rem] < arr[i - 1, rem - item[0]] + item[1]:
+        if rem - item[0] >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
+                                                        item[0]] + item[1]:
             current = (i - 1, rem - item[0])
             path.append(current)
             solution.append(i)

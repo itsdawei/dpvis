@@ -72,8 +72,7 @@ def excavate(v, M):
 
     # While the path is not fully constructed.
     while current != (0, 0):
-        i = current[0]  # Mining sites available.
-        m = current[1]  # Months remaining.
+        i = current[0], current[1]
 
         # Find the predecessor of current.
         # Mine zero levels from ith site.
