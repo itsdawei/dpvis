@@ -86,8 +86,7 @@ def display(array,
         array (DPArray): DParray to be visualized.
         row_labels (list of str): Row labels of the DP array.
         column_labels (list of str): Column labels of the DP array.
-        recurrence (str): Markdown of intended recurrence for the DPArray.
-        code (str): Markdown of the relevant code filling out the DPArray.
+        description (str): Markdown of the description for the DPArray.
         colorscale_name (str): Name of built-in colorscales in plotly. See
             plotly.colors.named_colorscales for the built-in colorscales.
     """
