@@ -599,7 +599,7 @@ class Visualizer:
         ]
 
         """Test-Info:
-            Attributes:
+            Keys:
                 tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
                 curr: a counter to indicate which test is being worked on
                 truth: a list of all remaining answers for the test type
