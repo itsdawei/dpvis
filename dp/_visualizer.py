@@ -459,10 +459,11 @@ class Visualizer:
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
             Output("instruction-alert", "children"),
+            Output("instruction-alert", "is_open", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
             if not info["tests"]:
-                return self._show_figure_trace(main_figure, t)
+                return self._show_figure_trace(main_figure, t), "", False
 
             fig = copy.deepcopy(main_figure)
             z = fig.data[t].z
@@ -472,7 +473,7 @@ class Visualizer:
             for (x, y) in cur_render:
                 z[x][y] = CellType.WRITE
 
-            return fig.update_traces(z=z, selector=t) , info["tests"][0]["tip"]
+            return fig.update_traces(z=z, selector=t) , info["tests"][0]["tip"], True
 
         @self.app.callback(
             Output("correct", "is_open"),
