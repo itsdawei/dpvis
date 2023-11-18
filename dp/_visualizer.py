@@ -344,7 +344,6 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
-        # html.P(annotation, style={"textAlign": "center"})
         t_annotations = [[
             html.P(
                 f"{name} : " + arr["t_annotations"][t],
@@ -357,6 +356,9 @@ class Visualizer:
             if arr["t_annotations"][t] is not None
         ]
                          for t in range(len(values))]
+
+        t_read_matrix = self._graph_metadata[self._primary]["t_read_matrix"]
+
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
@@ -422,13 +424,12 @@ class Visualizer:
         #     return json.dumps(click_data, indent=2)
 
         @self.app.callback(
-            Output("test-mode-toast", "is_open"),
             Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
-            if info["test_mode"]:
-                return True, {"visibility": "hidden"}
-            return False, {"visibility": "visible"}
+            if info["tests"]:
+                return {"visibility": "hidden"}
+            return {"visibility": "visible"}
 
         @self.app.callback(
             Output("test-info", "data"),
@@ -450,59 +451,135 @@ class Visualizer:
                 # TODO: notify user that there is no more testing
                 return dash.no_update
 
-            if info["test_mode"]:
+            # Turn off testing mode.
+            if info["tests"]:
                 return {
-                    "test_mode": False,
-                    "cur_test": 0,
-                    "num_tests": -1,
+                    "tests": [],
                 }
-            return {
-                "test_mode": True,
-                "cur_test": 0,
-                "num_tests": np.count_nonzero(t_write_matrix[t + 1]),
-            }
+
+            # Create list of write indices for t+1.
+            write_mask = t_write_matrix[t + 1]
+            all_writes = np.transpose(np.nonzero(write_mask))
+
+            # Create list of dependencies for t+1.
+            # Any all writes have the same reads on the same timestep, so we
+            # arbitrarily pick the first one.
+            all_reads = list(t_read_matrix[t + 1][write_mask][0])
+
+            # TODO: Populate according to radio box.
+            test_q = []
+
+            # Filling out write test.
+            # The truth list is a list of indices that are written to in the
+            # next cell.
+            test_q.append({
+                "truth": all_writes,
+                "render": [],
+                "color": CellType.WRITE,
+                "expected_triggered_id": self._primary,
+                "tip": "What cells are written to in the next frame? (Click "
+                       "in any order)"
+            })
+
+            # Filling out read test.
+            test_q.append({
+                "truth": all_reads,
+                "render": [],
+                "color": CellType.READ,
+                "expected_triggered_id": self._primary,
+                "tip": "What cells are read for the next timestep? (Click "
+                       "in any order)"
+            })
+
+            # Filling out all value tests.
+            for x, y in zip(*np.nonzero(write_mask)):
+                test_q.append({
+                    "truth": [values[t + 1][x][y]],
+                    "render": [(x, y)],
+                    "color": CellType.WRITE,
+                    "expected_triggered_id": "user-input",
+                    "tip": f"What is the value of cell ({x}, {y})?"
+                })
+
+            return {"tests": test_q}
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
-            Input("test-info", "data"), State("slider", "value"))
-        def highlight_tests(info, t):
-            if not info["test_mode"]:
-                return self._show_figure_trace(main_figure, t)
+            Output("test-instructions", "children"),
+            Input("test-info", "data"),
+            State("slider", "value"),
+        )
+        def display_tests(info, t):
+            alert = dbc.Alert(is_open=False,
+                              color="danger",
+                              class_name="alert-auto position-fixed w-25")
+            if not info["tests"]:
+                return self._show_figure_trace(main_figure, t), alert
 
             fig = copy.deepcopy(main_figure)
-            z = fig.data[t].z
 
-            # Highlight the cell that is being tested on.
-            cur_test = info["cur_test"]
-            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            z[x][y] = CellType.WRITE
+            # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
+            z = fig.data[t].z.astype("bool").astype("int")
 
-            return fig.update_traces(z=z, selector=t)
+            # Highlight the revelant cells as specified by "render".
+            test = info["tests"][0]
+            render = test["render"]
+            for x, y in render:
+                z[x][y] = test["color"]
+
+            # Bring up test-specific instructions.
+            alert.is_open = True
+            alert.children = test["tip"]
+
+            return fig.update_traces(z=z, selector=t), alert
 
         @self.app.callback(
             Output("correct", "is_open"),
             Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
+            # For manually resetting clickData.
+            Output(self._primary, "clickData"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
+            Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
-            State("slider", "value"),
         )
-        def compare_input_and_frame(_, user_input, info, t):
+        def validator(_, click_data, user_input, info):
             """Tests if user input is correct."""
-            if not info["test_mode"]:
+            if not info["tests"]:
                 return dash.no_update
 
-            cur_test = info["cur_test"]
-            x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
-            test = values[t + 1][x][y]
+            if ctx.triggered_id != info["tests"][0]["expected_triggered_id"]:
+                # Wrong type of input: no update.
+                return dash.no_update
 
-            if user_input == test:
-                info["cur_test"] += 1
-                info["test_mode"] = info["cur_test"] < info["num_tests"]
-                return True, False, info
-            return False, True, dash.no_update
+            if ctx.triggered_id == self._primary:
+                # Click on graph.
+                answer = [
+                    click_data["points"][0]["y"],
+                    click_data["points"][0]["x"],
+                ]
+            else:
+                # Enter number.
+                answer = user_input
+
+            test = info["tests"][0]
+            truths = test["truth"]
+
+            is_correct = False
+            # Check that [x, y] is a row of truths.
+            if answer in truths:
+                # Remove from truth and update render the test values.
+                truths.remove(answer)
+                info["tests"][0]["render"].append(answer)
+                is_correct = True
+
+            # If all truths have been found, pop test from queue.
+            if not truths:
+                info["tests"].pop(0)
+
+            return is_correct, not is_correct, info, None
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -510,7 +587,7 @@ class Visualizer:
             State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
-            if info["test_mode"]:
+            if info["tests"] or not click_data:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
@@ -523,8 +600,8 @@ class Visualizer:
             if z[y][x] == CellType.EMPTY:
                 return dash.no_update
 
-            # Clear all highlight, read, and write cells to filled.
-            z[z != CellType.EMPTY] = CellType.FILLED
+            # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
+            z = z.astype("bool").astype("int")
 
             # Highlight selected cell.
             z[y][x] = CellType.WRITE
@@ -582,16 +659,6 @@ class Visualizer:
         ]
 
         alerts = [
-            dbc.Alert("You are in self-testing mode",
-                      id="test-mode-toast",
-                      is_open=False,
-                      color="info",
-                      style={
-                          "position": "fixed",
-                          "bottom": 10,
-                          "left": 10,
-                          "width": 350,
-                      }),
             dbc.Alert("Correct!",
                       id="correct",
                       is_open=False,
@@ -615,7 +682,13 @@ class Visualizer:
                           "bottom": 10,
                           "left": 10,
                           "z-index": 9999,
-                      })
+                      }),
+            html.Div(id="test-instructions",
+                     style={
+                         "bottom": 80,
+                         "left": 10,
+                         "z-index": 9999,
+                     }),
         ]
 
         array_annotations = dbc.Card(
@@ -658,12 +731,16 @@ class Visualizer:
 
         datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store(id="test-info",
-                      data={
-                          "test_mode": False,
-                          "num_tests": -1,
-                          "cur_test": 0
-                      }),
+            dcc.Store(
+                id="test-info",
+                data={
+                    # [W, V1, V2, ..., Vn, R]
+                    # Each element is the test states for the current timestep.
+                    # - W: Click on all writes.
+                    # - Vi: Entered the value for the ith write.
+                    # - R: Click on all reads.
+                    "tests": [],
+                }),
         ]
 
         self.app.layout = dbc.Container(
