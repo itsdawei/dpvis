@@ -496,7 +496,7 @@ class Visualizer:
             State("user-input", "value"),
             State("test-info", "data"),
         )
-        def validator(_, click_data, user_input, info):
+        def validate(_, click_data, user_input, info):
             """Tests if user input is correct."""
             if not info["tests"]:
                 return dash.no_update
