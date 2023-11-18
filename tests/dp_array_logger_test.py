@@ -15,56 +15,19 @@ def test_read_write():
     dp = DPArray(10, "dp")
 
     dp[0] = 1
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp": {
-                0: 1
-            }
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp": {0: 1}}}
     assert len(dp.logger.logs) == 1
 
     dp[1] = 2
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp": {
-                0: 1,
-                1: 2
-            }
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp": {0: 1, 1: 2}}}
 
     temp = dp[1]
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp": {
-                0: 1,
-                1: 2
-            }
-        }
-    }
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "dp": {
-                1: None
-            }
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp": {0: 1, 1: 2}}}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp": {1: None}}}
     assert len(dp.logger.logs) == 2
 
     dp[2] = temp
-    assert dp.logger.logs[2] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp": {
-                2: 2
-            }
-        }
-    }
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"dp": {2: 2}}}
     assert len(dp.logger.logs) == 3
 
 
@@ -79,30 +42,9 @@ def test_2d_read_write():
 
     dp[3, 6] = temp
     assert len(dp.logger.logs) == 3
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                (0, 0): 1
-            }
-        }
-    }
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "name": {
-                (0, 0): None
-            }
-        }
-    }
-    assert dp.logger.logs[2] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                (3, 6): 1
-            }
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {(0, 0): 1}}}
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {(0, 0): None}}}
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {(3, 6): 1}}}
 
 
 def test_max_highlight():
@@ -405,12 +347,7 @@ def test_slice_reading(s):
     if isinstance(s, int):
         s = np.s_[s:s + 1]
     truth = {i: None for i in range(*s.indices(10))}
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "dp_array": truth
-        }
-    }
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
 
 
 def test_slice_reading_list_of_indices():
@@ -421,12 +358,7 @@ def test_slice_reading_list_of_indices():
     indices = [1, 2, 3]
     _ = dp[indices]
     truth = {i: None for i in indices}
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "dp_array": truth
-        }
-    }
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"dp_array": truth}}
 
 
 @pytest.mark.parametrize("s", [np.s_[::2], np.s_[:2], np.s_[4:], np.s_[:6], 5],
@@ -437,12 +369,7 @@ def test_slice_logging(s):
     if isinstance(s, int):
         s = np.s_[s:s + 1]
     truth = {i: 1 for i in range(*s.indices(10))}
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp_array": truth
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
     assert len(dp.logger.logs) == 1
 
 
@@ -464,12 +391,7 @@ def test_2d_slice_logging(slice_1, slice_2):
         (i, j): 1 for i in range(*slice_1.indices(10))
         for j in range(*slice_2.indices(10))
     }
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "dp_array": truth
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"dp_array": truth}}
     assert len(dp.logger.logs) == 1
 
 

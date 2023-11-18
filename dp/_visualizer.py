@@ -110,16 +110,16 @@ def display(dp_arr,
         contents[np.where(~mask)] = CellType.FILLED
         contents[_indices_to_np_indices(arr_data[Op.READ])] = CellType.READ
         contents[_indices_to_np_indices(arr_data[Op.WRITE])] = CellType.WRITE
-        contents[_indices_to_np_indices(arr_data[Op.HIGHLIGHT]
-                                        )] = CellType.HIGHLIGHT
+        contents[_indices_to_np_indices(
+            arr_data[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
         colors.append(contents)
 
     colors = np.array(colors)
     values = np.array([t[dp_arr.array_name]["contents"] for t in timesteps])
-    annotations = np.array([t[dp_arr.array_name]["annotations"]
-                            for t in timesteps])
-    cell_annotations = np.array([t[dp_arr.array_name]["cell_annotations"]
-                                 for t in timesteps])
+    annotations = np.array(
+        [t[dp_arr.array_name]["annotations"] for t in timesteps])
+    cell_annotations = np.array(
+        [t[dp_arr.array_name]["cell_annotations"] for t in timesteps])
 
     # Plotly heatmaps requires 2d input as data.
     if values.ndim == 2:
@@ -139,8 +139,9 @@ def display(dp_arr,
             if isinstance(write_idx, int):
                 hovertext[t:, 0, write_idx] = (
                     f"Value: {values[t, 0, write_idx]}<br />Dependencies: "
-                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}"
-                    + f"<br />Note: {cell_annotations[t][write_idx]}" if write_idx in cell_annotations[t] else "")
+                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}" +
+                    f"<br />Note: {cell_annotations[t][write_idx]}"
+                    if write_idx in cell_annotations[t] else "")
                 dependency_matrix[t:, 0, write_idx] = timestep[
                     dp_arr.array_name][Op.READ]
                 highlight_matrix[t:, 0, write_idx] = timestep[
@@ -148,8 +149,9 @@ def display(dp_arr,
             else:
                 hovertext[(np.s_[t:], *write_idx)] = (
                     f"Value: {values[(t, *write_idx)]}<br />Dependencies: "
-                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}"
-                    + f"<br />Note: {cell_annotations[t][write_idx]}" if write_idx in cell_annotations[t] else "")
+                    f"{timestep[dp_arr.array_name][Op.READ] or '{}'}" +
+                    f"<br />Note: {cell_annotations[t][write_idx]}"
+                    if write_idx in cell_annotations[t] else "")
                 dependency_matrix[(
                     np.s_[t:],
                     *write_idx)] = timestep[dp_arr.array_name][Op.READ]

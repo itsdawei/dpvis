@@ -220,10 +220,12 @@ class Logger:
                 if "annotations" in log:
                     for name, annotation in log["annotations"].items():
                         timesteps[-1][name]["annotations"] = annotation
-                
+
                 if "cell_annotations" in log:
-                    for name, cell_annotations in log["cell_annotations"].items():
-                        timesteps[-1][name]["cell_annotations"] = cell_annotations
+                    for name, cell_annotations in log["cell_annotations"].items(
+                    ):
+                        timesteps[-1][name][
+                            "cell_annotations"] = cell_annotations
 
         return timesteps
 
