@@ -356,7 +356,8 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
+                           Input("play", "n_clicks"), Input(
+                               "stop", "n_clicks"),
                            Input("self-test-button", "n_clicks"))
         def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
             """Starts and stop playback from running.
@@ -377,7 +378,8 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-mode-toast", "is_open"),
-            Output(component_id="playback-control", component_property="style"),
+            Output(component_id="playback-control",
+                   component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
             if info["test_mode"]:
@@ -410,33 +412,34 @@ class Visualizer:
                     "tests": [],
                     "curr": 0,
                 }
-            
+
             # Testing mode off -> on
 
             # TODO: Populate according to radio box
             filled_tests = []
 
-            import pdb; pdb.set_trace()
+            # Create list of write indices for t+1.
+            write_mask = t_write_matrix[t+1]
+            all_writes = np.transpose(np.nonzero(write_mask))
 
-            # Creating a list of indices of the reads and writes in the next timestep
-            all_writes = np.transpose(np.nonzero(t_write_matrix[t + 1]))
-            all_reads = np.transpose(np.nonzero(t_read_matrix[t + 1]))
+            # Create list of dependencies for t+1.
+            # Any all writes have the same reads on the same timestep, so we
+            # arbitrarily pick the first one.
+            all_reads = t_read_matrix[t+1][write_mask][0]
 
             # Filling out write test
             # The truth list is a list of indices that are written to in the next cell.
             filled_tests.append({"truth": all_writes,
                                  "render": []})
-            
+
             # Filling out all value tests
             for value_idx in all_writes:
                 filled_tests.append({"truth": [values[t + 1][value_idx]],
                                      "render": [value_idx]})
-            
+
             # Filling out read test.
             filled_tests.append({"truth": all_reads,
                                  "render": []})
-            
-            import pdb; pdb.set_trace()
 
             return {
                 "tests": filled_tests,
@@ -605,8 +608,8 @@ class Visualizer:
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
             ],
-                      id="sidebar",
-                      className="border border-warning"),
+                id="sidebar",
+                className="border border-warning"),
         ])
 
         playback_control = [
@@ -641,8 +644,8 @@ class Visualizer:
             dcc.Store(id="store-keypress", data=0),
             dcc.Store(id="test-info",
                       data={
-                        "tests":[],
-                        "curr": 0,
+                          "tests": [],
+                          "curr": 0,
                       }),
         ]
 
