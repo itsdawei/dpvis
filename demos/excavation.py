@@ -61,9 +61,41 @@ def excavate(v, M):
             # the ith site, we can take choice that yields the maximum value.
             OPT[i, m] = OPT.max(indices=indices, elements=elements)
 
-    # TODO: Implement backtracking.
-    # backtrack(OPT, indices)
+    # Make a copy data in OPT to prevent visualization of future operations.
+    arr = OPT.arr
 
+    # Recover a traceback path.
+    current = (arr.shape[0] - 1, arr.shape[1] - 1)
+    path = [current]
+    # Solution format: tuple(mining site, optimal number of levels to mine).
+    solution = []
+
+    # While the path is not fully constructed.
+    while current != (0, 0):
+        i = current[0]  # Mines still available.
+        m = current[1]  # Months still available.
+
+        # Find the predecessor of current
+        next_mine = (i - 1, m)  # Mine no levels of mine i
+        next_value = arr[i - 1, m] + np.sum(v[i - 1, :0])
+        solution_entry = (i, 0)
+
+        # Variable l is the number of levels to mine at mining site i.
+        for l in range(1, m + 1):
+            if next_value < arr[i - 1, m - l] + np.sum(v[i - 1, :l]):
+                next_mine = (i - 1, m - l)  # Mine l levels of mine i
+                next_value = arr[i - 1, m - l] + np.sum(v[i - 1, :l])
+                solution_entry = (i, l)
+
+        path.append(next_mine)
+        solution.append(solution_entry)
+        current = next_mine
+
+    path = path[::-1]
+    solution = solution[::-1]
+    OPT.add_traceback_path(path)
+
+    # Define labels.
     row_labels = [f"{i}th Mine" for i in range(v.shape[0] + 1)]
     if len(row_labels) > 0:
         row_labels[0] = "0th Mine"

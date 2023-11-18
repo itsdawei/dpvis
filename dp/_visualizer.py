@@ -285,6 +285,7 @@ class Visualizer:
                     "labelalias": column_alias,
                     "showgrid": False,
                     "zeroline": False,
+            
                 },
                 "yaxis": {
                     "tickmode": "array",
