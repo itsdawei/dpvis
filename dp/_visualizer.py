@@ -383,13 +383,10 @@ class Visualizer:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(
-            Output("test-info", "data"),
-            Input("self-test-button", "n_clicks"),
-            State("test-info", "data"),
-            State("slider", "value"),
-            State("test-select-checkbox", "value")
-        )
+        @self.app.callback(Output("test-info", "data"),
+                           Input("self-test-button", "n_clicks"),
+                           State("test-info", "data"), State("slider", "value"),
+                           State("test-select-checkbox", "value"))
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
@@ -419,7 +416,7 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-            # TODO: Populate according to radio box.
+            # TODO: Populate test_q in separate callback.
             test_q = []
 
             # Filling out write test.
@@ -431,7 +428,8 @@ class Visualizer:
                     "render": [],
                     "color": CellType.WRITE,
                     "expected_triggered_id": self._primary,
-                    "tip": "What cells are written to in the next frame? (Click "
+                    "tip":
+                        "What cells are written to in the next frame? (Click "
                         "in any order)"
                 })
 
@@ -443,7 +441,7 @@ class Visualizer:
                     "color": CellType.READ,
                     "expected_triggered_id": self._primary,
                     "tip": "What cells are read for the next timestep? (Click "
-                        "in any order)"
+                           "in any order)"
                 })
 
             if "What is its value?" in selected_tests:
@@ -456,7 +454,7 @@ class Visualizer:
                         "expected_triggered_id": "user-input",
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
-                    
+
             # If no tests selected, self-testing mode is automatically turned off
             return {"tests": test_q}
 
