@@ -419,10 +419,10 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-            # TODO: Populate according to radio box
+            # TODO: Populate according to radio box.
             test_q = []
 
-            # Filling out write test
+            # Filling out write test.
             # The truth list is a list of indices that are written to in the
             # next cell.
             test_q.append({
@@ -444,7 +444,7 @@ class Visualizer:
                        "in any order)"
             })
 
-            # Filling out all value tests
+            # Filling out all value tests.
             for x, y in zip(*np.nonzero(write_mask)):
                 test_q.append({
                     "truth": [values[t + 1][x][y]],
@@ -488,7 +488,7 @@ class Visualizer:
             Output("correct", "is_open"),
             Output("incorrect", "is_open"),
             Output("test-info", "data", allow_duplicate=True),
-            # For manually resetting clickData,
+            # For manually resetting clickData.
             Output(self._primary, "clickData"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
@@ -502,7 +502,7 @@ class Visualizer:
                 return dash.no_update
 
             if ctx.triggered_id != info["tests"][0]["expected_triggered_id"]:
-                # Wrong type of input: no update
+                # Wrong type of input: no update.
                 return dash.no_update
 
             if ctx.triggered_id == self._primary:
