@@ -495,9 +495,10 @@ class Visualizer:
             State("got-correct-write","data"),
             State("tests-set", "data"),
             State("slider", "value"),
+            State("skip-flag","data")
         )
-        def test_next_write(click_data, info, got_write,tests_set,t):
-            if not info["test_mode"] or got_write:
+        def test_next_write(click_data, info, got_write,tests_set,t, skip_flag):
+            if not info["test_mode"] or got_write or skip_flag:
                 return dash.no_update, dash.no_update
 
             y = click_data["points"][0]["x"]
