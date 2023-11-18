@@ -3,6 +3,7 @@
 ## 0.1.0
 
 ### API
+
 - Traceback path and solution construction in demos (#30)
 - Make `create_figure` return a `Figure` object (#34, #35)
 - Add support for displaying multiple arrays (#23, #32)

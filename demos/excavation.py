@@ -71,7 +71,7 @@ def excavate(v, M):
     solution = []
 
     # While the path is not fully constructed.
-    while current != (0, 0):
+    while current[0] > 0 and current[1] > 0:
         i = current[0]  # Mines still available.
         m = current[1]  # Months still available.
 
