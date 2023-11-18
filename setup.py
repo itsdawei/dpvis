@@ -14,7 +14,7 @@ install_requires = [
     "numpy>=1.17.0",
     "plotly>=5.17.0",
     "dash>=2.14.0",
-    "dash-bootstrap-components==1.5.0",
+    "dash-bootstrap-components>=1.5.0",
 ]
 
 extras_require = {
