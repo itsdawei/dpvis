@@ -343,12 +343,17 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
+        # html.P(annotation, style={"textAlign": "center"})
         t_annotations = [
-            "\n".join([
-                f"{name} : " + arr["t_annotations"][t]
+            [
+                html.P(
+                    f"{name} : " + arr["t_annotations"][t],
+                    style={"textAlign": "center",
+                           "width": "auto"},
+                )
                 for name,arr in self._graph_metadata.items()
                 if arr["t_annotations"][t] is not None
-            ])
+            ]
             for t in range(len(values))
             ]
         main_figure = self._graph_metadata[self._primary]["figure"]
@@ -369,11 +374,11 @@ class Visualizer:
         # update annotation toast based on slider value
         @self.app.callback(
             Output("array-annotation-toast", "is_open"),
-            Output("array-annotation-text", "children"),
+            Output("array-annotation-toast", "children"),
             Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
-            if t_annotations[t] is None:
+            if t_annotations[t] is None or t_annotations[t] == []:
                 return False, ""
             
             return True, t_annotations[t]
@@ -614,16 +619,11 @@ class Visualizer:
         ]
 
         array_annotations = dbc.Alert(
-                [html.P("", 
-                        id="array-annotation-text",
-                        style={
-                            "width": "100%",
-                            "textAlign": "center",
-                        })],
+                [],
                 id="array-annotation-toast",
                 color="secondary",
                 is_open=False,
-                className="border"
+                className="border",
                 )
 
         sidebar = html.Div([
