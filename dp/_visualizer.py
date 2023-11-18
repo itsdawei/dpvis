@@ -456,7 +456,7 @@ class Visualizer:
             z = fig.data[t].z
 
             # Highlight the cell that is being tested on.
-            cur_test = info["cur_test"]
+            cur_test = info["curr"]
             x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
             z[x][y] = CellType.WRITE
 
