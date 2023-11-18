@@ -516,8 +516,6 @@ class Visualizer:
             if not truths:
                 info["tests"].pop(0)
 
-            print(answer)
-
             return is_correct, not is_correct, info
 
         @self.app.callback(
@@ -630,6 +628,18 @@ class Visualizer:
                       style={
                           "bottom": 10,
                           "left": 10,
+                          "z-index": 9999,
+                      }),
+            dbc.Alert("Test hint",
+                      id="instruction-alert",
+                      is_open=True,
+                      color="danger",
+                      duration=3000,
+                      fade=True,
+                      className="alert-auto position-fixed w-25",
+                      style={
+                          "bottom": 200,
+                          "left": 200,
                           "z-index": 9999,
                       })
         ]
