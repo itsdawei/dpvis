@@ -127,18 +127,6 @@ class Logger:
             raise ValueError(f"Array name {array_name} not recognized by"
                              f"logger. Make sure logger is passed to the"
                              f"constructor of {array_name}")
-        
-        # if index out of bounds
-        if idx is not None and idx >= self._array_shapes[array_name]:
-            raise ValueError(f"Index {idx} out of bounds for array {array_name}.")
-
-
-                # "annotations": {
-                #     name: [] for name in self._array_shapes
-                # },
-                # "cell_annotations": {
-                #     name : {} for name in self._array_shapes
-                # }
 
         # create or overwrite annotation
         if idx is None:
@@ -210,6 +198,8 @@ class Logger:
         for batch in log_batches:
             timesteps.append({
                 name: {
+                    "annotations": None,
+                    "cell_annotations": {},
                     "contents": array_contents[name].copy(),
                     Op.READ: set(),
                     Op.WRITE: set(),

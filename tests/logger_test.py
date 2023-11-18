@@ -231,7 +231,6 @@ def test_annotation_log(logger):
     assert len(logger.logs) == 1
     log0 = logger.logs[-1]
     assert log0["annotations"]["dp1"] == "hello"
-    assert "annotations" not in log0["idx"]["dp2"]
 
     logger.append_annotation("dp2", "world")
     log1 = logger.logs[-1]
@@ -309,7 +308,6 @@ def test_annotation_timestep(logger):
     timesteps0 = logger.to_timesteps()
     assert len(timesteps0) == 1
     assert timesteps0[0]["dp1"]["annotations"] == "!!!"
-    assert "annotations" not in timesteps0[0]["dp2"]
 
 
 def test_cell_annotation_log(logger):
