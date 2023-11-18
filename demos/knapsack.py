@@ -20,21 +20,18 @@ def knapsack(items, capacity):
             # if there is no space.
             if idx == 0 or rem == 0:
                 continue
-            # Normal case: There is an item to add and space remaining.
-            if idx >= 1 and rem - item[0] >= 0:
-                indices = [
-                    (idx - 1, rem),
-                    (idx - 1, rem - item[0]),
-                ]
-                elements = [
-                    OPT[idx - 1, rem],
-                    OPT[idx - 1, rem - item[0]] + item[1],
-                ]
-                OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
-            # Edge case: adding item is not possible.
-            elif idx >= 1 and rem - item[0] < 0:
-                OPT[idx, rem] = OPT.max(indices=[(idx - 1, rem)],
-                                        elements=[OPT[idx - 1, rem]])
+
+            # Item is not added
+            indices = [(idx - 1, rem)]
+            elements = [OPT[idx - 1, rem]]
+
+            # If adding item is possible
+            if rem - item[0] >= 0:
+                # Item is added
+                indices.append((idx - 1, rem - item[0]))
+                elements.append(OPT[idx - 1, rem - item[0]] + item[1])
+            
+            OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
 
     # Make a copy of data in OPT to prevent visualization of future operations.
     arr = OPT.arr
@@ -51,21 +48,14 @@ def knapsack(items, capacity):
         item = items[idx]
 
         # Find the predecessor of current.
-        # Case 1: there is capacity for item
-        if idx >= 1 and rem - item[0] >= 0:
-            # It is better to exclude item
-            if arr[idx - 1, rem] >= arr[idx - 1, rem - item[0]] + item[1]:
-                current = (idx - 1, rem)
-                path.append(current)
+        # Case 1: adding item is possible and more optimal
+        if rem - item[0] >= 0 and arr[idx - 1, rem] < arr[idx - 1, rem - item[0]] + item[1]:
+            current = (idx - 1, rem - item[0])
+            path.append(current)
+            solution.append(idx)
 
-            # It is better to include item
-            else:
-                current = (idx - 1, rem - item[0])
-                path.append(current)
-                solution.append(idx)
-
-        # Case 2: there is no capacity for item
-        elif idx >= 1 and rem - item[0] < 0:
+        # Case 2: there is no capacity for item or not adding item is more optimal
+        else:
             current = (idx - 1, rem)
             path.append(current)
 
