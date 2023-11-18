@@ -356,8 +356,7 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input(
-                               "stop", "n_clicks"),
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
                            Input("self-test-button", "n_clicks"))
         def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
             """Starts and stop playback from running.
@@ -378,11 +377,10 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-mode-toast", "is_open"),
-            Output(component_id="playback-control",
-                   component_property="style"),
+            Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
-            if info["test_mode"]:
+            if info["tests"]:
                 return True, {"visibility": "hidden"}
             return False, {"visibility": "visible"}
 
@@ -419,27 +417,25 @@ class Visualizer:
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t+1]
-            all_writes = [tuple(idx) for idx in np.transpose(np.nonzero(write_mask))]
+            all_writes = np.transpose(np.nonzero(write_mask))
 
             # Create list of dependencies for t+1.
             # Any all writes have the same reads on the same timestep, so we
             # arbitrarily pick the first one.
-            all_reads = t_read_matrix[t+1][write_mask][0]
+            all_reads = list(t_read_matrix[t + 1][write_mask][0])
+
 
             # Filling out write test
             # The truth list is a list of indices that are written to in the next cell.
-            filled_tests.append({"truth": all_writes,
-                                 "render": []})
+            filled_tests.append({"truth": all_writes, "render": []})
 
             # Filling out all value tests
-            for write_idx in all_writes:
-                print(write_idx)
-                filled_tests.append({"truth": [values[t + 1][write_idx]],
-                                     "render": [write_idx]})
+            for value_idx in all_writes:
+                filled_tests.append({"truth": [values[t + 1][value_idx]],
+                                     "render": [value_idx]})
 
             # Filling out read test.
-            filled_tests.append({"truth": all_reads,
-                                 "render": []})
+            filled_tests.append({"truth": all_reads, "render": []})
 
             return {
                 "tests": filled_tests,
@@ -450,14 +446,14 @@ class Visualizer:
             Output(self._primary, "figure", allow_duplicate=True),
             Input("test-info", "data"), State("slider", "value"))
         def highlight_tests(info, t):
-            if not info["tests"]:
+            if not info["test_mode"]:
                 return self._show_figure_trace(main_figure, t)
 
             fig = copy.deepcopy(main_figure)
             z = fig.data[t].z
 
             # Highlight the cell that is being tested on.
-            cur_test = info["cur_test"]
+            cur_test = info["curr"]
             x, y = np.transpose(np.nonzero(t_write_matrix[t + 1]))[cur_test]
             z[x][y] = CellType.WRITE
 
@@ -635,33 +631,32 @@ class Visualizer:
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
             ],
-                id="sidebar",
-                className="border border-warning"),
+                      id="sidebar",
+                      className="border border-warning"),
         ])
 
         playback_control = [
             dbc.Col(dbc.Button("Play", id="play"), width="auto"),
             dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
-            dbc.Col(dcc.Slider(
-                min=0,
-                max=max_timestep - 1,
-                step=1,
-                value=0,
-                updatemode="drag",
-                id="slider",
-            )),
+            dbc.Col(
+                dcc.Slider(
+                    min=0,
+                    max=max_timestep - 1,
+                    step=1,
+                    value=0,
+                    updatemode="drag",
+                    id="slider",
+                )),
             dcc.Interval(id="interval",
                          interval=1000,
                          n_intervals=0,
                          max_intervals=0),
         ]
-
         """Test-Dict Documentation:
             Keys:
                 truth: the value of the things being looked for.
                 render: what should be rendered at the beginning of this test
         """
-
         """Test-Info:
             Keys:
                 tests: a ordered and typed (Write, Value, Read) list of all the tests in the given timestep
@@ -669,33 +664,31 @@ class Visualizer:
         """
         datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store(id="test-info",
-                      data={
-                          "tests": [],
-                          "curr": 0,
-                      }),
+            dcc.Store(id="test-info", data={
+                "tests": [],
+                "curr": 0,
+            }),
         ]
 
         self.app.layout = dbc.Container(
             [
-                dbc.Row(
-                    [
-                        dbc.Col(sidebar, width="auto"),
-                        dbc.Col([
-                            dbc.Row(
-                                playback_control,
-                                id="playback-control",
-                                class_name="g-0",
-                                align="center",
-                            ),
-                            dbc.Row(
-                                dbc.Stack(graphs),
-                                id="page-content",
-                                className="border border-warning",
-                            )
-                        ])
-                    ],
-                    class_name="g-3"),
+                dbc.Row([
+                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col([
+                        dbc.Row(
+                            playback_control,
+                            id="playback-control",
+                            class_name="g-0",
+                            align="center",
+                        ),
+                        dbc.Row(
+                            dbc.Stack(graphs),
+                            id="page-content",
+                            className="border border-warning",
+                        )
+                    ])
+                ],
+                        class_name="g-3"),
                 *alerts,
                 *datastores,
             ],
@@ -704,8 +697,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
