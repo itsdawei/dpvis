@@ -386,6 +386,7 @@ class Visualizer:
 
         @self.app.callback(
             Output("test-info", "data"),
+            Output("instruction-alert","is_open"),
             Input("self-test-button", "n_clicks"),
             State("test-info", "data"),
             State("slider", "value"),
@@ -407,7 +408,8 @@ class Visualizer:
                 # Testing mode on -> off
                 return {
                     "tests": [],
-                }
+                }, False
+
 
             # Testing mode off -> on
 
@@ -452,7 +454,7 @@ class Visualizer:
 
             return {
                 "tests": test_q,
-            }
+            }, True
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -631,9 +633,9 @@ class Visualizer:
                           "left": 10,
                           "z-index": 9999,
                       }),
-            dbc.Alert("Test hint",
+            dbc.Alert("",
                       id="instruction-alert",
-                      is_open=True,
+                      is_open=False,
                       color="danger",
                       duration=None,
                       fade=True,
