@@ -231,7 +231,6 @@ def test_max_min_2d(max_min, r, max_val, min_val):
 
     assert dp.arr[h - 1, w - 1] == truth
 
-
 # Logger related tests #
 
 

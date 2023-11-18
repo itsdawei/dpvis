@@ -35,9 +35,9 @@ def knapsack(items, capacity):
             elif idx >= 1 and rem - item[0] < 0:
                 OPT[idx, rem] = OPT[idx - 1, rem]
 
-    row_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
-    column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
-    display(OPT, row_labels=row_labels, column_labels=column_labels)
+    display(OPT,
+            row_labels=[f"Item {i}: {item}" for i, item in enumerate(items)],
+            column_labels=[f"Capacity {i}" for i in range(capacity + 1)])
 
 
 if __name__ == "__main__":
