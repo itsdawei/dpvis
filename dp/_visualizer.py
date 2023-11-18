@@ -487,109 +487,99 @@ class Visualizer:
             z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
 
             return fig
-        
+
         @self.app.callback(
-            Output("num-tests","data"),
-            Output("dep-set","data"),
-            Output("tests-set","data"),
-            Output("got-correct-value","data"),
-            Output("got-correct-write","data"),
-            Output("current-test","data"),
-            Input("slider","value"),
+            Output("num-tests", "data"),
+            Output("dep-set", "data"),
+            Output("tests-set", "data"),
+            Output("got-correct-value", "data"),
+            Output("got-correct-write", "data"),
+            Output("current-test", "data"),
+            Input("slider", "value"),
         )
         def change_test_data_with_frame(t):
             w = self._graph_metadata[self._primary]["t_write_matrix"]
             num_tests = np.count_nonzero(t_write_matrix[t + 1])
-            return num_tests, [], [], False, False, (-1,-1)
-        
-        @self.app.callback(
-            Output("testing-prompt", "children"),
-            Input("got-correct-write","data"),
-            Input("got-correct-value", "data"),
-            State("test-info","data"),
-            State("tests-set", "data"),
-            State("num-tests","data")
-        )
-        def change_testing_prompt(got_write, got_value, info, tests_set,num_tests):
+            return num_tests, [], [], False, False, (-1, -1)
+
+        @self.app.callback(Output("testing-prompt", "children"),
+                           Input("got-correct-write", "data"),
+                           Input("got-correct-value", "data"),
+                           State("test-info",
+                                 "data"), State("tests-set", "data"),
+                           State("num-tests", "data"))
+        def change_testing_prompt(got_write, got_value, info, tests_set,
+                                  num_tests):
             if not info["test_mode"]:
                 return ""
-            
+
             if not got_write:
                 return "Click on the next cell to be filled in!"
-            
+
             if not got_value:
                 return "Enter the value of the next cell!"
-            
+
             if len(tests_set) == num_tests:
-                import pdb;
+                import pdb
                 pdb.set_trace()
                 return "You have solved everything for the next time-step!"
-            
+
         @self.app.callback(
             Output("got-correct-write", "data", allow_duplicate=True),
-            Output("current-test","data", allow_duplicate=True),
-            Input(self._primary, "clickData"),
-            State("test-info","data"),
-            State("got-correct-write","data"),
-            State("tests-set", "data"),
-            State("slider", "value"),
-            State("skip-flag","data")
-        )
-        def test_next_write(click_data, info, got_write,tests_set,t, skip_flag):
+            Output("current-test", "data", allow_duplicate=True),
+            Input(self._primary, "clickData"), State("test-info", "data"),
+            State("got-correct-write", "data"), State("tests-set", "data"),
+            State("slider", "value"), State("skip-flag", "data"))
+        def test_next_write(click_data, info, got_write, tests_set, t,
+                            skip_flag):
             if not info["test_mode"] or got_write or skip_flag:
                 return dash.no_update, dash.no_update
 
             y = click_data["points"][0]["x"]
             x = click_data["points"][0]["y"]
 
-            writes = np.transpose(np.nonzero(t_write_matrix[t+1]))
+            writes = np.transpose(np.nonzero(t_write_matrix[t + 1]))
             l = [tuple(i) for i in writes]
             tests_set_l = [tuple(i) for i in tests_set]
 
-            if (x,y) in l and  not ((x,y) in tests_set_l):
-                return True, (x,y)
+            if (x, y) in l and not ((x, y) in tests_set_l):
+                return True, (x, y)
             return False, dash.no_update
-        
-        @self.app.callback(
-            Output("dep-set", "data", allow_duplicate = True),
-            Output("dep-test", "children"),
-            Input(self._primary, "clickData"),
-            State("dep-set", "data"),
-            State("test-info","data"),
-            State("got-correct-write","data"),
-            State("slider","value"),
-            State("current-test", "data"),
-            State("skip-flag","data")
-        )
-        def test_dep(click_data, dep_set, info, got_write,t,curr_test,skip_flag):
-            if not got_write or not info["test_mode"] or skip_flag:  
+
+        @self.app.callback(Output("dep-set", "data", allow_duplicate=True),
+                           Output("dep-test", "children"),
+                           Input(self._primary, "clickData"),
+                           State("dep-set", "data"), State("test-info", "data"),
+                           State("got-correct-write", "data"),
+                           State("slider", "value"),
+                           State("current-test", "data"),
+                           State("skip-flag", "data"))
+        def test_dep(click_data, dep_set, info, got_write, t, curr_test,
+                     skip_flag):
+            if not got_write or not info["test_mode"] or skip_flag:
                 return dep_set, dash.no_update
-            
+
             y = click_data["points"][0]["x"]
             x = click_data["points"][0]["y"]
 
-            reads = (t_read_matrix[t+1][curr_test[0]][curr_test[1]])
+            reads = (t_read_matrix[t + 1][curr_test[0]][curr_test[1]])
             l = [tuple(i) for i in reads]
             dep_set_l = [tuple(i) for i in dep_set]
 
-            if (x,y) in l and not ((x,y) in dep_set_l):
-                dep_set.append((x,y))
+            if (x, y) in l and not ((x, y) in dep_set_l):
+                dep_set.append((x, y))
                 return dep_set, "Correct dependency clicked!"
-            if (x,y) in l and (x,y) in dep_set_l:
+            if (x, y) in l and (x, y) in dep_set_l:
                 return dep_set, "Already clicked this dependency!"
-            
+
             return dep_set, "Incorrect Dependency clicked!"
-        
+
         @self.app.callback(
-            Output("got-correct-value", "data",allow_duplicate=True),
-            Input("user-input","n_submit"),
-            State("user-input","value"),
-            State("slider","value"),
-            State("test-info","data"),
-            State("current-test", "data"),
-            State("skip-flag","data")
-        )
-        def test_value(_, user_input, t,info, curr_test,skip_flag):
+            Output("got-correct-value", "data", allow_duplicate=True),
+            Input("user-input", "n_submit"), State("user-input", "value"),
+            State("slider", "value"), State("test-info", "data"),
+            State("current-test", "data"), State("skip-flag", "data"))
+        def test_value(_, user_input, t, info, curr_test, skip_flag):
             """Tests if user input is correct."""
             if not info["test_mode"] or skip_flag:
                 return dash.no_update
@@ -605,8 +595,6 @@ class Visualizer:
                 return True
 
             return False
-        
-
 
     def show(self):
         """Visualizes the DPArrays.
@@ -700,19 +688,20 @@ class Visualizer:
         playback_control = [
             dbc.Col(dbc.Button("Play", id="play"), width="auto"),
             dbc.Col(dbc.Button("Stop", id="stop"), width="auto"),
-            dbc.Col(dcc.Slider(
-                min=0,
-                max=max_timestep - 1,
-                step=1,
-                value=0,
-                updatemode="drag",
-                id="slider",
-            )),
+            dbc.Col(
+                dcc.Slider(
+                    min=0,
+                    max=max_timestep - 1,
+                    step=1,
+                    value=0,
+                    updatemode="drag",
+                    id="slider",
+                )),
             dcc.Interval(id="interval",
                          interval=1000,
                          n_intervals=0,
                          max_intervals=0),
-            html.Div(id="testing-prompt", children = ""),
+            html.Div(id="testing-prompt", children=""),
             html.Div(id="dep-test", children=""),
         ]
 
@@ -724,35 +713,34 @@ class Visualizer:
                           "num_tests": -1,
                           "cur_test": 0
                       }),
-            dcc.Store(id="current-test",data=(-1,-1)),
-            dcc.Store(id="num-tests",data=0),
+            dcc.Store(id="current-test", data=(-1, -1)),
+            dcc.Store(id="num-tests", data=0),
             dcc.Store(id="got-correct-value", data=False),
             dcc.Store(id="got-correct-write", data=False),
             dcc.Store(id="dep-set", data=[]),
-            dcc.Store(id="tests-set",data=[]),
-            dcc.Store(id="skip-flag",data=True)
+            dcc.Store(id="tests-set", data=[]),
+            dcc.Store(id="skip-flag", data=True)
         ]
 
         self.app.layout = dbc.Container(
             [
-                dbc.Row(
-                    [
-                        dbc.Col(sidebar, width="auto"),
-                        dbc.Col([
-                            dbc.Row(
-                                playback_control,
-                                id="playback-control",
-                                class_name="g-0",
-                                align="center",
-                            ),
-                            dbc.Row(
-                                dbc.Stack(graphs),
-                                id="page-content",
-                                className="border border-warning",
-                            )
-                        ])
-                    ],
-                    class_name="g-3"),
+                dbc.Row([
+                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col([
+                        dbc.Row(
+                            playback_control,
+                            id="playback-control",
+                            class_name="g-0",
+                            align="center",
+                        ),
+                        dbc.Row(
+                            dbc.Stack(graphs),
+                            id="page-content",
+                            className="border border-warning",
+                        )
+                    ])
+                ],
+                        class_name="g-3"),
                 *alerts,
                 *datastores,
             ],
