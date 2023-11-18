@@ -4,6 +4,7 @@
 
 ### API
 
+- Execute self-tests sequentially (#39)
 - Add sidebar in UI (#33)
 - Show extra description of the DP (#33)
 - Make `create_figure` return a `Figure` object (#34, #35)

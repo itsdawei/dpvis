@@ -20,6 +20,7 @@ def fib(n):
     # Return the dp array
     return arr
 
+
 dp_array = fib(n)
 
 # Set the recurrence and the code to be displayed
