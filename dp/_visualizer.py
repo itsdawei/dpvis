@@ -458,14 +458,16 @@ class Visualizer:
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
-            Output("instruction-alert", "children"),
-            Output("instruction-alert", "is_open"),
+            Output("test-instructions", "children"),
             Input("test-info", "data"),
             State("slider", "value"),
         )
         def display_tests(info, t):
+            alert = dbc.Alert(is_open=False,
+                              color="danger",
+                              class_name="alert-auto position-fixed w-25")
             if not info["tests"]:
-                return self._show_figure_trace(main_figure, t), "", False
+                return self._show_figure_trace(main_figure, t), alert
 
             fig = copy.deepcopy(main_figure)
             z = fig.data[t].z
@@ -478,11 +480,10 @@ class Visualizer:
             for x, y in cur_render:
                 z[x][y] = info["tests"][0]["color"]
 
-            return (
-                fig.update_traces(z=z, selector=t),
-                info["tests"][0]["tip"],
-                True,
-            )
+            alert.is_open = True
+            alert.children = info["tests"][0]["tip"]
+
+            return fig.update_traces(z=z, selector=t), alert
 
         @self.app.callback(
             Output("correct", "is_open"),
@@ -644,18 +645,12 @@ class Visualizer:
                           "left": 10,
                           "z-index": 9999,
                       }),
-            dbc.Alert("",
-                      id="instruction-alert",
-                      is_open=False,
-                      color="danger",
-                      duration=None,
-                      fade=True,
-                      className="alert-auto position-fixed w-25",
-                      style={
-                          "bottom": 80,
-                          "left": 10,
-                          "z-index": 9999,
-                      })
+            html.Div(id="test-instructions",
+                     style={
+                         "bottom": 80,
+                         "left": 10,
+                         "z-index": 9999,
+                     }),
         ]
 
         sidebar = html.Div([
