@@ -463,14 +463,14 @@ class Visualizer:
             Input("test-info", "data"),
             State("slider", "value"),
         )
-        def highlight_tests(info, t):
+        def display_tests(info, t):
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), "", False
 
             fig = copy.deepcopy(main_figure)
             z = fig.data[t].z
 
-            # Uncolor READ/WRITE/HIGHLIGHT.
+            # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
             z = z.astype("bool").astype("int")
 
             # Highlight the cell that is being tested on.
@@ -550,8 +550,8 @@ class Visualizer:
             if z[y][x] == CellType.EMPTY:
                 return dash.no_update
 
-            # Clear all highlight, read, and write cells to filled.
-            z[z != CellType.EMPTY] = CellType.FILLED
+            # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
+            z = z.astype("bool").astype("int")
 
             # Highlight selected cell.
             z[y][x] = CellType.WRITE
