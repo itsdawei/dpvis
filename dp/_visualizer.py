@@ -221,6 +221,16 @@ class Visualizer:
         }
 
     def _show_figure_trace(self, figure, i):
+        """Make exactly one trace of the figure visible.
+
+        Args:
+            figure (plotly.go.Figure): The ith trace from this figure will be
+                visible, while all the other traces will be hidden.
+            i (int): The index of the trace that will be shown.
+
+        Returns:
+            plotly.go.Figure: Figure after the trace is shown.
+        """
         return figure.update_traces(visible=False).update_traces(visible=True,
                                                                  selector=i)
 
@@ -234,7 +244,7 @@ class Visualizer:
                 plotly.colors.named_colorscales for the built-in colorscales.
 
         Returns:
-            Plotly figure: Figure of DPArray as it is filled out by the
+            plotly.go.figure: Figure of DPArray as it is filled out by the
                 recurrence.
         """
         name = arr.array_name
