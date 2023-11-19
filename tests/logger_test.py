@@ -133,7 +133,7 @@ def test_to_timesteps_one_array():
     timesteps = logger.to_timesteps()
     assert len(timesteps) == 1
     assert np.all(timesteps[0]["dp1"]["contents"] == [1, None, None])
-    assert timesteps[0]["dp1"].items() >= {
+    assert timesteps[0]["dp1"].items() == {
         Op.READ: set(),
         Op.WRITE: {0},
         Op.HIGHLIGHT: set(),
