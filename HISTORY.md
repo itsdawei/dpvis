@@ -5,6 +5,8 @@
 ### API
 
 - Add annotation functionality (#36)
+- Add to test queue based on selected tests checklist (#41)
+- Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)
 - Add sidebar in UI (#33)
 - Show extra description of the DP (#33)
