@@ -274,7 +274,7 @@ class Visualizer:
 
         # Extra hovertext info:
         # <br>Value: {value_text}<br>Dependencies: {deps_text}
-        # (if cell annotation present:) <br>Note: {annotation}
+        # (if cell annotation present:) <br>{annotation}
         value_text = np.where(np.isnan(t_value_matrix.astype(float)), "",
                               t_value_matrix.astype("str"))
         deps_text = np.where(t_read_matrix == set(), "{}",
