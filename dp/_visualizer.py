@@ -380,7 +380,7 @@ class Visualizer:
                            Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
-            if t_annotations[t] is None or t_annotations[t] == []:
+            if not t_annotations[t]:
                 return {"display": "none"}, []
 
             return {"display": "block"}, t_annotations[t]

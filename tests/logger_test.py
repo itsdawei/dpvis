@@ -209,8 +209,8 @@ def test_to_timesteps_two_arrays():
         Op.WRITE: {0, 2},
         Op.HIGHLIGHT: set(),
     }.items()
-    assert np.all(timesteps[1]["dp1"]["contents"] == [1, None, 3])
     assert np.all(timesteps[0]["dp2"]["contents"] == [2, 4, None])
+    assert np.all(timesteps[1]["dp1"]["contents"] == [1, None, 3])
     assert timesteps[0]["dp2"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
@@ -229,7 +229,7 @@ def test_to_timesteps_two_arrays():
     }.items()
 
 
-def test_annotation_log(logger):
+def test_array_annotation(logger):
     logger.add_array("dp2", 10)
     logger.append("dp1", Op.WRITE, 0, 1)
     logger.append("dp1", Op.WRITE, 2, 3)
