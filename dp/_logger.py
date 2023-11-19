@@ -212,13 +212,11 @@ class Logger:
                             array_contents[name][idx] = val
                         timesteps[-1][name]["contents"] = contents[name].copy()
 
-                if "annotations" in log:
-                    for name, annotation in log["annotations"].items():
-                        timesteps[-1][name]["annotations"] = annotation
-
-                if "cell_annotations" in log:
-                    for name, annotation in log["cell_annotations"].items():
-                        timesteps[-1][name]["cell_annotations"] = annotation
+                for annotate_key in ["annotations", "cell_annotations"]:
+                    if annotate_key not in log:
+                        continue
+                    for name, annotation in log[annotate_key].items():
+                        timesteps[-1][name][annotate_key] = annotation
 
         return timesteps
 
