@@ -346,7 +346,7 @@ class Visualizer:
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
         t_annotations = [[
             html.P(
-                f"{name} : " + arr["t_annotations"][t],
+                f"{name}: {arr['t_annotations'][t]}",
                 style={
                     "textAlign": "center",
                     "width": "auto"

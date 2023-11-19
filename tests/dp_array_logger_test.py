@@ -567,7 +567,7 @@ def test_annotation():
         "annotations": "hello world",
     }.items()
 
-    dp.annotate("hello world again")
+    # Test dp.annotate overwrites previous.
     dp.annotate("bye world")
     timesteps1 = dp.get_timesteps()
     assert len(timesteps1) == 1
