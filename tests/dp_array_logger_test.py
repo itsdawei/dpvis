@@ -52,7 +52,7 @@ def test_max_highlight():
     dp[0] = 1
     dp[1] = 3
     dp[2] = 0
-    assert dp.logger.logs[0].items() >= {
+    assert dp.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
@@ -61,7 +61,7 @@ def test_max_highlight():
                 2: 0
             }
         }
-    }.items()
+    }
 
     indices = [0, 1, 2]
     # BUG: Indexing with a list of indices only logs the first read.
@@ -69,7 +69,7 @@ def test_max_highlight():
     elements = [dp[i] for i in indices]
     dp[3] = dp.max(indices, elements)
     assert dp.arr[3] == 3
-    assert dp.logger.logs[1].items() >= {
+    assert dp.logger.logs[1] == {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -78,29 +78,29 @@ def test_max_highlight():
                 2: None
             }
         }
-    }.items()
-    assert dp.logger.logs[2].items() >= {
+    }
+    assert dp.logger.logs[2] == {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
                 1: None
             }
         }
-    }.items()
-    assert dp.logger.logs[3].items() >= {
+    }
+    assert dp.logger.logs[3] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
                 3: 3
             }
         }
-    }.items()
+    }
 
     indices = [0, 1, 2, 3]
     elements = [-(dp[i] - 1)**2 for i in indices]
     dp[4] = dp.max(indices, elements)
     assert dp.arr[4] == 0
-    assert dp.logger.logs[4].items() >= {
+    assert dp.logger.logs[4] == {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -110,23 +110,23 @@ def test_max_highlight():
                 3: None
             }
         }
-    }.items()
-    assert dp.logger.logs[5].items() >= {
+    }
+    assert dp.logger.logs[5] == {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
                 0: None
             }
         }
-    }.items()
-    assert dp.logger.logs[6].items() >= {
+    }
+    assert dp.logger.logs[6] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
                 4: 0
             }
         }
-    }.items()
+    }
 
 
 def test_min():
@@ -148,44 +148,44 @@ def test_min():
     dp = DPArray(8, "name")
 
     dp[0] = c[0]
-    assert dp.logger.logs[0].items() >= {
+    assert dp.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
                 0: 7
             }
         }
-    }.items()
+    }
 
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
-    assert dp.logger.logs[1].items() >= {
+    assert dp.logger.logs[1] == {
         "op": Op.READ,
         "idx": {
             "name": {
                 0: None
             }
         }
-    }.items()
-    assert dp.logger.logs[2].items() >= {
+    }
+    assert dp.logger.logs[2] == {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
                 None: None
             }
         }
-    }.items()
-    assert dp.logger.logs[3].items() >= {
+    }
+    assert dp.logger.logs[3] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
                 1: 6
             }
         }
-    }.items()
+    }
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
-    assert dp.logger.logs[4].items() >= {
+    assert dp.logger.logs[4] == {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -193,23 +193,23 @@ def test_min():
                 1: None
             }
         }
-    }.items()
-    assert dp.logger.logs[5].items() >= {
+    }
+    assert dp.logger.logs[5] == {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
                 1: None
             }
         }
-    }.items()
-    assert dp.logger.logs[6].items() >= {
+    }
+    assert dp.logger.logs[6] == {
         "op": Op.WRITE,
         "idx": {
             "name": {
                 2: 6
             }
         }
-    }.items()
+    }
 
     next_log = 7
     for i in range(3, 8):
@@ -221,7 +221,7 @@ def test_min():
             [i - 2, i - 2, i - 3],
             [dp[i - 2] + c[i], dp[i - 2] + c[i - 1], dp[i - 3] + c[i - 1]])
 
-        assert dp.logger.logs[next_log].items() >= {
+        assert dp.logger.logs[next_log] == {
             "op": Op.READ,
             "idx": {
                 "name": {
@@ -229,27 +229,27 @@ def test_min():
                     i - 3: None
                 }
             }
-        }.items()
+        }
 
         # Construct argmin set
         if isinstance(highlight_ans[i], list):
             name = {j: None for j in highlight_ans[i]}
         else:
             name = {highlight_ans[i]: None}
-        assert dp.logger.logs[next_log + 1].items() >= {
+        assert dp.logger.logs[next_log + 1] == {
             "op": Op.HIGHLIGHT,
             "idx": {
                 "name": name
             }
-        }.items()
-        assert dp.logger.logs[next_log + 2].items() >= {
+        }
+        assert dp.logger.logs[next_log + 2] == {
             "op": Op.WRITE,
             "idx": {
                 "name": {
                     i: val_ans[i]
                 }
             }
-        }.items()
+        }
         assert dp.arr[i] == val_ans[i]
         next_log += 3
 
@@ -260,7 +260,7 @@ def test_multiple_arrays_logging():
 
     dp1[0] = 1
     dp2[0] = 2
-    assert dp1.logger.logs[0].items() >= {
+    assert dp1.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
             "dp_1": {
@@ -270,11 +270,11 @@ def test_multiple_arrays_logging():
                 0: 2
             }
         }
-    }.items()
+    }
 
     dp1[1] = 3
     dp2[1] = dp1[1]  # READ happens before WRITE
-    assert dp1.logger.logs[0].items() >= {
+    assert dp1.logger.logs[0] == {
         "op": Op.WRITE,
         "idx": {
             "dp_1": {
@@ -285,8 +285,8 @@ def test_multiple_arrays_logging():
                 0: 2
             }
         }
-    }.items()
-    assert dp1.logger.logs[1].items() >= {
+    }
+    assert dp1.logger.logs[1] == {
         "op": Op.READ,
         "idx": {
             "dp_1": {
@@ -294,8 +294,8 @@ def test_multiple_arrays_logging():
             },
             "dp_2": {}
         }
-    }.items()
-    assert dp1.logger.logs[2].items() >= {
+    }
+    assert dp1.logger.logs[2] == {
         "op": Op.WRITE,
         "idx": {
             "dp_1": {},
@@ -303,7 +303,7 @@ def test_multiple_arrays_logging():
                 1: 3
             }
         }
-    }.items()
+    }
     assert len(dp1.logger.logs) == 3
 
 
@@ -324,14 +324,14 @@ def test_same_op_and_index(op):
         dp[0] = 1
         _ = dp[0]
         _ = dp[0]
-    assert dp.logger.logs[0 if op == Op.WRITE else 1].items() >= {
+    assert dp.logger.logs[0 if op == Op.WRITE else 1] == {
         "op": op,
         "idx": {
             "dp": {
                 0: 2 if op == Op.WRITE else None
             }
         }
-    }.items()
+    }
     assert len(dp.logger.logs) == 1 if op == Op.WRITE else 2
 
 
