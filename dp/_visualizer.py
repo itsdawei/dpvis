@@ -286,7 +286,7 @@ class Visualizer:
         # Remove extra info for empty cells.
         extra_hovertext[t_color_matrix == CellType.EMPTY] = ""
 
-        # Add any annotations to the hovertext.
+        # Add cell annotations to the hovertext.
         cell_annotation_text = metadata["t_cell_annotations"]
         for t, timestep in enumerate(cell_annotation_text):
             for j, cell_annotation in timestep.items():
