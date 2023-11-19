@@ -231,8 +231,14 @@ class DPArray:
             elif e == best_element:
                 best_indices.extend(i)
 
-        # Highlight and write value.
-        self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
+        # Highlight value if the selected element is from the array.
+        # I.e. if a passed-in element is selected, no HIGHLIGHT operation
+        # will be performed.
+        if not (len(best_indices) == 1 and best_indices[0] is None):
+            best_indices = [i for i in best_indices if i is not None]
+            self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
+
+        # Return the best element.
         return best_element
 
     def max(self, indices, elements):

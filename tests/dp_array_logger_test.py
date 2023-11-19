@@ -125,7 +125,7 @@ def test_min():
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
-    assert dp.logger.logs[2] == {
+    assert dp.logger.logs[2] != {
         "op": Op.HIGHLIGHT,
         "idx": {
             "name": {
@@ -133,10 +133,10 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
+    assert dp.logger.logs[2] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
-    assert dp.logger.logs[4] == {
+    assert dp.logger.logs[3] == {
         "op": Op.READ,
         "idx": {
             "name": {
@@ -145,10 +145,10 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
-    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
+    assert dp.logger.logs[4] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[5] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
-    next_log = 7
+    next_log = 6
     for i in range(3, 8):
         # Three options
         # Hydrant at i and then satisfy law for i - 2
@@ -190,6 +190,23 @@ def test_min():
         assert dp.arr[i] == val_ans[i]
         next_log += 3
 
+
+def test_min_select_indice_and_constant():
+    dp = DPArray(2, "dp")
+    dp[0] = 0
+    dp[1] = 1
+
+    # Basic check.
+    min_val = dp.min([0, 1, None], [dp[0], dp[1], 2])
+    assert min_val == 0
+    
+    dp[1] = 2
+    min_val = dp.min([0, 1, None], [dp[0], dp[1], 0])
+    assert min_val == 0
+    timestep = dp.get_timesteps()[1]
+    assert timestep["dp"][Op.READ] == {0, 1}
+    assert timestep["dp"][Op.HIGHLIGHT] == {0}
+    assert None not in timestep["dp"][Op.HIGHLIGHT]
 
 def test_multiple_arrays_logging():
     dp1 = DPArray(10, "dp_1")
