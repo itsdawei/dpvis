@@ -4,6 +4,7 @@
 
 ### API
 
+- Fix bug and updated max/min functions (#42)
 - Add to test queue based on selected tests checklist (#41)
 - Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)

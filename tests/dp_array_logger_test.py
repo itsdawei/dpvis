@@ -202,7 +202,7 @@ def test_min_select_indice_and_constant():
 
     min_val = dp.min([0, 1], constants=[-1])
     assert min_val == -1
-    
+
     dp[1] = 2
     min_val = dp.min([0, 1], constants=[0, 1])
     assert min_val == 0
@@ -210,6 +210,7 @@ def test_min_select_indice_and_constant():
     assert timestep["dp"][Op.READ] == {0, 1}
     assert timestep["dp"][Op.HIGHLIGHT] == {0}
     assert None not in timestep["dp"][Op.HIGHLIGHT]
+
 
 def test_max_select_indice_and_constant():
     dp = DPArray(2, "dp")
@@ -222,7 +223,7 @@ def test_max_select_indice_and_constant():
 
     max_val1 = dp.max([0, 1], constants=[-1])
     assert max_val1 == 1
-    
+
     dp[1] = 2
     max_val2 = dp.max([0, 1], constants=[0, 1])
     assert max_val2 == 2
@@ -231,12 +232,13 @@ def test_max_select_indice_and_constant():
     assert timestep["dp"][Op.HIGHLIGHT] == {1}
     assert None not in timestep["dp"][Op.HIGHLIGHT]
 
+
 def test_min_select_elements_and_constant():
     dp = DPArray(2, "dp")
     dp[0] = 0
     dp[1] = 1
 
-    min_val0 = dp.min([0, 1], elements=[dp[0]+1, dp[1]+1])
+    min_val0 = dp.min([0, 1], elements=[dp[0] + 1, dp[1] + 1])
     assert min_val0 == 1
     timestep0 = dp.get_timesteps()[1]
     assert timestep0["dp"][Op.READ] == {0, 1}
@@ -251,18 +253,14 @@ def test_min_select_elements_and_constant():
     assert timestep1["dp"][Op.HIGHLIGHT] == {0}
 
     dp[0] = 0
-    min_val2 = dp.min([0, 1],
-                        elements=[dp[0]+3, dp[1]-1],
-                        constants=[2])
+    min_val2 = dp.min([0, 1], elements=[dp[0] + 3, dp[1] - 1], constants=[2])
     assert min_val2 == 0
     timestep2 = dp.get_timesteps()[3]
     assert timestep2["dp"][Op.READ] == {0, 1}
     assert timestep2["dp"][Op.HIGHLIGHT] == {1}
 
     dp[0] = 0
-    min_val3 = dp.min([0, 1],
-                        elements=[dp[0]+3, dp[1]-1],
-                        constants=[-1])
+    min_val3 = dp.min([0, 1], elements=[dp[0] + 3, dp[1] - 1], constants=[-1])
     assert min_val3 == -1
     timestep3 = dp.get_timesteps()[4]
     assert timestep3["dp"][Op.READ] == {0, 1}
@@ -274,7 +272,7 @@ def test_max_select_elements_and_constant():
     dp[0] = 0
     dp[1] = 1
 
-    max_val0 = dp.max([0, 1], elements=[dp[0]+1, dp[1]+1])
+    max_val0 = dp.max([0, 1], elements=[dp[0] + 1, dp[1] + 1])
     assert max_val0 == 2
     timestep0 = dp.get_timesteps()[1]
     assert timestep0["dp"][Op.READ] == {0, 1}
@@ -289,18 +287,14 @@ def test_max_select_elements_and_constant():
     assert timestep1["dp"][Op.HIGHLIGHT] == {1}
 
     dp[0] = 0
-    max_val2 = dp.max([0, 1],
-                        elements=[dp[0]+3, dp[1]-1],
-                        constants=[10])
+    max_val2 = dp.max([0, 1], elements=[dp[0] + 3, dp[1] - 1], constants=[10])
     assert max_val2 == 10
     timestep2 = dp.get_timesteps()[3]
     assert timestep2["dp"][Op.READ] == {0, 1}
     assert timestep2["dp"][Op.HIGHLIGHT] == set()
 
     dp[0] = 0
-    max_val3 = dp.max([0, 1],
-                        elements=[dp[0]+3, dp[1]-1],
-                        constants=[-1])
+    max_val3 = dp.max([0, 1], elements=[dp[0] + 3, dp[1] - 1], constants=[-1])
     assert max_val3 == 3
     timestep3 = dp.get_timesteps()[4]
     assert timestep3["dp"][Op.READ] == {0, 1}
