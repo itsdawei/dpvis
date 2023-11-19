@@ -375,15 +375,28 @@ class Visualizer:
             ]
 
         # update annotation toast based on slider value
-        @self.app.callback(Output("array-annotation", "style"),
-                           Output("array-annotation", "children"),
+        @self.app.callback(Output("array-annotation", "children"),
                            Input("slider", "value"))
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
+            annotation_card = None # init
             if not t_annotations[t]:
-                return {"display": "none"}, []
+                annotation_card = dbc.CardBody(
+                    [],
+                    style = {
+                        "display": "none"
+                    }
+                )
 
-            return {"display": "block"}, t_annotations[t]
+            else:
+                annotation_card = dbc.CardBody(
+                    t_annotations[t],
+                    style = {
+                        "display": "block"
+                    }
+                )
+
+            return annotation_card
 
         @self.app.callback(
             Output("slider", "value"),
@@ -672,18 +685,12 @@ class Visualizer:
             html.Div(id="test-instructions", className="bottom-50 z-9999 w-25"),
         ]
 
-        array_annotations = dbc.Card(
-            dbc.CardBody([], id="array-annotation"),
-            color="info",
-            outline=True,
-        )
-
         sidebar = html.Div([
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
-                array_annotations,
+                dbc.Card([], id="array-annotation",color="info", outline=True),
             ],
                       id="sidebar",
                       className="border border-warning"),
