@@ -241,24 +241,63 @@ class DPArray:
         # Return the best element.
         return best_element
 
-    def max(self, indices, elements):
-        """Outputs the maximum value and highlight its corresponding index.
+    def max(self, indices, elements=None, constants=None):
+        """Outputs the maximum value and highlight its corresponding index. 
+        
+        Note the difference between elements and constants:
+            `max([indices], elements=[elements])`
+                Compares elements and returns the max value in elements.
+                The selected element's index will be recorded and displayed
+                as highlighted during visualization.
+            `max([indices], constants=[constants])`
+                Compares array[indices] and constants and returns the max 
+                value. An index is recorded only if the selected element is 
+                read with indices.
+            `max([indices], elements=[elements], constants=[constants])`
+                Compares elements and constants and returns the max value.
+                An index is recorded only if the selected element is from
+                elements.
+
 
         Args:
-            elements (array-like): An array of elements to be compared.
-                These can be elements directly from the array (i.e. arr[0]), or
-                modified elements (i.e. arr[0] + 1).
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
                 element of the DP array, item[i] should be None.
+            elements (array-like): An array of elements to be compared.
+                These can be elements directly from the array (i.e. arr[0]), or
+                modified elements (i.e. arr[0] + 1). If left None, the elements
+                will be retrieved from the DP array using the indices.
+            constants (array-like): An array of constants to be compared. Those
+                constants are not associated with any index and will not be 
+                highlighted.
 
         Returns:
             self.dtype: Maximum value of the elements.
         """
+        if elements is None:
+            elements = [self[i] for i in indices if i is not None]
+        if constants is not None:
+            elements.extend(constants)
+            indices.extend([None] * len(constants))
+
         return self._cmp(lambda x, y: x > y, indices, elements)
 
-    def min(self, indices, elements):
+    def min(self, indices, elements=None, constants=None):
         """Outputs the minimum value and highlight its corresponding index.
+
+        Note the difference between elements and constants:
+            min([indices], elements=[elements])
+                Compares elements and returns the min value in elements.
+                The selected element's index will be recorded and displayed
+                as highlighted during visualization.
+            min([indices], constants=[constants]):
+                Compares array[indices] and constants and returns the min 
+                value. An index is recorded only if the selected element is 
+                read with indices.
+            min([indices], elements=[elements], constants=[constants]):
+                Compares elements and constants and returns the min value.
+                An index is recorded only if the selected element is from
+                elements.
 
         Args:
             indices (array-like): An array of indices of the elements.
@@ -266,11 +305,21 @@ class DPArray:
                 element of the DP array, item[i] should be None.
             elements (array-like): An array of elements to be compared.
                 These can be elements directly from the array (i.e. arr[0]), or
-                modified elements (i.e. arr[0] + 1).
+                modified elements (i.e. arr[0] + 1). If left None, the elements
+                will be retrieved from the DP array using the indices.
+            constants (array-like): An array of constants to be compared. Those
+                constants are not associated with any index and will not be
+                highlighted.
 
         Returns:
             self.dtype: Minimum value of the elements.
         """
+        if elements is None:
+            elements = [self[i] for i in indices if i is not None]
+        if constants is not None:
+            elements.extend(constants)
+            indices.extend([None] * len(constants))
+
         return self._cmp(lambda x, y: x < y, indices, elements)
 
     def add_traceback_path(self, path):

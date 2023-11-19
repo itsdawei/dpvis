@@ -63,8 +63,6 @@ class Logger:
         Raises:
             ValueError: Array name not recognized by logger. 
         """
-        if operation == Op.HIGHLIGHT:
-            print("log", idx, values)
         if array_name not in self._array_shapes:
             raise ValueError(f"Array name {array_name} not recognized by"
                              f"logger. Make sure logger is passed to the"
