@@ -383,20 +383,18 @@ class Visualizer:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(
-            Output("test-info", "data"),
-            Input("self-test-button", "n_clicks"),
-            State("test-info", "data"),
-            State("slider", "value"),
-        )
-        def toggle_test_mode(_, info, t):
+        @self.app.callback(Output("test-info", "data"),
+                           Input("self-test-button", "n_clicks"),
+                           State("test-info", "data"), State("slider", "value"),
+                           State("test-select-checkbox", "value"))
+        def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
-            Args:
-                n_clicks (int): This callback is triggered by clicking the
-                    self-test-button component.
-                t (int): The current timestep retrieved from the slider
-                    component.
+            Populates the test queue according to what tests are selected by
+            the checkbox.
+
+            This callback is triggered by clicking the self-test-button
+            component and updates the test info.
             """
             # No tests to be performed on the last timestep.
             if t == len(values):
@@ -405,9 +403,7 @@ class Visualizer:
 
             # Turn off testing mode.
             if info["tests"]:
-                return {
-                    "tests": [],
-                }
+                return {"tests": []}
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
@@ -418,40 +414,42 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-            # TODO: Populate according to radio box.
+            # TODO: Populate test_q in separate callback.
             test_q = []
 
-            # Filling out write test.
-            # The truth list is a list of indices that are written to in the
-            # next cell.
-            test_q.append({
-                "truth": all_writes,
-                "render": [],
-                "color": CellType.WRITE,
-                "expected_triggered_id": self._primary,
-                "tip": "What cells are written to in the next frame? (Click "
-                       "in any order)"
-            })
-
-            # Filling out read test.
-            test_q.append({
-                "truth": all_reads,
-                "render": [],
-                "color": CellType.READ,
-                "expected_triggered_id": self._primary,
-                "tip": "What cells are read for the next timestep? (Click "
-                       "in any order)"
-            })
-
-            # Filling out all value tests.
-            for x, y in zip(*np.nonzero(write_mask)):
+            if "What is the next cell?" in selected_tests:
+                # Write test.
                 test_q.append({
-                    "truth": [values[t + 1][x][y]],
-                    "render": [(x, y)],
+                    "truth": all_writes,
+                    "render": [],
                     "color": CellType.WRITE,
-                    "expected_triggered_id": "user-input",
-                    "tip": f"What is the value of cell ({x}, {y})?"
+                    "expected_triggered_id": self._primary,
+                    "tip":
+                        "What cells are written to in the next frame? (Click "
+                        "in any order)"
                 })
+
+            if "What are its dependencies?" in selected_tests:
+                # Read test.
+                test_q.append({
+                    "truth": all_reads,
+                    "render": [],
+                    "color": CellType.READ,
+                    "expected_triggered_id": self._primary,
+                    "tip": "What cells are read for the next timestep? (Click "
+                           "in any order)"
+                })
+
+            if "What is its value?" in selected_tests:
+                # Value tests.
+                for x, y in zip(*np.nonzero(write_mask)):
+                    test_q.append({
+                        "truth": [values[t + 1][x][y]],
+                        "render": [(x, y)],
+                        "color": CellType.WRITE,
+                        "expected_triggered_id": "user-input",
+                        "tip": f"What is the value of cell ({x}, {y})?"
+                    })
 
             return {"tests": test_q}
 
