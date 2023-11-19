@@ -351,11 +351,11 @@ class Visualizer:
                     "textAlign": "center",
                     "width": "auto"
                 },
-            )
-            for name, arr in self._graph_metadata.items()
-            if arr["t_annotations"][t]
+            )   # Create a <p> element for each array annotation
+            for name, arr in self._graph_metadata.items() # For each array
+            if arr["t_annotations"][t]  # if there is an array annotation
         ]
-                         for t in range(len(values))]
+                         for t in range(len(values))] # At each timestep
 
         t_read_matrix = self._graph_metadata[self._primary]["t_read_matrix"]
 
