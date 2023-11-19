@@ -344,19 +344,6 @@ class Visualizer:
         """Attach callbacks."""
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
-        t_annotations = [[
-            html.P(
-                f"{name}: {arr['t_annotations'][t]}",
-                style={
-                    "textAlign": "center",
-                    "width": "auto"
-                },
-            )   # Create a <p> element for each array annotation
-            for name, arr in self._graph_metadata.items() # For each array
-            if arr["t_annotations"][t]  # if there is an array annotation
-        ]
-                         for t in range(len(values))] # At each timestep
-
         t_read_matrix = self._graph_metadata[self._primary]["t_read_matrix"]
 
         main_figure = self._graph_metadata[self._primary]["figure"]
@@ -380,7 +367,18 @@ class Visualizer:
         def update_annotation(t):
             """Update the annotation toast based on the slider value."""
             annotation_card = None # init
-            if not t_annotations[t]:
+            t_annotation = [
+                html.P(
+                    f"{name}: {arr['t_annotations'][t]}",
+                    style={
+                        "textAlign": "center",
+                        "width": "auto"
+                    },
+                )   # Create a <p> element for each array annotation
+                for name, arr in self._graph_metadata.items() # For each array
+                if arr["t_annotations"][t]  # if there is an array annotation
+            ]
+            if not t_annotation:
                 annotation_card = dbc.CardBody(
                     [],
                     style = {
@@ -390,7 +388,7 @@ class Visualizer:
 
             else:
                 annotation_card = dbc.CardBody(
-                    t_annotations[t],
+                    t_annotation,
                     style = {
                         "display": "block"
                     }
