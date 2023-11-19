@@ -116,13 +116,12 @@ class Logger:
 
         Args:
             array_name (str): Name of the array associated with this operation.
-            operation (Operation): Type of operation performed.
             annotation (str): Annotations associated with this operation.
-            idx (int): Index of the array.
+            idx (int or tuple): Index of the element to be annotated on. None 
+                if the annotation associated with the entire array.
 
         Raises:
             ValueError: Array name not recognized by logger. 
-            ValueError: Index out of bounds.
         """
         if array_name not in self._array_shapes:
             raise ValueError(f"Array name {array_name} not recognized by"
@@ -180,6 +179,9 @@ class Logger:
 
         # Split the logs into batches based on the last write indices.
         log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
+        # Remove the last batch if it is empty.
+        # TODO: investigate the source of this behavior and potentially optimize
+        #   how batches are created to fix this.
         if log_batches[-1].size == 0:
             log_batches = log_batches[:-1]
 
@@ -193,7 +195,7 @@ class Logger:
         for batch in log_batches:
             timesteps.append({
                 name: {
-                    "annotations": None,
+                    "annotations": {},
                     "cell_annotations": {},
                     "contents": array_contents[name].copy(),
                     Op.READ: set(),

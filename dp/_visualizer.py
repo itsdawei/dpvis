@@ -198,6 +198,11 @@ class Visualizer:
         t_highlight_matrix = np.empty((t, h, w), dtype="object")
         # Boolean mask of which cell is written to at timestep t.
         t_write_matrix = np.zeros((t, h, w), dtype="bool")
+        # List of dictionaries. Empty if no annotations.
+        # t_annotations: [{array_name: annotation}, ...]
+        # t_cell_annotations: [{array_name: {cell_idx: annotation}}, ...]
+        t_annotations = np.fill(len(timesteps), {})
+        t_cell_annotations = np.fill(len(timesteps), {})
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
             mask = np.isnan(t_arr["contents"].astype(float))
@@ -209,19 +214,14 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_value_matrix[i] = t_arr["contents"]
+            t_annotations[i] = t_arr["annotations"]
+            t_cell_annotations[i] = t_arr["cell_annotations"]
 
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
                 t_read_matrix[indices] = t_arr[Op.READ]
                 t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
                 t_write_matrix[i][write_idx] = True
-
-        # List of dictionaries. Empty if no annotations.
-        # t_annotations: [{array_name: annotation}, ...]
-        # t_cell_annotations: [{array_name: {cell_idx: annotation}}, ...]
-        t_annotations = np.array([t[name]["annotations"] for t in timesteps])
-        t_cell_annotations = np.array(
-            [t[name]["cell_annotations"] for t in timesteps])
 
         return {
             "t_color_matrix": t_color_matrix,
@@ -353,7 +353,7 @@ class Visualizer:
                 },
             )
             for name, arr in self._graph_metadata.items()
-            if arr["t_annotations"][t] is not None
+            if arr["t_annotations"][t]
         ]
                          for t in range(len(values))]
 
