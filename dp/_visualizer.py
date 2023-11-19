@@ -201,8 +201,8 @@ class Visualizer:
         # List of dictionaries. Empty if no annotations.
         # t_annotations: [{array_name: annotation}, ...]
         # t_cell_annotations: [{array_name: {cell_idx: annotation}}, ...]
-        t_annotations = np.fill(len(timesteps), {})
-        t_cell_annotations = np.fill(len(timesteps), {})
+        t_annotations = np.full(len(timesteps), {})
+        t_cell_annotations = np.full(len(timesteps), {})
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
             mask = np.isnan(t_arr["contents"].astype(float))
