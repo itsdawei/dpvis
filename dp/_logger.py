@@ -34,8 +34,8 @@ class Logger:
     }
     note that values are None for READ and HIGHLIGHT.
 
-    The fields "annotations" and "cell_annotations" are optional and are
-    only included if append_annotation was called.
+    The keys "annotation" and "cell_annotations" are only included if
+    append_annotation was called.
 
     Attributes:
         _logs (list): Contains the logs.
