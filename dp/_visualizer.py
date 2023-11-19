@@ -673,10 +673,7 @@ class Visualizer:
         ]
 
         array_annotations = dbc.Card(
-            dbc.CardBody(
-                [],
-                id="array-annotation",
-            ),
+            dbc.CardBody([], id="array-annotation"),
             color="info",
             outline=True,
         )
