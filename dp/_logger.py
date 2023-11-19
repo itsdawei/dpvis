@@ -143,7 +143,7 @@ class Logger:
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
-        
+
         Returns:
             list of timestep dicts
             timestep: {
@@ -217,10 +217,8 @@ class Logger:
                         timesteps[-1][name]["annotations"] = annotation
 
                 if "cell_annotations" in log:
-                    for name, cell_annotations in log["cell_annotations"].items(
-                    ):
-                        timesteps[-1][name][
-                            "cell_annotations"] = cell_annotations
+                    for name, annotation in log["cell_annotations"].items():
+                        timesteps[-1][name]["cell_annotations"] = annotation
 
         return timesteps
 
