@@ -2,7 +2,7 @@
 from dp import DPArray, display
 
 # Number of iterations to run Fibonacci.
-n = 10
+n = 5
 
 
 # Fibonacci DP function

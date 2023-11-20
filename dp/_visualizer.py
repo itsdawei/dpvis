@@ -1,6 +1,5 @@
 """This file provides the visualizer for the DPArray class."""
 import copy
-# import json
 from enum import IntEnum
 
 import dash
@@ -329,16 +328,21 @@ class Visualizer:
             for name in self._graph_metadata
         ]
 
-        @self.app.callback(output_figure, Input("slider", "value"))
-        def update_figure(t):
+        @self.app.callback(output_figure, Input("slider", "value"),
+                           State("self-test-mode", "data"))
+        def update_figure(t, self_test_mode):
             """Update each graph based on the slider value."""
+            # Edge case: in self testing mode and ran out of tests.
+            # TODO: Check that this shouldn't be >
+            if (t == len(values)): return dash.no_update
+
             return [
                 self._show_figure_trace(metadata["figure"], t)
                 for metadata in self._graph_metadata.values()
             ]
 
         @self.app.callback(
-            Output("slider", "value"),
+            Output("slider", "value", allow_duplicate=True),
             Input("store-keypress", "data"),
             Input("interval", "n_intervals"),
             State("slider", "value"),
@@ -369,44 +373,57 @@ class Visualizer:
                 return 0  # Stops interval from running.
             return dash.no_update
 
-        # @self.app.callback(Output("click-data", "children"),
-        #                    Input(self._primary, "clickData"))
-        # def display_click_data(click_data):
-        #     # TODO: Remove this
-        #     return json.dumps(click_data, indent=2)
-
         @self.app.callback(
             Output(component_id="playback-control", component_property="style"),
-            Input("test-info", "data"))
-        def toggle_layout(info):
-            if info["tests"]:
+            Input("self-test-mode", "data"))
+        def toggle_layout(self_test_mode):
+            if self_test_mode:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(Output("test-info", "data"),
+        @self.app.callback(Output("self-test-mode", "data", allow_duplicate=True),
+                           Output("test-info", "data", allow_duplicate=True),
+                           Output("trigger-make-tests", "data", allow_duplicate=True),
                            Input("self-test-button", "n_clicks"),
-                           State("test-info", "data"), State("slider", "value"),
-                           State("test-select-checkbox", "value"))
-        def toggle_test_mode(_, info, t, selected_tests):
+                           State("self-test-mode", "data"),
+                           State("slider", "value"),
+                           State("test-select-checkbox", "value"),
+                           State("trigger-make-tests", "data"),)
+        def toggle_test_mode(_, self_test_mode, t, selected_tests, trigger):
             """Toggles self-testing mode.
 
             Args:
-                n_clicks (int): This callback is triggered by clicking the
+                _ (int): This callback is triggered by clicking the
                     self-test-button component.
+                self_test_mode (bool): Current state of self testing mode.
                 t (int): The current timestep retrieved from the slider
                     component.
+                selected_tests (list): lists of tests to be made.
+                trigger (bool): boolean to trigger make tests.
             """
             # No tests to be performed on the last timestep.
-            if t == len(values):
+            if t == len(values)-1:
                 # TODO: notify user that there is no more testing
-                return dash.no_update
-
-            # Turn off testing mode.
-            if info["tests"]:
-                return {
-                    "tests": [],
-                }
-
+                return False, {"tests": []}, dash.no_update
+                        
+            # Turn off testing mode if no tests selected or it was already on.
+            if self_test_mode or not selected_tests:
+                return False, {"tests": []}, dash.no_update
+            
+            # Testing mode should be on, so trigger the make tests callback.
+            return True, dash.no_update, not trigger
+            
+        @self.app.callback(Output("self-test-mode", "data"),
+                           Output("test-info", "data"),
+                           Output("slider", "value"),
+                           Input("trigger-make-tests", "data"),
+                           State("slider", "value"),
+                           State("test-select-checkbox", "value"))
+        def make_tests(_, t, selected_tests):
+            # On the last timestep, turn off self testing.
+            if (t == len(values)-1):
+                return False, {"tests": []}, t - 1
+            
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
             all_writes = np.transpose(np.nonzero(write_mask))
@@ -416,7 +433,6 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-            # TODO: Populate test_q in separate callback.
             # Populate test_q according to what tests are selected.
             test_q = []
 
@@ -455,9 +471,8 @@ class Visualizer:
                         "expected_triggered_id": "user-input",
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
-
-            # If no tests selected, self-testing mode is automatically turned off
-            return {"tests": test_q}
+            return dash.no_update, {"tests": test_q}, dash.no_update
+        
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -469,9 +484,10 @@ class Visualizer:
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
+            # import pdb;pdb.set_trace();
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
-
+            
             fig = copy.deepcopy(main_figure)
 
             # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
@@ -494,13 +510,18 @@ class Visualizer:
             Output("correct-alert", "children"),
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
+            Output("slider", "value", allow_duplicate=True),
+            # For triggering make tests.
+            Output("trigger-make-tests", "data"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
+            State("slider", "value"),
+            State("trigger-make-tests", "data"),
         )
-        def validate(_, click_data, user_input, info):
+        def validate(_, click_data, user_input, info, t, trigger):
             """Validates the user input."""
             if not info["tests"]:
                 return dash.no_update
@@ -539,17 +560,22 @@ class Visualizer:
             # If all truths have been found, pop from test queue.
             if not truths:
                 info["tests"].pop(0)
+                
+                # If all tests are done, update slider value and make tests.
+                if not info["tests"]:
+                    return info, correct_alert, None, t + 1, not trigger
+
 
             # Updates test info, the alert, and resets clickData.
-            return info, correct_alert, None
+            return info, correct_alert, None, dash.no_update, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
-            Input(self._primary, "clickData"), State("test-info", "data"),
+            Input(self._primary, "clickData"), State("self-test-mode", "data"),
             State("slider", "value"))
-        def display_dependencies(click_data, info, t):
+        def display_dependencies(click_data, self_test_mode, t):
             # Skip this callback in testing mode.
-            if info["tests"] or not click_data:
+            if self_test_mode or not click_data:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
@@ -660,6 +686,8 @@ class Visualizer:
 
         datastores = [
             dcc.Store(id="store-keypress", data=0),
+            dcc.Store("self-test-mode", data=False),
+            dcc.Store("trigger-make-tests", data=False),
             dcc.Store(
                 id="test-info",
                 data={
