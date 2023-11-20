@@ -333,8 +333,8 @@ class Visualizer:
         def update_figure(t, self_test_mode):
             """Update each graph based on the slider value."""
             # Edge case: in self testing mode and ran out of tests.
-            # TODO: Check that this shouldn't be >
-            if (t == len(values)): return dash.no_update
+            # TODO: Check that this shouldn't be ==
+            if (t > len(values)): return dash.no_update
 
             return [
                 self._show_figure_trace(metadata["figure"], t)
@@ -422,7 +422,7 @@ class Visualizer:
         def make_tests(_, t, selected_tests):
             # On the last timestep, turn off self testing.
             if (t == len(values)-1):
-                return False, {"tests": []}, t - 1
+                return False, {"tests": []}, t
             
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
