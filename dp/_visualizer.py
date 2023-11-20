@@ -198,11 +198,10 @@ class Visualizer:
         t_highlight_matrix = np.empty((t, h, w), dtype="object")
         # Boolean mask of which cell is written to at timestep t.
         t_write_matrix = np.zeros((t, h, w), dtype="bool")
-        # List of dictionaries. Empty if no annotations.
-        # t_annotations: [{array_name: annotation}, ...]
-        # t_cell_annotations: [{array_name: {cell_idx: annotation}}, ...]
-        t_annotations = np.full(len(timesteps), {})
-        t_cell_annotations = np.full(len(timesteps), {})
+        # Array annotation for each timestep.
+        t_annotations = np.full(t, "", dtype="object")
+        # Cell annotation for each cell at every timestep.
+        t_cell_annotations = np.full((t, h, w), "", dtype="object")
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
             mask = np.isnan(t_arr["contents"].astype(float))
@@ -215,7 +214,10 @@ class Visualizer:
                 t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_value_matrix[i] = t_arr["contents"]
             t_annotations[i] = t_arr["annotations"]
-            t_cell_annotations[i] = t_arr["cell_annotations"]
+            cell_annotations = t_arr["cell_annotations"]
+            if cell_annotations:
+                t_cell_annotations[i][_indices_to_np_indices(
+                    cell_annotations)] = list(cell_annotations.values())
 
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
@@ -269,6 +271,7 @@ class Visualizer:
         t_value_matrix = metadata["t_value_matrix"]
         t_color_matrix = metadata["t_color_matrix"]
         t_read_matrix = metadata["t_read_matrix"]
+        t_cell_annotations = metadata["t_cell_annotations"]
 
         h, w = t_value_matrix.shape[1], t_value_matrix.shape[2]
 
@@ -277,23 +280,23 @@ class Visualizer:
         # (if cell annotation present:) <br>{annotation}
         value_text = np.where(np.isnan(t_value_matrix.astype(float)), "",
                               t_value_matrix.astype("str"))
+        extra_hovertext = np.char.add("<br>Value: ", value_text)
+
+        # Add cell dependencies.
         deps_text = np.where(t_read_matrix == set(), "{}",
                              t_read_matrix.astype("str"))
-        extra_hovertext = np.char.add("<br>Value: ", value_text)
         extra_hovertext = np.char.add(extra_hovertext, "<br>Dependencies: ")
         extra_hovertext = np.char.add(extra_hovertext, deps_text)
+
+        # Add cell annotations.
+        br = np.where(t_cell_annotations == "", "", "<br>")
+        extra_hovertext = np.char.add(extra_hovertext, br)
+        extra_hovertext = np.char.add(extra_hovertext, t_cell_annotations)
 
         # Remove extra info for empty cells.
         extra_hovertext[t_color_matrix == CellType.EMPTY] = ""
 
-        # Add cell annotations to the hovertext.
-        cell_annotation_text = metadata["t_cell_annotations"]
-        for t, timestep in enumerate(cell_annotation_text):
-            for j, cell_annotation in timestep.items():
-                extra_hovertext[t][j] += "<br>" + cell_annotation
-
         # Create the figure.
-        # column_alias = row_alias = None
         column_alias = dict(enumerate(kwargs["column_labels"]))
         row_alias = dict(enumerate(kwargs["row_labels"]))
         figure = go.Figure(
@@ -361,40 +364,21 @@ class Visualizer:
                 for metadata in self._graph_metadata.values()
             ]
 
-        # update annotation toast based on slider value
         @self.app.callback(Output("array-annotation", "children"),
                            Input("slider", "value"))
         def update_annotation(t):
-            """Update the annotation toast based on the slider value."""
-            annotation_card = None # init
-            t_annotation = [
-                html.P(
-                    f"{name}: {arr['t_annotations'][t]}",
-                    style={
-                        "textAlign": "center",
-                        "width": "auto"
-                    },
-                )   # Create a <p> element for each array annotation
-                for name, arr in self._graph_metadata.items() # For each array
-                if arr["t_annotations"][t]  # if there is an array annotation
-            ]
-            if not t_annotation:
-                annotation_card = dbc.CardBody(
-                    [],
-                    style = {
-                        "display": "none"
-                    }
-                )
+            """Update the annotation based on the slider value."""
+            card_body = dbc.CardBody([])
+            for name, metadata in self._graph_metadata.items():
+                ann = metadata["t_annotations"][t]
+                if not ann:
+                    continue
+                card_body.children.append(
+                    html.P(f"{name}: {ann}", className="text-center w-auto"))
 
-            else:
-                annotation_card = dbc.CardBody(
-                    t_annotation,
-                    style = {
-                        "display": "block"
-                    }
-                )
-
-            return annotation_card
+            # Hides card if it is empty.
+            card_body.class_name = "d-block" if card_body.children else "d-none"
+            return card_body
 
         @self.app.callback(
             Output("slider", "value"),
@@ -688,7 +672,7 @@ class Visualizer:
                 *description_md,
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
-                dbc.Card([], id="array-annotation",color="info", outline=True),
+                dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar",
                       className="border border-warning"),

@@ -195,7 +195,7 @@ class Logger:
         for batch in log_batches:
             timesteps.append({
                 name: {
-                    "annotations": {},
+                    "annotations": "",
                     "cell_annotations": {},
                     "contents": array_contents[name].copy(),
                     Op.READ: set(),
