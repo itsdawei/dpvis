@@ -436,10 +436,8 @@ class Visualizer:
             # Populate test_q according to what tests are selected.
             test_q = []
 
-            # Filling out write test.
-            # The truth list is a list of indices that are written to in the
-            # next cell.
             if "What is the next cell?" in selected_tests:
+                # Write test.
                 test_q.append({
                     "truth": all_writes,
                     "render": [],
@@ -451,7 +449,7 @@ class Visualizer:
                 })
 
             if "What are its dependencies?" in selected_tests:
-                # Filling out read test.
+                # Read test.
                 test_q.append({
                     "truth": all_reads,
                     "render": [],
@@ -462,7 +460,7 @@ class Visualizer:
                 })
 
             if "What is its value?" in selected_tests:
-                # Filling out all value tests.
+                # Value tests.
                 for x, y in zip(*np.nonzero(write_mask)):
                     test_q.append({
                         "truth": [values[t + 1][x][y]],
