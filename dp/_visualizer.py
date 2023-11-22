@@ -329,8 +329,8 @@ class Visualizer:
         ]
 
         @self.app.callback(output_figure, Input("slider", "value"),
-                           State("self-test-mode", "data"))
-        def update_figure(t, self_test_mode):
+                           State("test-info", "data"))
+        def update_figure(t, info):
             """Update each graph based on the slider value."""
             # Edge case: in self testing mode and ran out of tests.
             # TODO: Check that this shouldn't be ==
@@ -375,27 +375,26 @@ class Visualizer:
 
         @self.app.callback(
             Output(component_id="playback-control", component_property="style"),
-            Input("self-test-mode", "data"))
-        def toggle_layout(self_test_mode):
-            if self_test_mode:
+            Input("test-info", "data"))
+        def toggle_layout(info):
+            if info["tests"]:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(Output("self-test-mode", "data", allow_duplicate=True),
-                           Output("test-info", "data", allow_duplicate=True),
+        @self.app.callback(Output("test-info", "data", allow_duplicate=True),
                            Output("trigger-make-tests", "data", allow_duplicate=True),
                            Input("self-test-button", "n_clicks"),
-                           State("self-test-mode", "data"),
+                           State("test-info", "data"),
                            State("slider", "value"),
                            State("test-select-checkbox", "value"),
                            State("trigger-make-tests", "data"),)
-        def toggle_test_mode(_, self_test_mode, t, selected_tests, trigger):
+        def toggle_test_mode(_, info, t, selected_tests, trigger):
             """Toggles self-testing mode.
 
             Args:
                 _ (int): This callback is triggered by clicking the
                     self-test-button component.
-                self_test_mode (bool): Current state of self testing mode.
+                info (dict): Used to determine if self-testing-mode is on.
                 t (int): The current timestep retrieved from the slider
                     component.
                 selected_tests (list): lists of tests to be made.
@@ -404,17 +403,16 @@ class Visualizer:
             # No tests to be performed on the last timestep.
             if t == len(values)-1:
                 # TODO: notify user that there is no more testing
-                return False, {"tests": []}, dash.no_update
+                return {"tests": []}, dash.no_update
                         
             # Turn off testing mode if no tests selected or it was already on.
-            if self_test_mode or not selected_tests:
-                return False, {"tests": []}, dash.no_update
+            if info["tests"] or not selected_tests:
+                return {"tests": []}, dash.no_update
             
             # Testing mode should be on, so trigger the make tests callback.
-            return True, dash.no_update, not trigger
+            return dash.no_update, not trigger
             
-        @self.app.callback(Output("self-test-mode", "data"),
-                           Output("test-info", "data"),
+        @self.app.callback(Output("test-info", "data"),
                            Output("slider", "value"),
                            Input("trigger-make-tests", "data"),
                            State("slider", "value"),
@@ -422,7 +420,7 @@ class Visualizer:
         def make_tests(_, t, selected_tests):
             # On the last timestep, turn off self testing.
             if (t == len(values)-1):
-                return False, {"tests": []}, t
+                return {"tests": []}, t
             
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
@@ -469,7 +467,7 @@ class Visualizer:
                         "expected_triggered_id": "user-input",
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
-            return dash.no_update, {"tests": test_q}, dash.no_update
+            return {"tests": test_q}, dash.no_update
         
 
         @self.app.callback(
@@ -569,11 +567,11 @@ class Visualizer:
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
-            Input(self._primary, "clickData"), State("self-test-mode", "data"),
+            Input(self._primary, "clickData"), State("test-info", "data"),
             State("slider", "value"))
-        def display_dependencies(click_data, self_test_mode, t):
+        def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
-            if self_test_mode or not click_data:
+            if info["tests"] or not click_data:
                 return dash.no_update
 
             x = click_data["points"][0]["x"]
@@ -684,7 +682,6 @@ class Visualizer:
 
         datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store("self-test-mode", data=False),
             dcc.Store("trigger-make-tests", data=False),
             dcc.Store(
                 id="test-info",
