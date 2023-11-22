@@ -328,6 +328,58 @@ class Visualizer:
             for name in self._graph_metadata
         ]
 
+        def helper_make_tests(t, selected_tests):
+            # On the last timestep, turn off self testing.
+            if (t == len(values)-1):
+                return {"tests": []}
+            
+            # Create list of write indices for t+1.
+            write_mask = t_write_matrix[t + 1]
+            all_writes = np.transpose(np.nonzero(write_mask))
+
+            # Create list of dependencies for t+1.
+            # Any all writes have the same reads on the same timestep, so we
+            # arbitrarily pick the first one.
+            all_reads = list(t_read_matrix[t + 1][write_mask][0])
+
+            # Populate test_q according to what tests are selected.
+            test_q = []
+
+            if "What is the next cell?" in selected_tests:
+                # Write test.
+                test_q.append({
+                    "truth": all_writes,
+                    "render": [],
+                    "color": CellType.WRITE,
+                    "expected_triggered_id": self._primary,
+                    "tip":
+                        "What cells are written to in the next frame? (Click "
+                        "in any order)"
+                })
+
+            if "What are its dependencies?" in selected_tests:
+                # Read test.
+                test_q.append({
+                    "truth": all_reads,
+                    "render": [],
+                    "color": CellType.READ,
+                    "expected_triggered_id": self._primary,
+                    "tip": "What cells are read for the next timestep? (Click "
+                           "in any order)"
+                })
+
+            if "What is its value?" in selected_tests:
+                # Value tests.
+                for x, y in zip(*np.nonzero(write_mask)):
+                    test_q.append({
+                        "truth": [values[t + 1][x][y]],
+                        "render": [(x, y)],
+                        "color": CellType.WRITE,
+                        "expected_triggered_id": "user-input",
+                        "tip": f"What is the value of cell ({x}, {y})?"
+                    })
+            return {"tests": test_q}
+
         @self.app.callback(output_figure, Input("slider", "value"),
                            State("test-info", "data"))
         def update_figure(t, info):
@@ -382,13 +434,11 @@ class Visualizer:
             return {"visibility": "visible"}
 
         @self.app.callback(Output("test-info", "data", allow_duplicate=True),
-                           Output("trigger-make-tests", "data", allow_duplicate=True),
                            Input("self-test-button", "n_clicks"),
                            State("test-info", "data"),
                            State("slider", "value"),
-                           State("test-select-checkbox", "value"),
-                           State("trigger-make-tests", "data"),)
-        def toggle_test_mode(_, info, t, selected_tests, trigger):
+                           State("test-select-checkbox", "value"),)
+        def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
             Args:
@@ -410,66 +460,9 @@ class Visualizer:
                 return {"tests": []}, dash.no_update
             
             # Testing mode should be on, so trigger the make tests callback.
-            return dash.no_update, not trigger
-            
-        @self.app.callback(Output("test-info", "data"),
-                           Output("slider", "value"),
-                           Input("trigger-make-tests", "data"),
-                           State("slider", "value"),
-                           State("test-select-checkbox", "value"))
-        def make_tests(_, t, selected_tests):
-            # On the last timestep, turn off self testing.
-            if (t == len(values)-1):
-                return {"tests": []}, t
-            
-            # Create list of write indices for t+1.
-            write_mask = t_write_matrix[t + 1]
-            all_writes = np.transpose(np.nonzero(write_mask))
-
-            # Create list of dependencies for t+1.
-            # Any all writes have the same reads on the same timestep, so we
-            # arbitrarily pick the first one.
-            all_reads = list(t_read_matrix[t + 1][write_mask][0])
-
-            # Populate test_q according to what tests are selected.
-            test_q = []
-
-            if "What is the next cell?" in selected_tests:
-                # Write test.
-                test_q.append({
-                    "truth": all_writes,
-                    "render": [],
-                    "color": CellType.WRITE,
-                    "expected_triggered_id": self._primary,
-                    "tip":
-                        "What cells are written to in the next frame? (Click "
-                        "in any order)"
-                })
-
-            if "What are its dependencies?" in selected_tests:
-                # Read test.
-                test_q.append({
-                    "truth": all_reads,
-                    "render": [],
-                    "color": CellType.READ,
-                    "expected_triggered_id": self._primary,
-                    "tip": "What cells are read for the next timestep? (Click "
-                           "in any order)"
-                })
-
-            if "What is its value?" in selected_tests:
-                # Value tests.
-                for x, y in zip(*np.nonzero(write_mask)):
-                    test_q.append({
-                        "truth": [values[t + 1][x][y]],
-                        "render": [(x, y)],
-                        "color": CellType.WRITE,
-                        "expected_triggered_id": "user-input",
-                        "tip": f"What is the value of cell ({x}, {y})?"
-                    })
-            return {"tests": test_q}, dash.no_update
+            new_info = helper_make_tests(t, selected_tests)
+            return new_info
         
-
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
             Output("test-instructions", "children"),
@@ -507,17 +500,15 @@ class Visualizer:
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
             Output("slider", "value", allow_duplicate=True),
-            # For triggering make tests.
-            Output("trigger-make-tests", "data"),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
             State("slider", "value"),
-            State("trigger-make-tests", "data"),
+            State("test-select-checkbox", "value"),
         )
-        def validate(_, click_data, user_input, info, t, trigger):
+        def validate(_, click_data, user_input, info, t, selected_tests):
             """Validates the user input."""
             if not info["tests"]:
                 return dash.no_update
@@ -559,11 +550,12 @@ class Visualizer:
                 
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
-                    return info, correct_alert, None, t + 1, not trigger
+                    new_info = helper_make_tests(t+1, selected_tests)
+                    return new_info, correct_alert, None, t + 1
 
 
             # Updates test info, the alert, and resets clickData.
-            return info, correct_alert, None, dash.no_update, dash.no_update
+            return info, correct_alert, None, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -682,7 +674,6 @@ class Visualizer:
 
         datastores = [
             dcc.Store(id="store-keypress", data=0),
-            dcc.Store("trigger-make-tests", data=False),
             dcc.Store(
                 id="test-info",
                 data={
