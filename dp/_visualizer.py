@@ -473,8 +473,6 @@ class Visualizer:
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
-            # import pdb;pdb.set_trace();
-            print(info)
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
             
@@ -714,8 +712,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=True, use_reloader=True)
-        self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
