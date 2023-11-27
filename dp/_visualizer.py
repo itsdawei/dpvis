@@ -329,10 +329,11 @@ class Visualizer:
         ]
 
         def helper_make_tests(t, selected_tests):
+            print("[CALLBACK] helper")
             # On the last timestep, turn off self testing.
-            if (t == len(values)-1):
+            if t == len(values) - 1:
                 return {"tests": []}
-            
+
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
             all_writes = np.transpose(np.nonzero(write_mask))
@@ -384,9 +385,11 @@ class Visualizer:
                            State("test-info", "data"))
         def update_figure(t, info):
             """Update each graph based on the slider value."""
+            print("[CALLBACK] update_figure")
             # Edge case: in self testing mode and ran out of tests.
             # TODO: Check that this shouldn't be ==
-            if (t > len(values)): return dash.no_update
+            if (t > len(values)):
+                return dash.no_update
 
             return [
                 self._show_figure_trace(metadata["figure"], t)
@@ -405,6 +408,7 @@ class Visualizer:
             Update slider value based on store-keypress. Store-keypress is
             changed in assets/custom.js.
             """
+            print("[CALLBACK] update_slider")
             if ctx.triggered_id == "interval":
                 return (t + 1) % len(values)
             if key_data in [37, 39]:
@@ -419,6 +423,7 @@ class Visualizer:
 
             Pauses the playback when "stop" or "self-test-button" is pressed.
             """
+            print("[CALLBACK] play_pause_playback")
             if ctx.triggered_id == "play":
                 return -1  # Runs interval indefinitely.
             if ctx.triggered_id in ["stop", "self-test-button"]:
@@ -429,15 +434,18 @@ class Visualizer:
             Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
+            print("[CALLBACK] toggle_layout")
             if info["tests"]:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(Output("test-info", "data", allow_duplicate=True),
-                           Input("self-test-button", "n_clicks"),
-                           State("test-info", "data"),
-                           State("slider", "value"),
-                           State("test-select-checkbox", "value"),)
+        @self.app.callback(
+            Output("test-info", "data", allow_duplicate=True),
+            Input("self-test-button", "n_clicks"),
+            State("test-info", "data"),
+            State("slider", "value"),
+            State("test-select-checkbox", "value"),
+        )
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
@@ -450,19 +458,19 @@ class Visualizer:
                 selected_tests (list): lists of tests to be made.
                 trigger (bool): boolean to trigger make tests.
             """
+            print("[CALLBACK] toggle_test_mode")
             # No tests to be performed on the last timestep.
-            if t == len(values)-1:
+            if t == len(values) - 1:
                 # TODO: notify user that there is no more testing
                 return {"tests": []}
-                        
+
             # Turn off testing mode if no tests selected or it was already on.
             if info["tests"] or not selected_tests:
                 return {"tests": []}
-            
-            # Testing mode should be on, so trigger the make tests callback.
-            new_info = helper_make_tests(t, selected_tests)
-            return new_info
-        
+
+            # Update test-info with selected tests on this timestep.
+            return helper_make_tests(t, selected_tests)
+
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
             Output("test-instructions", "children"),
@@ -470,12 +478,13 @@ class Visualizer:
             State("slider", "value"),
         )
         def display_tests(info, t):
+            print("[CALLBACK] display_tests")
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
-            
+
             fig = copy.deepcopy(main_figure)
 
             # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
@@ -509,6 +518,7 @@ class Visualizer:
         )
         def validate(_, click_data, user_input, info, t, selected_tests):
             """Validates the user input."""
+            print("[CALLBACK] validate")
             if not info["tests"]:
                 return dash.no_update
 
@@ -546,12 +556,11 @@ class Visualizer:
             # If all truths have been found, pop from test queue.
             if not truths:
                 info["tests"].pop(0)
-                
+
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
-                    new_info = helper_make_tests(t+1, selected_tests)
+                    new_info = helper_make_tests(t + 1, selected_tests)
                     return new_info, correct_alert, None, t + 1
-
 
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
