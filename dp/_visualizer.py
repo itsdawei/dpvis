@@ -453,11 +453,11 @@ class Visualizer:
             # No tests to be performed on the last timestep.
             if t == len(values)-1:
                 # TODO: notify user that there is no more testing
-                return {"tests": []}, dash.no_update
+                return {"tests": []}
                         
             # Turn off testing mode if no tests selected or it was already on.
             if info["tests"] or not selected_tests:
-                return {"tests": []}, dash.no_update
+                return {"tests": []}
             
             # Testing mode should be on, so trigger the make tests callback.
             new_info = helper_make_tests(t, selected_tests)
@@ -474,6 +474,7 @@ class Visualizer:
                               color="danger",
                               class_name="alert-auto")
             # import pdb;pdb.set_trace();
+            print(info)
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
             
@@ -713,8 +714,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
