@@ -381,7 +381,9 @@ class Visualizer:
                     })
             return {"tests": test_q}
 
-        @self.app.callback(output_figure, Input("slider", "value"),
+        @self.app.callback(Output("test-instructions", "children", allow_duplicate=True),
+                           output_figure, 
+                           Input("slider", "value"),
                            State("test-info", "data"))
         def update_figure(t, info):
             """Update each graph based on the slider value."""
@@ -391,10 +393,28 @@ class Visualizer:
             if (t > len(values)):
                 return dash.no_update
 
-            return [
-                self._show_figure_trace(metadata["figure"], t)
-                for metadata in self._graph_metadata.values()
-            ]
+            alert = dbc.Alert(is_open=False,
+                              color="danger",
+                              class_name="alert-auto")
+            
+            if ctx.triggered_id == "slider":
+                next_figures = [
+                        self._show_figure_trace(metadata["figure"], t)
+                        for metadata in self._graph_metadata.values()
+                    ]
+
+                # Slider changed
+                if not info["tests"]:
+                    # Not in self testing mode, update all figures
+                    return [alert, *next_figures]
+                
+                # Case: Finished all tests of previous input, change slider and then display tests.
+                # Change the main figure, which is the first figure in next_figures list
+                # TODO: This is not the right way to do things since dicts are usually not ordered
+                next_figures[0], alert = display_tests(info, t)
+
+                return [alert, *next_figures]
+            
 
         @self.app.callback(
             Output("slider", "value", allow_duplicate=True),
