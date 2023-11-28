@@ -79,22 +79,8 @@ def test_max_highlight():
             }
         }
     }
-    assert dp.logger.logs[2] == {
-        "op": Op.HIGHLIGHT,
-        "idx": {
-            "name": {
-                1: None
-            }
-        }
-    }
-    assert dp.logger.logs[3] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                3: 3
-            }
-        }
-    }
+    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
 
     indices = [0, 1, 2, 3]
     elements = [-(dp[i] - 1)**2 for i in indices]
@@ -111,22 +97,8 @@ def test_max_highlight():
             }
         }
     }
-    assert dp.logger.logs[5] == {
-        "op": Op.HIGHLIGHT,
-        "idx": {
-            "name": {
-                0: None
-            }
-        }
-    }
-    assert dp.logger.logs[6] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                4: 0
-            }
-        }
-    }
+    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4: 0}}}
 
 
 def test_min():
@@ -148,25 +120,11 @@ def test_min():
     dp = DPArray(8, "name")
 
     dp[0] = c[0]
-    assert dp.logger.logs[0] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                0: 7
-            }
-        }
-    }
+    assert dp.logger.logs[0] == {"op": Op.WRITE, "idx": {"name": {0: 7}}}
 
     # Comparing dp[0] with a constant.
     dp[1] = dp.min([0, None], [dp[0], c[1]])
-    assert dp.logger.logs[1] == {
-        "op": Op.READ,
-        "idx": {
-            "name": {
-                0: None
-            }
-        }
-    }
+    assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
     assert dp.logger.logs[2] == {
         "op": Op.HIGHLIGHT,
         "idx": {
@@ -175,14 +133,7 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[3] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                1: 6
-            }
-        }
-    }
+    assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {1: 6}}}
 
     dp[2] = dp.min([0, 1], [dp[0] + c[2], dp[1]])
     assert dp.logger.logs[4] == {
@@ -194,22 +145,8 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[5] == {
-        "op": Op.HIGHLIGHT,
-        "idx": {
-            "name": {
-                1: None
-            }
-        }
-    }
-    assert dp.logger.logs[6] == {
-        "op": Op.WRITE,
-        "idx": {
-            "name": {
-                2: 6
-            }
-        }
-    }
+    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
     next_log = 7
     for i in range(3, 8):

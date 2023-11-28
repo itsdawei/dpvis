@@ -291,7 +291,8 @@ class Visualizer:
         # Add cell annotations.
         br = np.where(t_cell_annotations == "", "", "<br>")
         extra_hovertext = np.char.add(extra_hovertext, br)
-        extra_hovertext = np.char.add(extra_hovertext, t_cell_annotations.astype("str"))
+        annotation_hovertext = t_cell_annotations.astype("str")
+        extra_hovertext = np.char.add(extra_hovertext, annotation_hovertext)
 
         # Remove extra info for empty cells.
         extra_hovertext[t_color_matrix == CellType.EMPTY] = ""
