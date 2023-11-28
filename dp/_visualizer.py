@@ -328,7 +328,7 @@ class Visualizer:
             for name in self._graph_metadata
         ]
 
-        def helper_make_tests(t, selected_tests):
+        def make_tests(t, selected_tests):
             print("[CALLBACK] helper")
             # On the last timestep, turn off self testing.
             if t == len(values) - 1:
@@ -388,7 +388,7 @@ class Visualizer:
             """Update each graph based on the slider value."""
             print("[CALLBACK] update_figure")
             # Edge case: in self testing mode and ran out of tests.
-            if (t > len(values)):
+            if t > len(values):
                 return dash.no_update
             
             next_figures = [
@@ -469,7 +469,6 @@ class Visualizer:
                 t (int): The current timestep retrieved from the slider
                     component.
                 selected_tests (list): lists of tests to be made.
-                trigger (bool): boolean to trigger make tests.
             """
             print("[CALLBACK] toggle_test_mode")
             # No tests to be performed on the last timestep.
@@ -482,7 +481,7 @@ class Visualizer:
                 return {"tests": []}
 
             # Update test-info with selected tests on this timestep.
-            return helper_make_tests(t, selected_tests)
+            return make_tests(t, selected_tests)
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -572,7 +571,7 @@ class Visualizer:
 
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
-                    new_info = helper_make_tests(t + 1, selected_tests)
+                    new_info = make_tests(t + 1, selected_tests)
                     return new_info, correct_alert, None, t + 1
 
             # Updates test info, the alert, and resets clickData.
