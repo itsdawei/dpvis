@@ -381,8 +381,7 @@ class Visualizer:
                     })
             return {"tests": test_q}
 
-        @self.app.callback(output_figure, 
-                           Input("slider", "value"),
+        @self.app.callback(output_figure, Input("slider", "value"),
                            State("test-info", "data"))
         def update_figure(t, info):
             """Update each graph based on the slider value."""
@@ -390,24 +389,23 @@ class Visualizer:
             # Edge case: in self testing mode and ran out of tests.
             if t > len(values):
                 return dash.no_update
-            
+
             next_figures = [
-                    self._show_figure_trace(metadata["figure"], t)
-                    for metadata in self._graph_metadata.values()
-                ]
+                self._show_figure_trace(metadata["figure"], t)
+                for metadata in self._graph_metadata.values()
+            ]
 
             # Slider changed
             if not info["tests"]:
                 # Not in self testing mode, update all figures
                 return next_figures
-            
+
             # Case: Finished all tests of previous input, change slider and then display tests.
             # Change the main figure, which is the first figure in next_figures list
             # TODO: This is not the right way to do things since dicts are usually not ordered
             next_figures[0], _ = display_tests(info, t)
 
             return next_figures
-            
 
         @self.app.callback(
             Output("slider", "value", allow_duplicate=True),
