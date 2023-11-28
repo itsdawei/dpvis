@@ -391,23 +391,22 @@ class Visualizer:
             if (t > len(values)):
                 return dash.no_update
             
-            if ctx.triggered_id == "slider":
-                next_figures = [
-                        self._show_figure_trace(metadata["figure"], t)
-                        for metadata in self._graph_metadata.values()
-                    ]
+            next_figures = [
+                    self._show_figure_trace(metadata["figure"], t)
+                    for metadata in self._graph_metadata.values()
+                ]
 
-                # Slider changed
-                if not info["tests"]:
-                    # Not in self testing mode, update all figures
-                    return next_figures
-                
-                # Case: Finished all tests of previous input, change slider and then display tests.
-                # Change the main figure, which is the first figure in next_figures list
-                # TODO: This is not the right way to do things since dicts are usually not ordered
-                next_figures[0], _ = display_tests(info, t)
-
+            # Slider changed
+            if not info["tests"]:
+                # Not in self testing mode, update all figures
                 return next_figures
+            
+            # Case: Finished all tests of previous input, change slider and then display tests.
+            # Change the main figure, which is the first figure in next_figures list
+            # TODO: This is not the right way to do things since dicts are usually not ordered
+            next_figures[0], _ = display_tests(info, t)
+
+            return next_figures
             
 
         @self.app.callback(
