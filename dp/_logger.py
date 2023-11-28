@@ -1,8 +1,8 @@
 """This file provides the Logger class."""
 from enum import IntEnum
-from colorama import Fore, Style
 
 import numpy as np
+from colorama import Fore, Style
 
 
 class Op(IntEnum):
@@ -23,8 +23,19 @@ class Logger:
             array_name_2: {idx1: value1, idx2: value2, ...},
             ...
         },
+        "annotations": {
+            array_name_1: annotation1,
+            ...
+        }
+        "cell_annotations": {
+            array_name_1: {idx1: annotation1, idx2: annotation2, ...},
+            ...
+        }
     }
     note that values are None for READ and HIGHLIGHT.
+
+    The keys "annotation" and "cell_annotations" are only included if
+    append_annotation was called.
 
     Attributes:
         _logs (list): Contains the logs.
@@ -95,21 +106,50 @@ class Logger:
                     name: {} for name in self._array_shapes
                 },
             })
-        self._logs[-1]["idx"][array_name].update(
-            dict(zip(idx_list, values) \
-                if values is not None \
-                else zip(idx_list, [None] * len(idx_list))))
+
+        if values is None:
+            values = [None] * len(idx_list)
+        self._logs[-1]["idx"][array_name].update(dict(zip(idx_list, values)))
+
+    def append_annotation(self, array_name, annotation, idx=None):
+        """Appends an annotated operation to the log.
+
+        Args:
+            array_name (str): Name of the array associated with this operation.
+            annotation (str): Annotations associated with this operation.
+            idx (int or tuple): Index of the element to be annotated on. None 
+                if the annotation associated with the entire array.
+
+        Raises:
+            ValueError: Array name not recognized by logger. 
+        """
+        if array_name not in self._array_shapes:
+            raise ValueError(f"Array name {array_name} not recognized by"
+                             f"logger. Make sure logger is passed to the"
+                             f"constructor of {array_name}")
+
+        # Create or overwrite annotation.
+        if idx is None:
+            if "annotations" not in self._logs[-1]:
+                self._logs[-1]["annotations"] = {}
+            self._logs[-1]["annotations"][array_name] = annotation
+        else:
+            if "cell_annotations" not in self._logs[-1]:
+                self._logs[-1]["cell_annotations"] = {
+                    name: {} for name in self._array_shapes
+                }
+            self._logs[-1]["cell_annotations"][array_name][idx] = annotation
 
     def to_timesteps(self):
         """Converts the logs to timesteps.
-        
-        Raises:
-            ValueError: If the logs are not in the correct format.
 
         Returns:
             list of timestep dicts
             timestep: {
                 "array_name": {
+                    "annotations": array annotations at this timestep which are
+                        not associated with any cell but the entire array.
+                    "cell_annotations": array cell annotations at this timestep,
                     "contents": array contents at this timestep,
                     Op.READ: [idx1, idx2, ...],
                     Op.WRITE: [idx1, idx2, ...],
@@ -119,44 +159,72 @@ class Logger:
                     ...
                 },
             }
+
+        Raises:
+            ValueError: If the logs are not in the correct format.
         """
-        timesteps = []
         array_contents = {
             name: np.full(shape, None)
             for name, shape in self._array_shapes.items()
         }
 
-        new_timestep = True
-        for log in self._logs:
-            if new_timestep:
-                timesteps.append({
-                    name: {
-                        "contents": array_contents[name].copy(),
-                        Op.READ: set(),
-                        Op.WRITE: set(),
-                        Op.HIGHLIGHT: set(),
-                    } for name in self._array_shapes
-                })
-                new_timestep = False
+        # For each consecutive sequence of Op.WRITE, find the last index.
+        last_write_indices = []
+        for i, log in enumerate(self._logs):
+            if log["op"] != Op.WRITE:
+                continue
+            if last_write_indices and i == last_write_indices[-1] + 1:
+                continue
+            last_write_indices.append(i)
 
-            if log["op"] == Op.WRITE:
-                for name, idx in log["idx"].items():
-                    timesteps[-1][name][log["op"]] = set(idx.keys())
-                    for i, v in idx.items():
-                        array_contents[name][i] = v
-                    timesteps[-1][name]["contents"] = \
-                        array_contents[name].copy()
-                new_timestep = True
-            else:
-                # NON-WRITE / READ and HIGHLIGHT operations
-                for name, idx in log["idx"].items():
-                    timesteps[-1][name][log["op"]] |= set(idx.keys())
+        # Split the logs into batches based on the last write indices.
+        log_batches = np.split(self._logs, np.array(last_write_indices) + 1)
+        # Remove the last batch if it is empty.
+        # TODO: investigate the source of this behavior and potentially optimize
+        #   how batches are created to fix this.
+        if log_batches[-1].size == 0:
+            log_batches = log_batches[:-1]
+
+        contents = {
+            name: np.full(shape, None)
+            for name, shape in self._array_shapes.items()
+        }
+
+        # Create a new timestep for each batch.
+        timesteps = []
+        for batch in log_batches:
+            timesteps.append({
+                name: {
+                    "annotations": "",
+                    "cell_annotations": {},
+                    "contents": array_contents[name].copy(),
+                    Op.READ: set(),
+                    Op.WRITE: set(),
+                    Op.HIGHLIGHT: set(),
+                } for name in self._array_shapes
+            })
+            for log in batch:
+                op = log["op"]
+                for name, indice_dict in log["idx"].items():
+                    timesteps[-1][name][op] |= indice_dict.keys()
+                    # For WRITE, track the changes to the DP array.
+                    if op == Op.WRITE:
+                        for idx, val in indice_dict.items():
+                            contents[name][idx] = val
+                            array_contents[name][idx] = val
+                        timesteps[-1][name]["contents"] = contents[name].copy()
+
+                for annotate_key in ["annotations", "cell_annotations"]:
+                    if annotate_key not in log:
+                        continue
+                    for name, annotation in log[annotate_key].items():
+                        timesteps[-1][name][annotate_key] = annotation
 
         return timesteps
 
     def print_timesteps(self):
         """Prints the timesteps in color. Currently works for 1D arrays only.
-        
+
         Raises:
             ValueError: If the array shapes are not 1D.
         """

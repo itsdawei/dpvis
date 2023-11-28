@@ -67,6 +67,17 @@ class DPArray:
         raise ValueError("Unsupported dtype. Must be np.float32 or"
                          "np.float64")
 
+    def annotate(self, annotation, idx=None):
+        """Annotates the array or a cell of the array. 
+        This annotation will be associated with the last regular operation.
+
+        Args:
+            annotation (str): The annotation to be added.
+            idx (int or tuple of ints): The index of the array. If None, the
+                annotation will be associated with the entire array.
+        """
+        self._logger.append_annotation(self._array_name, annotation, idx)
+
     def get_timesteps(self):
         """Retrieve the timesteps of all DPArrays associated with this array's 
             logger.

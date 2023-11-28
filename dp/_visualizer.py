@@ -182,6 +182,10 @@ class Visualizer:
                 for op in Op:
                     new_op_coords = {(0, idx) for idx in t_arr[op]}
                     t_arr[op] = new_op_coords
+                t_arr["cell_annotations"] = {
+                    (0, idx): annotation
+                    for idx, annotation in t_arr["cell_annotations"].items()
+                }
         else:
             h, w = arr.shape
 
@@ -194,6 +198,10 @@ class Visualizer:
         t_highlight_matrix = np.empty((t, h, w), dtype="object")
         # Boolean mask of which cell is written to at timestep t.
         t_write_matrix = np.zeros((t, h, w), dtype="bool")
+        # Array annotation for each timestep.
+        t_annotations = np.full(t, "", dtype="object")
+        # Cell annotation for each cell at every timestep.
+        t_cell_annotations = np.full((t, h, w), "", dtype="object")
         for i, timestep in enumerate(timesteps):
             t_arr = timestep[name]
             mask = np.isnan(t_arr["contents"].astype(float))
@@ -205,6 +213,11 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
             t_value_matrix[i] = t_arr["contents"]
+            t_annotations[i] = t_arr["annotations"]
+            cell_annotations = t_arr["cell_annotations"]
+            if cell_annotations:
+                t_cell_annotations[i][_indices_to_np_indices(
+                    cell_annotations)] = list(cell_annotations.values())
 
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
@@ -218,6 +231,8 @@ class Visualizer:
             "t_read_matrix": t_read_matrix,
             "t_write_matrix": t_write_matrix,
             "t_highlight_matrix": t_highlight_matrix,
+            "t_annotations": t_annotations,
+            "t_cell_annotations": t_cell_annotations,
         }
 
     def _show_figure_trace(self, figure, i):
@@ -256,24 +271,33 @@ class Visualizer:
         t_value_matrix = metadata["t_value_matrix"]
         t_color_matrix = metadata["t_color_matrix"]
         t_read_matrix = metadata["t_read_matrix"]
+        t_cell_annotations = metadata["t_cell_annotations"]
 
         h, w = t_value_matrix.shape[1], t_value_matrix.shape[2]
 
         # Extra hovertext info:
         # <br>Value: {value_text}<br>Dependencies: {deps_text}
+        # (if cell annotation present:) <br>{annotation}
         value_text = np.where(np.isnan(t_value_matrix.astype(float)), "",
                               t_value_matrix.astype("str"))
+        extra_hovertext = np.char.add("<br>Value: ", value_text)
+
+        # Add cell dependencies.
         deps_text = np.where(t_read_matrix == set(), "{}",
                              t_read_matrix.astype("str"))
-        extra_hovertext = np.char.add("<br>Value: ", value_text)
         extra_hovertext = np.char.add(extra_hovertext, "<br>Dependencies: ")
         extra_hovertext = np.char.add(extra_hovertext, deps_text)
+
+        # Add cell annotations.
+        br = np.where(t_cell_annotations == "", "", "<br>")
+        extra_hovertext = np.char.add(extra_hovertext, br)
+        annotation_hovertext = t_cell_annotations.astype("str")
+        extra_hovertext = np.char.add(extra_hovertext, annotation_hovertext)
 
         # Remove extra info for empty cells.
         extra_hovertext[t_color_matrix == CellType.EMPTY] = ""
 
         # Create the figure.
-        # column_alias = row_alias = None
         column_alias = dict(enumerate(kwargs["column_labels"]))
         row_alias = dict(enumerate(kwargs["row_labels"]))
         figure = go.Figure(
@@ -298,6 +322,9 @@ class Visualizer:
                     "showscale": False
                 },
                 "clickmode": "event+select",
+                "hoverlabel": {
+                    "namelength": -1,
+                },
             })
 
         for color, val, extra in zip(t_color_matrix, value_text,
@@ -322,6 +349,7 @@ class Visualizer:
         values = self._graph_metadata[self._primary]["t_value_matrix"]
         t_write_matrix = self._graph_metadata[self._primary]["t_write_matrix"]
         t_read_matrix = self._graph_metadata[self._primary]["t_read_matrix"]
+
         main_figure = self._graph_metadata[self._primary]["figure"]
 
         output_figure = [
@@ -336,6 +364,22 @@ class Visualizer:
                 self._show_figure_trace(metadata["figure"], t)
                 for metadata in self._graph_metadata.values()
             ]
+
+        @self.app.callback(Output("array-annotation", "children"),
+                           Input("slider", "value"))
+        def update_annotation(t):
+            """Update the annotation based on the slider value."""
+            card_body = dbc.CardBody([])
+            for name, metadata in self._graph_metadata.items():
+                ann = metadata["t_annotations"][t]
+                if not ann:
+                    continue
+                card_body.children.append(
+                    html.P(f"{name}: {ann}", className="text-center w-auto"))
+
+            # Hides card if it is empty.
+            card_body.class_name = "d-block" if card_body.children else "d-none"
+            return card_body
 
         @self.app.callback(
             Output("slider", "value"),
@@ -629,6 +673,7 @@ class Visualizer:
                 *description_md,
                 test_select_checkbox,
                 dbc.Input(id="user-input", type="number", placeholder=""),
+                dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar",
                       className="border border-warning"),
@@ -669,7 +714,7 @@ class Visualizer:
         self.app.layout = dbc.Container(
             [
                 dbc.Row([
-                    dbc.Col(sidebar, width="auto"),
+                    dbc.Col(sidebar, width=4),
                     dbc.Col([
                         dbc.Row(
                             playback_control,
@@ -681,8 +726,9 @@ class Visualizer:
                             dbc.Stack(graphs),
                             id="page-content",
                             className="border border-warning",
-                        )
-                    ])
+                        ),
+                    ],
+                            width=8),
                 ],
                         class_name="g-3"),
                 *alerts,
