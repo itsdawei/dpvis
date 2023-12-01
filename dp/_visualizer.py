@@ -1,6 +1,5 @@
 """This file provides the visualizer for the DPArray class."""
 import copy
-# import json
 from enum import IntEnum
 
 import dash
@@ -357,96 +356,10 @@ class Visualizer:
             for name in self._graph_metadata
         ]
 
-        @self.app.callback(output_figure, Input("slider", "value"))
-        def update_figure(t):
-            """Update each graph based on the slider value."""
-            return [
-                self._show_figure_trace(metadata["figure"], t)
-                for metadata in self._graph_metadata.values()
-            ]
-
-        @self.app.callback(Output("array-annotation", "children"),
-                           Input("slider", "value"))
-        def update_annotation(t):
-            """Update the annotation based on the slider value."""
-            card_body = dbc.CardBody([])
-            for name, metadata in self._graph_metadata.items():
-                ann = metadata["t_annotations"][t]
-                if not ann:
-                    continue
-                card_body.children.append(
-                    html.P(f"{name}: {ann}", className="text-center w-auto"))
-
-            # Hides card if it is empty.
-            card_body.class_name = "d-block" if card_body.children else "d-none"
-            return card_body
-
-        @self.app.callback(
-            Output("slider", "value"),
-            Input("store-keypress", "data"),
-            Input("interval", "n_intervals"),
-            State("slider", "value"),
-        )
-        def update_slider(key_data, _, t):
-            """Update the value of slider based on state of play/stop button.
-
-            Update slider value based on store-keypress. Store-keypress is
-            changed in assets/custom.js.
-            """
-            if ctx.triggered_id == "interval":
-                return (t + 1) % len(values)
-            if key_data in [37, 39]:
-                return (t + key_data - 38) % len(values)
-            return dash.no_update
-
-        @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
-                           Input("self-test-button", "n_clicks"))
-        def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
-            """Starts and stop playback from running.
-
-            Pauses the playback when "stop" or "self-test-button" is pressed.
-            """
-            if ctx.triggered_id == "play":
-                return -1  # Runs interval indefinitely.
-            if ctx.triggered_id in ["stop", "self-test-button"]:
-                return 0  # Stops interval from running.
-            return dash.no_update
-
-        # @self.app.callback(Output("click-data", "children"),
-        #                    Input(self._primary, "clickData"))
-        # def display_click_data(click_data):
-        #     # TODO: Remove this
-        #     return json.dumps(click_data, indent=2)
-
-        @self.app.callback(
-            Output(component_id="playback-control", component_property="style"),
-            Input("test-info", "data"))
-        def toggle_layout(info):
-            if info["tests"]:
-                return {"visibility": "hidden"}
-            return {"visibility": "visible"}
-
-        @self.app.callback(Output("test-info", "data"),
-                           Input("self-test-button", "n_clicks"),
-                           State("test-info", "data"), State("slider", "value"),
-                           State("test-select-checkbox", "value"))
-        def toggle_test_mode(_, info, t, selected_tests):
-            """Toggles self-testing mode.
-
-            Populates the test queue according to what tests are selected by
-            the checkbox.
-
-            This callback is triggered by clicking the self-test-button
-            component and updates the test info.
-            """
-            # No tests to be performed on the last timestep.
-            if t == len(values):
-                # TODO: notify user that there is no more testing
-                return dash.no_update
-
-            # Turn off testing mode.
-            if info["tests"]:
+        def make_tests(t, selected_tests):
+            print("[CALLBACK] helper")
+            # On the last timestep, turn off self testing.
+            if t == len(values) - 1:
                 return {"tests": []}
 
             # Create list of write indices for t+1.
@@ -458,7 +371,7 @@ class Visualizer:
             # arbitrarily pick the first one.
             all_reads = list(t_read_matrix[t + 1][write_mask][0])
 
-            # TODO: Populate test_q in separate callback.
+            # Populate test_q according to what tests are selected.
             test_q = []
 
             if "What is the next cell?" in selected_tests:
@@ -494,8 +407,120 @@ class Visualizer:
                         "expected_triggered_id": "user-input",
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
-
             return {"tests": test_q}
+
+        @self.app.callback(output_figure, Input("slider", "value"),
+                           State("test-info", "data"))
+        def update_figure(t, info):
+            """Update each graph based on the slider value."""
+            print("[CALLBACK] update_figure")
+            # Edge case: in self testing mode and ran out of tests.
+            if t > len(values):
+                return dash.no_update
+
+            next_figures = [
+                self._show_figure_trace(metadata["figure"], t)
+                for metadata in self._graph_metadata.values()
+            ]
+
+            # Slider changed
+            if not info["tests"]:
+                # Not in self testing mode, update all figures
+                return next_figures
+
+            # Case: Finished all tests of previous input.
+            # Change slider and then display tests.
+            # Change the main figure (first figure in next_figures list).
+            # TODO: This is not the right way to do things.
+            # Dicts are usually not ordered.
+            next_figures[0], _ = display_tests(info, t)
+
+            return next_figures
+
+        @self.app.callback(Output("array-annotation", "children"),
+                           Input("slider", "value"))
+        def update_annotation(t):
+            """Update the annotation based on the slider value."""
+            card_body = dbc.CardBody([])
+            for name, metadata in self._graph_metadata.items():
+                ann = metadata["t_annotations"][t]
+                if not ann:
+                    continue
+                card_body.children.append(
+                    html.P(f"{name}: {ann}", className="text-center w-auto"))
+
+            # Hides card if it is empty.
+            card_body.class_name = "d-block" if card_body.children else "d-none"
+            return card_body
+
+        @self.app.callback(
+            Output("slider", "value", allow_duplicate=True),
+            Input("store-keypress", "data"),
+            Input("interval", "n_intervals"),
+            State("slider", "value"),
+        )
+        def update_slider(key_data, _, t):
+            """Update the value of slider based on state of play/stop button.
+
+            Update slider value based on store-keypress. Store-keypress is
+            changed in assets/custom.js.
+            """
+            print("[CALLBACK] update_slider")
+            if ctx.triggered_id == "interval":
+                return (t + 1) % len(values)
+            if key_data in [37, 39]:
+                return (t + key_data - 38) % len(values)
+            return dash.no_update
+
+        @self.app.callback(Output("interval", "max_intervals"),
+                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
+                           Input("self-test-button", "n_clicks"))
+        def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
+            """Starts and stop playback from running.
+
+            Pauses the playback when "stop" or "self-test-button" is pressed.
+            """
+            print("[CALLBACK] play_pause_playback")
+            if ctx.triggered_id == "play":
+                return -1  # Runs interval indefinitely.
+            if ctx.triggered_id in ["stop", "self-test-button"]:
+                return 0  # Stops interval from running.
+            return dash.no_update
+
+        @self.app.callback(
+            Output(component_id="playback-control", component_property="style"),
+            Input("test-info", "data"))
+        def toggle_layout(info):
+            print("[CALLBACK] toggle_layout")
+            if info["tests"]:
+                return {"visibility": "hidden"}
+            return {"visibility": "visible"}
+
+        @self.app.callback(Output("test-info", "data", allow_duplicate=True),
+                           Input("self-test-button", "n_clicks"),
+                           State("test-info", "data"), State("slider", "value"),
+                           State("test-select-checkbox", "value"))
+        def toggle_test_mode(_, info, t, selected_tests):
+            """Toggles self-testing mode.
+
+            Populates the test queue according to what tests are selected by
+            the checkbox.
+
+            This callback is triggered by clicking the self-test-button
+            component and updates the test info.
+            """
+            print("[CALLBACK] toggle_test_mode")
+            # No tests to be performed on the last timestep.
+            if t == len(values) - 1:
+                # TODO: notify user that there is no more testing
+                return {"tests": []}
+
+            # Turn off testing mode if no tests selected or it was already on.
+            if info["tests"] or not selected_tests:
+                return {"tests": []}
+
+            # Update test-info with selected tests on this timestep.
+            return make_tests(t, selected_tests)
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -504,6 +529,7 @@ class Visualizer:
             State("slider", "value"),
         )
         def display_tests(info, t):
+            print("[CALLBACK] display_tests")
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
@@ -532,14 +558,18 @@ class Visualizer:
             Output("correct-alert", "children"),
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
+            Output("slider", "value", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
             State("user-input", "value"),
             State("test-info", "data"),
+            State("slider", "value"),
+            State("test-select-checkbox", "value"),
         )
-        def validate(_, click_data, user_input, info):
+        def validate(_, click_data, user_input, info, t, selected_tests):
             """Validates the user input."""
+            print("[CALLBACK] validate")
             if not info["tests"]:
                 return dash.no_update
 
@@ -578,8 +608,13 @@ class Visualizer:
             if not truths:
                 info["tests"].pop(0)
 
+                # If all tests are done, update slider value and make tests.
+                if not info["tests"]:
+                    new_info = make_tests(t + 1, selected_tests)
+                    return new_info, correct_alert, None, t + 1
+
             # Updates test info, the alert, and resets clickData.
-            return info, correct_alert, None
+            return info, correct_alert, None, dash.no_update
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
