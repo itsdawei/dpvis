@@ -16,6 +16,10 @@ def fib(n):
     # Recurrence
     for i in range(2, n):
         arr[i] = arr[i - 1] + arr[i - 2]
+        arr.annotate(f"Calculating arr[{i}]")
+        arr.annotate("Used to calculate cell {i}", idx=i - 1)
+        arr.annotate("Used to calculate cell {i}", idx=i - 2)
+        arr.annotate(f"arr[{i - 1}] + arr[{i - 2}]", idx=i)
 
     # Return the dp array
     return arr

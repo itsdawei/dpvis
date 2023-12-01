@@ -1,3 +1,4 @@
+"""Tests for verifying backtracking paths."""
 import pytest
 import numpy as np
 from dp import DPArray
