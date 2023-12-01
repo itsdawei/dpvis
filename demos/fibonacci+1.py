@@ -23,6 +23,10 @@ def fib(n):
         b = arr[1, i - 1] + arr[1, i - 2]
         arr[0, i] = a
         arr[1, i] = b
+        arr.annotate(f"Calculating arr[0][{i}] and arr[1][{i}]")
+        # arr.annotate("Used to calculate cell {i}", idx=(i - 1, 0))
+        # arr.annotate("Used to calculate cell {i}", idx=(i - 2, 1))
+        # arr.annotate(f"arr[{i - 1}] + arr[{i - 2}]", idx=(i, 0))
 
     # Return the dp array
     return arr
