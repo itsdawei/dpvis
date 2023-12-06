@@ -35,9 +35,40 @@ def knapsack(items, capacity):
             elif idx >= 1 and rem - item[0] < 0:
                 OPT[idx, rem] = OPT[idx - 1, rem]
 
-    display(OPT,
-            row_labels=[f"Item {i}: {item}" for i, item in enumerate(items)],
-            column_labels=[f"Capacity {i}" for i in range(capacity + 1)])
+    # Make a copy of data in OPT to prevent visualization of future operations.
+    arr = OPT.arr
+
+    # Recover a traceback path.
+    current = (arr.shape[0] - 1, arr.shape[1] - 1)
+    path = [current]
+    solution = []  # List of items.
+
+    # While the path is not fully constructed.
+    while current[0] != 0 and current[1] != 0:
+        i, rem = current
+        item = items[i]
+
+        # Find the predecessor of current.
+        # Case 1: adding item is possible and more optimal
+        if rem - item[0] >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
+                                                        item[0]] + item[1]:
+            current = (i - 1, rem - item[0])
+            path.append(current)
+            solution.append(i)
+
+        # Case 2: there is no capacity for item or not adding item is more optimal
+        else:
+            current = (i - 1, rem)
+            path.append(current)
+
+    path = path[::-1]
+    solution = solution[::-1]
+    OPT.add_traceback_path(path)
+
+    # Define labels.
+    row_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
+    display(OPT, row_labels=row_labels, column_labels=column_labels)
 
 
 if __name__ == "__main__":
