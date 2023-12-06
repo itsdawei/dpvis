@@ -688,8 +688,8 @@ class Visualizer:
 
         description_md = [
             dcc.Markdown(metadata["description"],
-                         mathjax=True,
-                         className="border border-primary")
+                         mathjax=True)
+                         # className="border border-primary")
             for metadata in self._graph_metadata.values()
         ]
 
@@ -710,8 +710,8 @@ class Visualizer:
                 dbc.Input(id="user-input", type="number", placeholder=""),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
-                      id="sidebar",
-                      className="border border-warning"),
+                      id="sidebar")
+                      # className="border border-warning"),
         ])
 
         playback_control = [
@@ -760,7 +760,7 @@ class Visualizer:
                         dbc.Row(
                             dbc.Stack(graphs),
                             id="page-content",
-                            className="border border-warning",
+                            # className="border border-warning",
                         ),
                     ],
                             width=8),
@@ -774,8 +774,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
