@@ -497,6 +497,7 @@ class Visualizer:
             return {"visibility": "visible"}
 
         @self.app.callback(Output("test-info", "data", allow_duplicate=True),
+                           Output("test-mode-toggle", "children"),
                            Input("self-test-button", "n_clicks"),
                            State("test-info", "data"), State("slider", "value"),
                            State("test-select-checkbox", "value"))
@@ -510,17 +511,26 @@ class Visualizer:
             component and updates the test info.
             """
             print("[CALLBACK] toggle_test_mode")
+
+            out_test_button = dbc.Button("Test Myself!",
+                                         id="self-test-button",
+                                         class_name="h-100",
+                                         color="info")
             # No tests to be performed on the last timestep.
             if t == len(values) - 1:
                 # TODO: notify user that there is no more testing
-                return {"tests": []}
+                return {"tests": []}, out_test_button
 
             # Turn off testing mode if no tests selected or it was already on.
             if info["tests"] or not selected_tests:
-                return {"tests": []}
+                return {"tests": []}, out_test_button
 
             # Update test-info with selected tests on this timestep.
-            return make_tests(t, selected_tests)
+            in_test_button = dbc.Button("Exit Testing Mode",
+                                        id="self-test-button",
+                                        class_name="h-100",
+                                        color="warning"),
+            return make_tests(t, selected_tests), in_test_button
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -683,13 +693,12 @@ class Visualizer:
                                id="self-test-button",
                                class_name="h-100",
                                color="info"),
-                    width="auto")
+                    width="auto", id="test-mode-toggle")
         ])
 
         description_md = [
-            dcc.Markdown(metadata["description"],
-                         mathjax=True)
-                         # className="border border-primary")
+            dcc.Markdown(metadata["description"], mathjax=True)
+            # className="border border-primary")
             for metadata in self._graph_metadata.values()
         ]
 
@@ -711,7 +720,7 @@ class Visualizer:
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar")
-                      # className="border border-warning"),
+            # className="border border-warning"),
         ])
 
         playback_control = [
@@ -748,24 +757,26 @@ class Visualizer:
 
         self.app.layout = dbc.Container(
             [
-                dbc.Row([
-                    dbc.Col(sidebar, width=4),
-                    dbc.Col([
-                        dbc.Row(
-                            playback_control,
-                            id="playback-control",
-                            class_name="g-0",
-                            align="center",
-                        ),
-                        dbc.Row(
-                            dbc.Stack(graphs),
-                            id="page-content",
-                            # className="border border-warning",
-                        ),
-                    ],
+                dbc.Row(
+                    [
+                        dbc.Col(sidebar, width=4),
+                        dbc.Col(
+                            [
+                                dbc.Row(
+                                    playback_control,
+                                    id="playback-control",
+                                    class_name="g-0",
+                                    align="center",
+                                ),
+                                dbc.Row(
+                                    dbc.Stack(graphs),
+                                    id="page-content",
+                                    # className="border border-warning",
+                                ),
+                            ],
                             width=8),
-                ],
-                        class_name="g-3"),
+                    ],
+                    class_name="g-3"),
                 *alerts,
                 *datastores,
             ],
@@ -774,8 +785,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=True, use_reloader=True)
-        self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
