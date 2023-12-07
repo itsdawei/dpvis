@@ -5,22 +5,24 @@ from dp import DPArray, display
 # items is a list of items in the problem instance.
 def knapsack(items, capacity):
     # Adding a filler element since python is 0-indexed
-    items.insert(0, (0, -1))
+    # items.insert(0, (0, -1))
 
     # Initialize DPArray
-    OPT = DPArray((len(items), capacity + 1))
+    OPT = DPArray((len(items)+1, capacity + 1))
 
     # Put in base cases
     OPT[0, :] = 0
     OPT[:, 0] = 0
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val)
-    for idx, item in enumerate(items):
+    for idx in range(len(items)+1):
         for rem in range(capacity + 1):
             # Base case: 0 value if there are no items left or if there is no space.
             if idx == 0 or rem == 0:
                 continue
             # Normal case: There is an item to add and space remaining
+            item = items[idx-1]
             if idx >= 1 and rem - item[0] >= 0:
+                # OPT[idx, rem] = max(OPT[idx - 1, rem], OPT[idx - 1, rem-item[0]] + item[1])
                 indices = [
                     (idx - 1, rem),
                     (idx - 1, rem - item[0]),
@@ -30,7 +32,7 @@ def knapsack(items, capacity):
                     OPT[idx - 1, rem - item[0]] + item[1],
                 ]
                 OPT[idx, rem] = OPT.max(indices=indices, elements=elements)
-                OPT.annotate(f"max({indices[0]}, {indices[1]})", idx=(idx, rem))
+                OPT.annotate(f"Comparing: max({indices[0]}, {indices[1]})")
             # Edge case: adding item is not possible
             elif idx >= 1 and rem - item[0] < 0:
                 OPT[idx, rem] = OPT[idx - 1, rem]
