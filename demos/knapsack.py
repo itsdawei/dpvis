@@ -1,14 +1,15 @@
 from dp import DPArray, display
+from dp._visualizer import Visualizer
 
 
 # An item is a 2-tuple with (space, value)
 # items is a list of items in the problem instance.
 def knapsack(items, capacity):
-    # Adding a filler element since python is 0-indexed
-    # items.insert(0, (0, -1))
-
     # Initialize DPArray
-    OPT = DPArray((len(items)+1, capacity + 1))
+    OPT = DPArray((len(items)+1, capacity + 1), array_name="Knapsack")
+    DP_items = DPArray(shape=len(items), array_name = "Items", logger = OPT.logger)
+    for i in range(len(items)):
+        DP_items[i] = i
 
     # Put in base cases
     OPT[0, :] = 0
@@ -22,6 +23,7 @@ def knapsack(items, capacity):
             # Normal case: There is an item to add and space remaining
             item = items[idx-1]
             if idx >= 1 and rem - item[0] >= 0:
+                _ = DP_items[idx-1]
                 # OPT[idx, rem] = max(OPT[idx - 1, rem], OPT[idx - 1, rem-item[0]] + item[1])
                 indices = [
                     (idx - 1, rem),
@@ -35,7 +37,9 @@ def knapsack(items, capacity):
                 OPT.annotate(f"Comparing: max({indices[0]}, {indices[1]})")
             # Edge case: adding item is not possible
             elif idx >= 1 and rem - item[0] < 0:
+                _ = DP_items[idx-1]
                 OPT[idx, rem] = OPT[idx - 1, rem]
+                OPT.annotate("Item does not fit in remaining capacity.")
 
     # Make a copy of data in OPT to prevent visualization of future operations.
     arr = OPT.arr
@@ -48,7 +52,7 @@ def knapsack(items, capacity):
     # While the path is not fully constructed.
     while current[0] != 0 and current[1] != 0:
         i, rem = current
-        item = items[i]
+        item = items[i-1]
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
@@ -68,10 +72,25 @@ def knapsack(items, capacity):
     OPT.add_traceback_path(path)
 
     # Define labels.
-    row_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    row_labels = [f"Item {i+1}: {item}" for i, item in enumerate(items)]
+    row_labels.insert(0, "No item")
     column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
-    display(OPT, row_labels=row_labels, column_labels=column_labels)
+    description = """
+Recurrence: $OPT(i, C) = \max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$
+```python
+if idx >= 1 and rem - item[0] >= 0:
+    OPT[idx, rem] = max(OPT[idx - 1, rem], OPT[idx - 1, rem-item[0]] + item[1])
+elif idx >= 1 and rem - item[0] < 0:
+    OPT[idx, rem] = OPT[idx - 1, rem]
+```
+"""
 
+    display(OPT, row_labels=row_labels, column_labels=column_labels, description=description)
+    # visualizer = Visualizer()
+    # visualizer.add_array(OPT, row_labels=row_labels, column_labels=column_labels, description=description)
+    # item_col_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    # visualizer.add_array(DP_items, row_labels=" ", column_labels=item_col_labels)
+    # visualizer.show()
 
 if __name__ == "__main__":
     items = [(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)]
