@@ -40,6 +40,8 @@
 - Initial project setup (#1, #2)
 
 ### Style
+
+- `HIGHLIGHT` -> `MAXMIN` (#47)
 - Toggle style of test mode button (#45)
 
 ### Documentation
