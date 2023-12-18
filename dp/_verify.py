@@ -42,11 +42,11 @@ def verify_traceback_path(arr, path):
         if path[i] in timestep[name][Op.WRITE]:
             # Check that path[0] has no predecessors.
             if i == 0:
-                return len(timestep[name][Op.HIGHLIGHT]) == 0
+                return len(timestep[name][Op.MAXMIN]) == 0
 
             # path[i - 1] is not a predecessor.
             # The given path is not correct.
-            if path[i - 1] not in timestep[name][Op.HIGHLIGHT]:
+            if path[i - 1] not in timestep[name][Op.MAXMIN]:
                 return False
             i = i - 1
     return True

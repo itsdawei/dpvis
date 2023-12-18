@@ -107,7 +107,7 @@ def test_append(logger):
     assert len(logger.logs) == 2
 
 
-@pytest.mark.parametrize("op", [Op.WRITE, Op.READ, Op.HIGHLIGHT],
+@pytest.mark.parametrize("op", [Op.WRITE, Op.READ, Op.MAXMIN],
                          ids=["w", "r", "h"])
 def test_same_ops_and_index(logger, op):
     if op == Op.WRITE:
@@ -116,9 +116,9 @@ def test_same_ops_and_index(logger, op):
     elif op == Op.READ:
         logger.append("dp1", Op.READ, 0)
         logger.append("dp1", Op.READ, 0)
-    elif op == Op.HIGHLIGHT:
-        logger.append("dp1", Op.HIGHLIGHT, 0)
-        logger.append("dp1", Op.HIGHLIGHT, 0)
+    elif op == Op.MAXMIN:
+        logger.append("dp1", Op.MAXMIN, 0)
+        logger.append("dp1", Op.MAXMIN, 0)
     assert len(logger.logs) == 1
     assert logger.logs[0] == {
         "op": op,
@@ -141,7 +141,7 @@ def test_to_timesteps_one_array():
     assert timesteps[0]["dp1"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     logger.append("dp1", Op.WRITE, 2, 3)
@@ -152,7 +152,7 @@ def test_to_timesteps_one_array():
     assert timesteps1[0]["dp1"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 2},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     logger.append("dp1", Op.READ, 1)
@@ -162,10 +162,10 @@ def test_to_timesteps_one_array():
     assert timesteps2[1]["dp1"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
-    logger.append("dp1", Op.HIGHLIGHT, 0)
+    logger.append("dp1", Op.MAXMIN, 0)
     logger.append("dp1", Op.WRITE, 0, 5)
     timesteps3 = logger.to_timesteps()
     assert len(timesteps3) == 2
@@ -173,11 +173,11 @@ def test_to_timesteps_one_array():
     assert timesteps3[1]["dp1"].items() >= {
         Op.READ: {1},
         Op.WRITE: {0},
-        Op.HIGHLIGHT: {0},
+        Op.MAXMIN: {0},
     }.items()
 
     logger.append("dp1", Op.READ, 1)
-    logger.append("dp1", Op.HIGHLIGHT, 2)
+    logger.append("dp1", Op.MAXMIN, 2)
     logger.append("dp1", Op.READ, 2)
     timesteps4 = logger.to_timesteps()
     assert len(timesteps4) == 3
@@ -185,7 +185,7 @@ def test_to_timesteps_one_array():
     assert timesteps4[2]["dp1"].items() >= {
         Op.READ: {1, 2},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: {2},
+        Op.MAXMIN: {2},
     }.items()
 
 
@@ -199,7 +199,7 @@ def test_to_timesteps_two_arrays():
     logger.append("dp2", Op.WRITE, 1, 4)
     logger.append("dp1", Op.READ, 1)
     logger.append("dp2", Op.READ, 1)
-    logger.append("dp1", Op.HIGHLIGHT, 0)
+    logger.append("dp1", Op.MAXMIN, 0)
 
     timesteps = logger.to_timesteps()
     assert len(timesteps) == 2
@@ -207,25 +207,25 @@ def test_to_timesteps_two_arrays():
     assert timesteps[0]["dp1"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 2},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     assert np.all(timesteps[0]["dp2"]["contents"] == [2, 4, None])
     assert np.all(timesteps[1]["dp1"]["contents"] == [1, None, 3])
     assert timesteps[0]["dp2"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     assert timesteps[1]["dp1"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: {0},
+        Op.MAXMIN: {0},
     }.items()
     assert np.all(timesteps[1]["dp2"]["contents"] == [2, 4, None])
     assert timesteps[1]["dp2"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
 

@@ -9,7 +9,7 @@ class Op(IntEnum):
     """The allowed operation on the DPArray."""
     READ = 1
     WRITE = 2
-    HIGHLIGHT = 3
+    MAXMIN = 3
 
 
 class Logger:
@@ -200,7 +200,7 @@ class Logger:
                     "contents": array_contents[name].copy(),
                     Op.READ: set(),
                     Op.WRITE: set(),
-                    Op.HIGHLIGHT: set(),
+                    Op.MAXMIN: set(),
                 } for name in self._array_shapes
             })
             for log in batch:
@@ -247,7 +247,7 @@ class Logger:
                         print(Fore.RED,
                               f"{ts[name]['contents'][i]:>2.0f}",
                               end="")
-                    elif i in ts[name][Op.HIGHLIGHT]:
+                    elif i in ts[name][Op.MAXMIN]:
                         print(Fore.GREEN,
                               f"{ts[name]['contents'][i]:>2.0f}",
                               end="")
