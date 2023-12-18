@@ -1,4 +1,4 @@
-from dp import DPArray, display
+from dp import DPArray
 from dp._visualizer import Visualizer
 
 
