@@ -497,30 +497,42 @@ class Visualizer:
             return {"visibility": "visible"}
 
         @self.app.callback(Output("test-info", "data", allow_duplicate=True),
+                           Output("test-mode-toggle", "children"),
                            Input("self-test-button", "n_clicks"),
                            State("test-info", "data"), State("slider", "value"),
                            State("test-select-checkbox", "value"))
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
-            Populates the test queue according to what tests are selected by
+            This callback performs two task:
+            1. Populates the test queue according to what tests are selected by
             the checkbox.
+            2. Change the style of the self-test-button component.
 
             This callback is triggered by clicking the self-test-button
             component and updates the test info.
             """
             print("[CALLBACK] toggle_test_mode")
+            test_button = dbc.Button("Test Myself!",
+                                     id="self-test-button",
+                                     class_name="h-100",
+                                     color="info")
             # No tests to be performed on the last timestep.
             if t == len(values) - 1:
                 # TODO: notify user that there is no more testing
-                return {"tests": []}
+                return {"tests": []}, test_button
 
             # Turn off testing mode if no tests selected or it was already on.
             if info["tests"] or not selected_tests:
-                return {"tests": []}
+                return {"tests": []}, test_button
+
+            test_button = dbc.Button("Exit Testing Mode",
+                                     id="self-test-button",
+                                     class_name="h-100",
+                                     color="warning"),
 
             # Update test-info with selected tests on this timestep.
-            return make_tests(t, selected_tests)
+            return make_tests(t, selected_tests), test_button
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -683,7 +695,8 @@ class Visualizer:
                                id="self-test-button",
                                class_name="h-100",
                                color="info"),
-                    width="auto")
+                    width="auto",
+                    id="test-mode-toggle")
         ])
 
         description_md = [
