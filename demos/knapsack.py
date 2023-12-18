@@ -52,13 +52,13 @@ def knapsack(items, capacity):
     # While the path is not fully constructed.
     while current[0] != 0 and current[1] != 0:
         i, rem = current
-        item = items[i - 1]
+        (capacity, value) = items[i - 1]
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
-        if rem - item[0] >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
-                                                        item[0]] + item[1]:
-            current = (i - 1, rem - item[0])
+        if rem - capacity >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
+                                                        capacity] + value:
+            current = (i - 1, rem - capacity)
             path.append(current)
             solution.append(i)
 
