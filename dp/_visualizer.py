@@ -211,7 +211,7 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.WRITE])] = CellType.WRITE
             t_color_matrix[i][_indices_to_np_indices(
-                t_arr[Op.HIGHLIGHT])] = CellType.MAXMIN
+                t_arr[Op.MAXMIN])] = CellType.MAXMIN
             t_value_matrix[i] = t_arr["contents"]
             t_annotations[i] = t_arr["annotations"]
             cell_annotations = t_arr["cell_annotations"]
@@ -222,7 +222,7 @@ class Visualizer:
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
                 t_read_matrix[indices] = t_arr[Op.READ]
-                t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
+                t_highlight_matrix[indices] = t_arr[Op.MAXMIN]
                 t_write_matrix[i][write_idx] = True
 
         return {
