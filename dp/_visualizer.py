@@ -22,7 +22,7 @@ class CellType(IntEnum):
     """
     EMPTY = 0
     FILLED = 1
-    HIGHLIGHT = 2
+    MAXMIN = 2
     READ = 3
     WRITE = 4
 
@@ -53,6 +53,7 @@ def _get_colorbar_kwargs(name):
     # Colorscale for the colorbar.
     color = np.repeat(color, 2)
 
+    ticktext = ["EMPTY", "FILLED", "MAX/MIN", "READ", "WRITE"]
     return {
         "zmin": 0,
         "zmax": n,
@@ -61,7 +62,7 @@ def _get_colorbar_kwargs(name):
             "orientation": "h",
             "ticklabelposition": "inside",
             "tickvals": np.array(list(CellType)) + 0.5,
-            "ticktext": [c.name for c in CellType],
+            "ticktext": ticktext,
             "tickfont": {
                 "color": "black",
                 "size": 20,
@@ -210,7 +211,7 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.WRITE])] = CellType.WRITE
             t_color_matrix[i][_indices_to_np_indices(
-                t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+                t_arr[Op.HIGHLIGHT])] = CellType.MAXMIN
             t_value_matrix[i] = t_arr["contents"]
             t_annotations[i] = t_arr["annotations"]
             cell_annotations = t_arr["cell_annotations"]
@@ -659,7 +660,7 @@ class Visualizer:
 
             # Highlight highlights.
             h = self._graph_metadata[self._primary]["t_highlight_matrix"]
-            z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
+            z[_indices_to_np_indices(h[t][y][x])] = CellType.MAXMIN
 
             return fig.update_traces(z=z, selector=t)
 
