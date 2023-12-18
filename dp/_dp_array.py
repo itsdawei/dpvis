@@ -179,7 +179,7 @@ class DPArray:
             return self.arr != other.arr
         return self.arr != other
 
-    def _cmp(self, cmp, indices, elements = None):
+    def _cmp(self, cmp, indices, elements=None):
         """Helper function for comparing a list of elements.
 
         Iterates through a list of element and outputs the "largest" element
@@ -249,7 +249,7 @@ class DPArray:
         self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
         return best_element
 
-    def max(self, indices, elements = None):
+    def max(self, indices, elements=None):
         """Outputs the maximum value and highlight its corresponding index.
 
         Args:
@@ -265,7 +265,7 @@ class DPArray:
         """
         return self._cmp(lambda x, y: x > y, indices, elements)
 
-    def min(self, indices, elements = None):
+    def min(self, indices, elements=None):
         """Outputs the minimum value and highlight its corresponding index.
 
         Args:
