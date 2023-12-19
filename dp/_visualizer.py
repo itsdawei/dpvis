@@ -340,6 +340,7 @@ class Visualizer:
                 xgap=1,
                 ygap=1,
                 visible=False,
+                showscale=self._primary == arr.array_name,
             )
 
         return self._show_figure_trace(figure, 0)
