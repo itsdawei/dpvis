@@ -48,4 +48,4 @@ for i in range(2, n)
 """
 
 # Visualize.
-display(dp_array, description=description)
+display(dp_array)
