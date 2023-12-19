@@ -44,11 +44,11 @@ def test_fib_dparray():
     assert timesteps[0]["dp_array"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     for i in range(1, 10):
         assert timesteps[i]["dp_array"].items() >= {
             Op.READ: {i, i - 1},
             Op.WRITE: {i + 1},
-            Op.HIGHLIGHT: set(),
+            Op.MAXMIN: set(),
         }.items()

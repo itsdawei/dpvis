@@ -79,7 +79,7 @@ def test_max_highlight():
             }
         }
     }
-    assert dp.logger.logs[2] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[2] == {"op": Op.MAXMIN, "idx": {"name": {1: None}}}
     assert dp.logger.logs[3] == {"op": Op.WRITE, "idx": {"name": {3: 3}}}
 
     indices = [0, 1, 2, 3]
@@ -97,7 +97,7 @@ def test_max_highlight():
             }
         }
     }
-    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {0: None}}}
+    assert dp.logger.logs[5] == {"op": Op.MAXMIN, "idx": {"name": {0: None}}}
     assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {4: 0}}}
 
 
@@ -126,7 +126,7 @@ def test_min():
     dp[1] = dp.min([0, None], [dp[0], c[1]])
     assert dp.logger.logs[1] == {"op": Op.READ, "idx": {"name": {0: None}}}
     assert dp.logger.logs[2] == {
-        "op": Op.HIGHLIGHT,
+        "op": Op.MAXMIN,
         "idx": {
             "name": {
                 None: None
@@ -145,7 +145,7 @@ def test_min():
             }
         }
     }
-    assert dp.logger.logs[5] == {"op": Op.HIGHLIGHT, "idx": {"name": {1: None}}}
+    assert dp.logger.logs[5] == {"op": Op.MAXMIN, "idx": {"name": {1: None}}}
     assert dp.logger.logs[6] == {"op": Op.WRITE, "idx": {"name": {2: 6}}}
 
     next_log = 7
@@ -174,7 +174,7 @@ def test_min():
         else:
             name = {highlight_ans[i]: None}
         assert dp.logger.logs[next_log + 1] == {
-            "op": Op.HIGHLIGHT,
+            "op": Op.MAXMIN,
             "idx": {
                 "name": name
             }
@@ -362,7 +362,7 @@ def test_get_timesteps_one_array():
     assert timesteps[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     dp[1] = 3
@@ -372,7 +372,7 @@ def test_get_timesteps_one_array():
     assert timesteps2[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     _ = dp[1]
@@ -382,7 +382,7 @@ def test_get_timesteps_one_array():
     assert timesteps3[1]["dp"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     dp[1] = 3
@@ -392,7 +392,7 @@ def test_get_timesteps_one_array():
     assert timesteps4[1]["dp"].items() >= {
         Op.READ: {1},
         Op.WRITE: {1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     dp[0] = dp[1]
@@ -402,7 +402,7 @@ def test_get_timesteps_one_array():
     assert timesteps5[2]["dp"].items() >= {
         Op.READ: {1},
         Op.WRITE: {0},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
 
@@ -420,12 +420,12 @@ def test_get_timesteps_two_arrays():
     assert timesteps[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     assert timesteps[0]["dp2"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     _ = dp[1]
@@ -436,12 +436,12 @@ def test_get_timesteps_two_arrays():
     assert timesteps1[1]["dp"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     assert timesteps1[1]["dp2"].items() >= {
         Op.READ: set(),
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     dp2[2] = 3
@@ -452,12 +452,12 @@ def test_get_timesteps_two_arrays():
     assert timesteps2[1]["dp"].items() >= {
         Op.READ: {1},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
     assert timesteps2[1]["dp2"].items() >= {
         Op.READ: set(),
         Op.WRITE: {2},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
 
@@ -473,7 +473,7 @@ def test_to_timestep_2d():
     assert timesteps[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {(0, 0), (1, 1)},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
     _ = dp[1, 1]
@@ -484,7 +484,7 @@ def test_to_timestep_2d():
     assert timesteps1[1]["dp"].items() >= {
         Op.READ: {(1, 1)},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
 
@@ -500,7 +500,7 @@ def test_annotation():
     assert timesteps0[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1, 2},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "annotations": "hello world",
     }.items()
 
@@ -511,7 +511,7 @@ def test_annotation():
     assert timesteps1[0]["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {0, 1, 2},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "annotations": "bye world",
     }.items()
 
@@ -523,7 +523,7 @@ def test_annotation():
     assert timesteps2[1]["dp"].items() >= {
         Op.READ: {0},
         Op.WRITE: {6},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "cell_annotations": {
             6: "hello cell"
         }
@@ -536,7 +536,7 @@ def test_annotation():
     assert timesteps3[1]["dp"].items() >= {
         Op.READ: {0},
         Op.WRITE: {6},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "cell_annotations": {
             6: "hello cell again",
             0: "hello cell 0"
@@ -549,7 +549,7 @@ def test_annotation():
     assert timesteps4[1]["dp"].items() >= {
         Op.READ: {0},
         Op.WRITE: {6},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "annotations": "some annotation",
         "cell_annotations": {
             6: "hello cell again",
@@ -563,7 +563,7 @@ def test_annotation():
     assert timesteps5[2]["dp"].items() >= {
         Op.READ: {0},
         Op.WRITE: set(),
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
     }.items()
 
 
@@ -577,7 +577,7 @@ def test_2d_cell_annotation():
     assert timestep0["dp"].items() >= {
         Op.READ: set(),
         Op.WRITE: {(0, 0), (1, 1)},
-        Op.HIGHLIGHT: set(),
+        Op.MAXMIN: set(),
         "cell_annotations": {
             (0, 0): "hello world"
         }

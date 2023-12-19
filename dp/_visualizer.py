@@ -22,7 +22,7 @@ class CellType(IntEnum):
     """
     EMPTY = 0
     FILLED = 1
-    HIGHLIGHT = 2
+    MAXMIN = 2
     READ = 3
     WRITE = 4
 
@@ -53,6 +53,7 @@ def _get_colorbar_kwargs(name):
     # Colorscale for the colorbar.
     color = np.repeat(color, 2)
 
+    ticktext = ["EMPTY", "FILLED", "MAX/MIN", "READ", "WRITE"]
     return {
         "zmin": 0,
         "zmax": n,
@@ -61,7 +62,7 @@ def _get_colorbar_kwargs(name):
             "orientation": "h",
             "ticklabelposition": "inside",
             "tickvals": np.array(list(CellType)) + 0.5,
-            "ticktext": [c.name for c in CellType],
+            "ticktext": ticktext,
             "tickfont": {
                 "color": "black",
                 "size": 20,
@@ -210,7 +211,7 @@ class Visualizer:
             t_color_matrix[i][_indices_to_np_indices(
                 t_arr[Op.WRITE])] = CellType.WRITE
             t_color_matrix[i][_indices_to_np_indices(
-                t_arr[Op.HIGHLIGHT])] = CellType.HIGHLIGHT
+                t_arr[Op.MAXMIN])] = CellType.MAXMIN
             t_value_matrix[i] = t_arr["contents"]
             t_annotations[i] = t_arr["annotations"]
             cell_annotations = t_arr["cell_annotations"]
@@ -221,7 +222,7 @@ class Visualizer:
             for write_idx in t_arr[Op.WRITE]:
                 indices = (np.s_[i:], *write_idx)
                 t_read_matrix[indices] = t_arr[Op.READ]
-                t_highlight_matrix[indices] = t_arr[Op.HIGHLIGHT]
+                t_highlight_matrix[indices] = t_arr[Op.MAXMIN]
                 t_write_matrix[i][write_idx] = True
 
         return {
@@ -497,30 +498,42 @@ class Visualizer:
             return {"visibility": "visible"}
 
         @self.app.callback(Output("test-info", "data", allow_duplicate=True),
+                           Output("test-mode-toggle", "children"),
                            Input("self-test-button", "n_clicks"),
                            State("test-info", "data"), State("slider", "value"),
                            State("test-select-checkbox", "value"))
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
-            Populates the test queue according to what tests are selected by
+            This callback performs two task:
+            1. Populates the test queue according to what tests are selected by
             the checkbox.
+            2. Change the style of the self-test-button component.
 
             This callback is triggered by clicking the self-test-button
             component and updates the test info.
             """
             print("[CALLBACK] toggle_test_mode")
+            test_button = dbc.Button("Test Myself!",
+                                     id="self-test-button",
+                                     class_name="h-100",
+                                     color="info")
             # No tests to be performed on the last timestep.
             if t == len(values) - 1:
                 # TODO: notify user that there is no more testing
-                return {"tests": []}
+                return {"tests": []}, test_button
 
             # Turn off testing mode if no tests selected or it was already on.
             if info["tests"] or not selected_tests:
-                return {"tests": []}
+                return {"tests": []}, test_button
+
+            test_button = dbc.Button("Exit Testing Mode",
+                                     id="self-test-button",
+                                     class_name="h-100",
+                                     color="warning"),
 
             # Update test-info with selected tests on this timestep.
-            return make_tests(t, selected_tests)
+            return make_tests(t, selected_tests), test_button
 
         @self.app.callback(
             Output(self._primary, "figure", allow_duplicate=True),
@@ -647,7 +660,7 @@ class Visualizer:
 
             # Highlight highlights.
             h = self._graph_metadata[self._primary]["t_highlight_matrix"]
-            z[_indices_to_np_indices(h[t][y][x])] = CellType.HIGHLIGHT
+            z[_indices_to_np_indices(h[t][y][x])] = CellType.MAXMIN
 
             return fig.update_traces(z=z, selector=t)
 
@@ -683,7 +696,8 @@ class Visualizer:
                                id="self-test-button",
                                class_name="h-100",
                                color="info"),
-                    width="auto")
+                    width="auto",
+                    id="test-mode-toggle")
         ])
 
         description_md = [

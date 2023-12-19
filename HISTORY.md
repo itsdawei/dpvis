@@ -39,6 +39,11 @@
 - Create `DPArray` class (#3)
 - Initial project setup (#1, #2)
 
+### Style
+
+- `HIGHLIGHT` -> `MAXMIN` (#47)
+- Toggle style of test mode button (#45)
+
 ### Documentation
 
 - Excavation and Matrix Traversal examples (#19, #21)

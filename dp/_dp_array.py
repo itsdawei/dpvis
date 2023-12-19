@@ -246,7 +246,7 @@ class DPArray:
                 best_indices.extend(i)
 
         # Highlight and write value.
-        self.logger.append(self._array_name, Op.HIGHLIGHT, best_indices)
+        self.logger.append(self._array_name, Op.MAXMIN, best_indices)
         return best_element
 
     def max(self, indices, elements=None):
