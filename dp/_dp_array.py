@@ -203,7 +203,8 @@ class DPArray:
                 array has the same shape as elements.
             elements (array-like): An array of elements to be compared.
                 These can be elements directly from the array (i.e. arr[0]), or
-                modified elements (i.e. arr[0] + 1).
+                modified elements (i.e. arr[0] + 1). If elements is None, the
+                value of array at the indices queried is used.
 
         Returns:
             dtype: Final result of the comparisons
@@ -258,7 +259,8 @@ class DPArray:
                 modified elements (i.e. arr[0] + 1).
             indices (array-like): An array of indices of the elements.
                 indices[i] correspond to elements[i]. If elements[i] is not an
-                element of the DP array, item[i] should be None.
+                element of the DP array, item[i] should be None. If elements 
+                is None, the value of array at the indices queried is used.
 
         Returns:
             self.dtype: Maximum value of the elements.
@@ -274,7 +276,8 @@ class DPArray:
                 element of the DP array, item[i] should be None.
             elements (array-like): An array of elements to be compared.
                 These can be elements directly from the array (i.e. arr[0]), or
-                modified elements (i.e. arr[0] + 1).
+                modified elements (i.e. arr[0] + 1). If elements is None, the
+                value of array at the indices queried is used.
 
         Returns:
             self.dtype: Minimum value of the elements.
