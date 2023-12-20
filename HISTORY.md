@@ -41,6 +41,7 @@
 
 ### Style
 
+- Remove colorbars in auxiliary heatmaps (#48) 
 - `HIGHLIGHT` -> `MAXMIN` (#47)
 - Toggle style of test mode button (#45)
 
