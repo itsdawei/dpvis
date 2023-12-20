@@ -340,6 +340,7 @@ class Visualizer:
                 xgap=1,
                 ygap=1,
                 visible=False,
+                showscale=self._primary == arr.array_name,
             )
 
         return self._show_figure_trace(figure, 0)
@@ -530,7 +531,7 @@ class Visualizer:
             test_button = dbc.Button("Exit Testing Mode",
                                      id="self-test-button",
                                      class_name="h-100",
-                                     color="warning"),
+                                     color="warning")
 
             # Update test-info with selected tests on this timestep.
             return make_tests(t, selected_tests), test_button
