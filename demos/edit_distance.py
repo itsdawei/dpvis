@@ -59,7 +59,7 @@ display(dp_array)
 
 """
 Question for student:
-1. How can we optimize the above DP to use a 2 x len(str1) array?
+1. How can we optimize the above DP to use a 2 x m array?
 2. How can we optimize the above DP to use just a 1d array?
 3. The above problem works when the cost of each action is 1, how
    would you modify it if the cost of an add is alpha, the cost
