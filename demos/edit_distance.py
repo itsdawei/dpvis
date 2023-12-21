@@ -45,12 +45,7 @@ def edit_distance(str1, str2, m, n):
                     (i-1, j),       # Remove
                     (i-1, j-1)      # Replace
                 ]
-                elements = [
-                    OPT[i, j-1],       # Insert
-                    OPT[i-1, j],       # Remove
-                    OPT[i-1, j-1]      # Replace
-                ]
-                OPT[i, j] = 1 + OPT.min(indices=indices, elements=elements)
+                OPT[i, j] = 1 + OPT.min(indices=indices)
     
     return OPT
 
