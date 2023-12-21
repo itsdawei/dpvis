@@ -178,6 +178,34 @@ def test_max_cmp():
         dp[i] = dp.max(indices, elements)
         assert dp.arr[i] == max(*elements)
 
+def test_min_cmp():
+    dp = DPArray(10)
+    dp[0] = 0
+    dp[1] = 1
+
+    for i in range(2, 10):
+        indices = [i - 2, i - 1]
+        elements = [dp[indices[0]] + 2, 2 * dp[indices[1]]]
+        dp[i] = dp.min(indices, elements)
+        assert dp.arr[i] == min(*elements)
+
+def test_max_indices():
+    dp = DPArray(10)
+    dp[0] = 0
+    dp[1] = 1
+    for i in range(2, 10):
+        indices = indices = [i-2, i-1]
+        dp[i] = dp.max(indices)
+        assert dp.arr[i] == max(dp[indices])
+
+def test_min_indices():
+    dp = DPArray(10)
+    dp[0] = 0
+    dp[1] = 1
+    for i in range(2, 10):
+        indices = indices = [i-2, i-1]
+        dp[i] = dp.min(indices)
+        assert dp.arr[i] == min(dp[indices])
 
 def add_const(x, const):
     """

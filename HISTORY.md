@@ -29,7 +29,7 @@
 - Raises warning when accessing array out-of-bounds (#15)
 - Enable reading with slices (#14)
 - Implement method to print timesteps of the logger (#13)
-- Add max/min method in `DPArray`(#12, #17)
+- Add max/min method in `DPArray`(#12, #17, #44)
 - Implement method to convert `Logger` object to a timestep action on the
   array (#11)
 - Add `Value` field to Logger class for tracking (#10)
