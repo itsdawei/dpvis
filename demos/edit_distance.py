@@ -7,7 +7,7 @@ the cost of the cheapest set of actions that converts str1 into str2.
 The following actions are possible:
 add before/after index i, remove before/after index i, replace at index i
 
-Solution inspired by Bhavya Jain:
+Solution adapted from Bhavya Jain's solution:
 https://www.geeksforgeeks.org/edit-distance-dp-5/
 """
 
