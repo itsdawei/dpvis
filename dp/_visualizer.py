@@ -119,10 +119,11 @@ class Visualizer:
             }
     """
 
-    def __init__(self):
+    def __init__(self, debug=False):
         """Initialize Visualizer object."""
         self._primary = None
         self._graph_metadata = {}
+        self._debug = debug
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
@@ -359,7 +360,8 @@ class Visualizer:
         ]
 
         def make_tests(t, selected_tests):
-            print("[CALLBACK] helper")
+            if self._debug:
+                print("[CALLBACK] helper")
             # On the last timestep, turn off self testing.
             if t == len(values) - 1:
                 return {"tests": []}
@@ -415,7 +417,8 @@ class Visualizer:
                            State("test-info", "data"))
         def update_figure(t, info):
             """Update each graph based on the slider value."""
-            print("[CALLBACK] update_figure")
+            if self._debug:
+                print("[CALLBACK] update_figure")
             # Edge case: in self testing mode and ran out of tests.
             if t > len(values):
                 return dash.no_update
@@ -467,7 +470,8 @@ class Visualizer:
             Update slider value based on store-keypress. Store-keypress is
             changed in assets/custom.js.
             """
-            print("[CALLBACK] update_slider")
+            if self._debug:
+                print("[CALLBACK] update_slider")
             if ctx.triggered_id == "interval":
                 return (t + 1) % len(values)
             if key_data in [37, 39]:
@@ -482,7 +486,8 @@ class Visualizer:
 
             Pauses the playback when "stop" or "self-test-button" is pressed.
             """
-            print("[CALLBACK] play_pause_playback")
+            if self._debug:
+                print("[CALLBACK] play_pause_playback")
             if ctx.triggered_id == "play":
                 return -1  # Runs interval indefinitely.
             if ctx.triggered_id in ["stop", "self-test-button"]:
@@ -493,7 +498,8 @@ class Visualizer:
             Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
-            print("[CALLBACK] toggle_layout")
+            if self._debug:
+                print("[CALLBACK] toggle_layout")
             if info["tests"]:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
@@ -514,7 +520,8 @@ class Visualizer:
             This callback is triggered by clicking the self-test-button
             component and updates the test info.
             """
-            print("[CALLBACK] toggle_test_mode")
+            if self._debug:
+                print("[CALLBACK] toggle_test_mode")
             test_button = dbc.Button("Test Myself!",
                                      id="self-test-button",
                                      class_name="h-100",
@@ -543,7 +550,8 @@ class Visualizer:
             State("slider", "value"),
         )
         def display_tests(info, t):
-            print("[CALLBACK] display_tests")
+            if self._debug:
+                print("[CALLBACK] display_tests")
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
@@ -583,7 +591,8 @@ class Visualizer:
         )
         def validate(_, click_data, user_input, info, t, selected_tests):
             """Validates the user input."""
-            print("[CALLBACK] validate")
+            if self._debug:
+                print("[CALLBACK] validate")
             if not info["tests"]:
                 return dash.no_update
 
@@ -791,6 +800,7 @@ class Visualizer:
 
         self.app.run_server(debug=True, use_reloader=True)
         # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug= not self._debug, use_reloader=True)
 
     @property
     def app(self):
