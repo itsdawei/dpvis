@@ -7,11 +7,12 @@ n = 10
 # Fibonacci DP function
 def fib(n):
     # Initialize a DPArray instead of an array/list
-    arr = DPArray(n)
+    arr = DPArray(n, array_name="Fibonacci Array")
 
     # Base cases
     arr[0] = 1
     arr[1] = 1
+    arr.annotate("Base cases: arr[0] = 1, arr[1] = 1")
 
     # Recurrence
     for i in range(2, n):

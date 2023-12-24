@@ -440,7 +440,8 @@ class Visualizer:
             return next_figures
 
         @self.app.callback(Output("array-annotation", "children"),
-                           Input("slider", "value"))
+                           Input("slider", "value"), 
+                           prevent_initial_call=False)
         def update_annotation(t):
             """Update the annotation based on the slider value."""
             card_body = dbc.CardBody([])
