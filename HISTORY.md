@@ -5,7 +5,7 @@
 ### API
 
 - Self-testing mode perists over multiple timesteps (#43)
-- Add annotation functionality (#36)
+- Add annotation functionality (#36, #50)
 - Add to test queue based on selected tests checklist (#41)
 - Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)
