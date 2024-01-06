@@ -10,6 +10,8 @@ nav:
   - Home: README.md
   - API:
     - dp_array.md
+    - logger.md
+    - visualizer.md
 plugins:
   - search
   - gen-files:
@@ -31,3 +33,5 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+watch:
+- dp
