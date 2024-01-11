@@ -22,8 +22,6 @@ The library has three major features:
 - Interactive self-testing feature in which the user will be quizzed on which
   cells will be used to compute the result, which cell will the result be
   stored, and what is the value of the result.
-- Showing and highlighting the relevant lines of code used to compute the new
-  entry in the animation.
 
 ## Installation
 

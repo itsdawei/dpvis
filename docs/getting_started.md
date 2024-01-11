@@ -36,4 +36,4 @@ display(arr) # (3)!
 3. Shows the visualization with [`display(arr)`][dp.display].
 
 dpvis supports additional features that enhances the visualization.
-For a more comprehensive overview see our [tutorials](tutorials/index.md).
+For a more comprehensive overview, see our [tutorials](tutorials/index.md).
