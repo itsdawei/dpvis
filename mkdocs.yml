@@ -8,9 +8,8 @@ theme:
     - content.code.annotate
     - navigation.instant
     - navigation.expand
-    - navigation.path
-    - navigation.top
     - navigation.indexes 
+    - navigation.top
   icon:
     repo: fontawesome/brands/github
 nav:
