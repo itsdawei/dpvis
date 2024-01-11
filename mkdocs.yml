@@ -3,6 +3,7 @@ theme:
   name: material
   features:
     - content.code.copy
+    - content.code.annotate
     - navigation.sections
     - navigation.path
     - navigation.top
@@ -34,5 +35,10 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - tables
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 watch:
 - dp
