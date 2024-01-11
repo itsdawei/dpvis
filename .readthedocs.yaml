@@ -12,7 +12,7 @@ build:
       - asdf global poetry latest
       - poetry config virtualenvs.create false
     post_install:
-      - poetry install
+      - poetry install --with "docs"
 
 mkdocs:
   configuration: mkdocs.yml
