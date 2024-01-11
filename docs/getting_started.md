@@ -1,6 +1,6 @@
 # Getting Started
 
-[dpvis]() is designed to assist students studying algorithm design gain
+[dpvis](https://github.com/itsdawei/dpvis/) is designed to assist students studying algorithm design gain
 a more thorough understanding of the counter-intuitive yet beautiful technique
 in theoretical computer science known as [Dynamic Programming
 (DP)](https://en.wikipedia.org/wiki/Dynamic_programming).
@@ -35,6 +35,5 @@ display(arr) # (3)!
 2. Replaces the standard Python list with a [`DPArray`][dp.DPArray] object.
 3. Shows the visualization with [`display(arr)`][dp.display].
 
-<!-- ```python linenums="1" -->
-<!-- --8<-- "demos/fibonacci.py" -->
-<!-- ``` -->
+dpvis supports additional features that enhances the visualization.
+For a more comprehensive overview see our [tutorials](tutorials/index.md).

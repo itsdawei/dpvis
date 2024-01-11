@@ -1,13 +1,18 @@
 site_name: dpvis Documentation
+repo_url: https://github.com/itsdawei/dpvis
+repo_name: dpvis
 theme:
   name: material
   features:
     - content.code.copy
     - content.code.annotate
+    - navigation.instant
     # - navigation.sections
     - navigation.path
     - navigation.top
     - navigation.indexes 
+  icon:
+    repo: fontawesome/brands/github
 nav:
   - Home: README.md
   - Getting Started: getting_started.md
@@ -17,11 +22,13 @@ nav:
     - Knapsack: examples/knapsack.md
     - Matrix Traversal: examples/matrix_traversal.md
     - Excavation: examples/excavation.md
+  - Tutorials:
+    - tutorials/index.md
   - API:
     - api/index.md
     - DPArray: api/dp_array.md
     - Logger: api/logger.md
-    - Visualizaer: api/visualizer.md
+    - Visualizer: api/visualizer.md
 plugins:
   - search
   - gen-files:
@@ -36,6 +43,8 @@ plugins:
             docstring_options:
               returns_named_value: False
 markdown_extensions:
+  - toc:
+      permalink: "#"
   - pymdownx.highlight:
       # anchor_linenums: true
       line_spans: __span
