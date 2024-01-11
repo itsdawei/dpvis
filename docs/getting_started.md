@@ -35,6 +35,6 @@ display(arr) # (3)!
 2. Replaces the standard Python list with a [`DPArray`][dp.DPArray] object.
 3. Shows the visualization with [`display(arr)`][dp.display].
 
-```python linenums="1"
---8<-- "demos/fibonacci.py"
-```
+<!-- ```python linenums="1" -->
+<!-- --8<-- "demos/fibonacci.py" -->
+<!-- ``` -->

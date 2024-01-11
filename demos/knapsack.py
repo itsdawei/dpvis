@@ -77,12 +77,6 @@ def knapsack(items, capacity):
     column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
     description = """
 Recurrence: $OPT(i, C) = \max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$
-```python
-if idx >= 1 and rem - item[0] >= 0:
-    OPT[idx, rem] = max(OPT[idx - 1, rem], OPT[idx - 1, rem-item[0]] + item[1])
-elif idx >= 1 and rem - item[0] < 0:
-    OPT[idx, rem] = OPT[idx - 1, rem]
-```
 """
 
     # Visualize with the items array
