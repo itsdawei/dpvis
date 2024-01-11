@@ -8,6 +8,7 @@ theme:
     - navigation.top
 nav:
   - Home: README.md
+  - Getting Started: getting_started.md
   - API:
     - dp_array.md
     - logger.md
