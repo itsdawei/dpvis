@@ -4,21 +4,24 @@ theme:
   features:
     - content.code.copy
     - content.code.annotate
-    - navigation.sections
+    # - navigation.sections
     - navigation.path
     - navigation.top
+    - navigation.indexes 
 nav:
   - Home: README.md
   - Getting Started: getting_started.md
   - Examples:
-    - examples/fibonacci.md
-    - examples/knapsack.md
-    - examples/matrix_traversal.md
-    - examples/excavation.md
+    - examples/index.md
+    - Fibonacci: examples/fibonacci.md
+    - Knapsack: examples/knapsack.md
+    - Matrix Traversal: examples/matrix_traversal.md
+    - Excavation: examples/excavation.md
   - API:
-    - dp_array.md
-    - logger.md
-    - visualizer.md
+    - api/index.md
+    - DPArray: api/dp_array.md
+    - Logger: api/logger.md
+    - Visualizaer: api/visualizer.md
 plugins:
   - search
   - gen-files:
@@ -45,8 +48,8 @@ markdown_extensions:
   - tables
   - attr_list
 watch:
-- dp
-- demos
+  - dp
+  - demos
 extra_javascript:
   - javascripts/mathjax.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
