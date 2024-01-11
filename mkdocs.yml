@@ -7,7 +7,7 @@ theme:
     - content.code.copy
     - content.code.annotate
     - navigation.instant
-    # - navigation.sections
+    - navigation.expand
     - navigation.path
     - navigation.top
     - navigation.indexes 
@@ -25,7 +25,6 @@ nav:
   - Tutorials:
     - tutorials/index.md
   - API:
-    - api/index.md
     - DPArray: api/dp_array.md
     - Logger: api/logger.md
     - Visualizer: api/visualizer.md
@@ -63,3 +62,5 @@ extra_javascript:
   - javascripts/mathjax.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+extra_css:
+  - stylesheets/extra.css
