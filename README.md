@@ -1,4 +1,4 @@
-# Dynamically Visualized (dpvis)
+# dpvis
 
 [![Documentation Status](https://readthedocs.org/projects/dpvis/badge/?version=latest)](https://dpvis.readthedocs.io/en/latest/?badge=latest)
 
