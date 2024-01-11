@@ -6,36 +6,72 @@ from colorama import Fore, Style
 
 
 class Op(IntEnum):
-    """The allowed operation on the DPArray."""
+    """Allowed operations on the array to be recorded by Logger.
+
+    Attributes:
+        READ (int): Reading from indices in the array. No values required.
+        WRITE (int): Writing to indices in the array. Requires an value for each
+            index.
+        MAXMIN (int): Maximum or minimum on indices in the array. No values
+            required.
+    """
     READ = 1
     WRITE = 2
     MAXMIN = 3
 
 
 class Logger:
-    """Logger class.
+    """Records the operations performed on the DPArray.
 
-    The log format is as follows:
-    {
-        "op": Op.READ/Op.WRITE/Op.HIGHLIGHT,
+    [`Visualizer`][dp._visualizer.Visualizer] uses the
+    [`Logger`][dp._logger.Logger] to produce a frame-by-frame animation of the
+    states of the DPArray.
+
+    Each Logger is associated with some [`DPArray`][dp._dp_array] objects. The
+    logger stores a list of "logs," where each log contains information
+    regarding an [`operations`][dp._logger.Op] performed on the `DPArray`.
+    For example, for a DP problem with two arrays (say, `OPT` and `Values`),
+    consider the following operations on the corresponding arrays:
+
+    1. **`OPT`**: `READ` operation at index `(1, 1)`, `(1, 2)`, and `(1, 3)`.
+    1. **`Values`**: `READ` operation at index `(0, 0)`.
+    1. **`OPT`**: `WRITE` operation of value `10` at index `(3, 3)` and
+       `(4, 4)`.
+    1. **`Values`**: `MAXMIN` operation at index `(3, 3)` and `(4, 4)`.
+
+    ```json
+    [{
+        "op": Op.READ,
         "idx": {
-            array_name_1: {idx1: value1, idx2: value2, ...},
-            array_name_2: {idx1: value1, idx2: value2, ...},
-            ...
+            "OPT": {
+                (1, 1): None,
+                (1, 2): None,
+                (1, 3): None,
+            },
+            "Values": { (0, 0): None },
         },
-        "annotations": {
-            array_name_1: annotation1,
-            ...
-        }
-        "cell_annotations": {
-            array_name_1: {idx1: annotation1, idx2: annotation2, ...},
-            ...
-        }
-    }
-    note that values are None for READ and HIGHLIGHT.
-
-    The keys "annotation" and "cell_annotations" are only included if
-    append_annotation was called.
+    },
+    {
+        "op": Op.WRITE,
+        "idx": {
+            "OPT": {
+                (3, 3): 10,
+                (4, 4): 10,
+            },
+            "Values": {},
+        },
+    },
+    {
+        "op": Op.MAXMIN,
+        "idx": {
+            "OPT": {
+                (3, 3): None,
+                (4, 4): None,
+            },
+            "Values": {},
+        },
+    }]
+    ```
 
     Attributes:
         _logs (list): Contains the logs.
@@ -59,17 +95,20 @@ class Logger:
             raise ValueError(f"Array name {array_name} already exists in"
                              f"logger.")
         if len(self._logs) > 0:
-            raise ValueError(
-                f"Cannot add array {array_name} to a non-empty logger.")
+            raise ValueError(f"Cannot add array {array_name} to a non-empty"
+                             f"logger.")
         self._array_shapes[array_name] = shape
 
     def append(self, array_name, operation, idx, values=None):
         """Appends an operation to the log.
 
         Args:
-            operation (Operation): Operation performed.
-            idx (list of tuple/int): Index of the array.
-            values (list): Values updated, 
+            operation (Op): Operation performed.
+            idx (list of indices): Indices of the array. For 1D arrays, this
+                is a list of int. For higher dimensional arrays, this is a list
+                of tuples.
+            values (list): Values of the array that is updated with for
+                [Op.WRITE][dp._logger.Op].
 
         Raises:
             ValueError: Array name not recognized by logger. 
@@ -114,6 +153,23 @@ class Logger:
     def append_annotation(self, array_name, annotation, idx=None):
         """Appends an annotated operation to the log.
 
+        ```json
+        {
+            "annotations": {
+                name_1: "annotation1",
+                name_2: "annotation1",
+            }
+            "cell_annotations": {
+                name_1: {
+                    idx1: "annotation1", 
+                    idx2: "annotation2",
+                    ...,
+                },
+                ...
+            }
+        }
+        ```
+
         Args:
             array_name (str): Name of the array associated with this operation.
             annotation (str): Annotations associated with this operation.
@@ -153,7 +209,7 @@ class Logger:
                     "contents": array contents at this timestep,
                     Op.READ: [idx1, idx2, ...],
                     Op.WRITE: [idx1, idx2, ...],
-                    Op.HIGHLIGHT: [idx1, idx2, ...],
+                    Op.MAXMIN: [idx1, idx2, ...],
                 },
                 "array_2": {
                     ...
@@ -219,7 +275,6 @@ class Logger:
                         continue
                     for name, annotation in log[annotate_key].items():
                         timesteps[-1][name][annotate_key] = annotation
-
         return timesteps
 
     def print_timesteps(self):

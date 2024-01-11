@@ -3,13 +3,17 @@ theme:
   name: material
   features:
     - content.code.copy
+    - content.code.annotate
     - navigation.sections
     - navigation.path
     - navigation.top
 nav:
   - Home: README.md
+  - Getting Started: getting_started.md
   - API:
     - dp_array.md
+    - logger.md
+    - visualizer.md
 plugins:
   - search
   - gen-files:
@@ -31,3 +35,7 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - tables
+  - attr_list
+watch:
+- dp
