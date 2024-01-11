@@ -1,5 +1,7 @@
 # Dynamically Visualized (dynvis)
 
+[![Documentation Status](https://readthedocs.org/projects/dpvis/badge/?version=latest)](https://dpvis.readthedocs.io/en/latest/?badge=latest)
+
 The topic of dynamic programming (DP) is particularly challenging for learners
 newly introduced to algorithm design. The library will serve as a learning aid
 for studying DP. To this end, we design a widely accessible library that can be
