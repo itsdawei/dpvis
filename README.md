@@ -1,4 +1,6 @@
-# Dynamically Visualized (dynvis)
+# dpvis
+
+[![Documentation Status](https://readthedocs.org/projects/dpvis/badge/?version=latest)](https://dpvis.readthedocs.io/en/latest/?badge=latest)
 
 The topic of dynamic programming (DP) is particularly challenging for learners
 newly introduced to algorithm design. The library will serve as a learning aid
@@ -20,8 +22,6 @@ The library has three major features:
 - Interactive self-testing feature in which the user will be quizzed on which
   cells will be used to compute the result, which cell will the result be
   stored, and what is the value of the result.
-- Showing and highlighting the relevant lines of code used to compute the new
-  entry in the animation.
 
 ## Installation
 
@@ -31,12 +31,12 @@ The library has three major features:
 
    ```bash
    # With SSH:
-   git clone git@github.com:itsdawei/dynamically_programmed.git
+   git clone git@github.com:itsdawei/dpvis.git
 
    # Without SSH:
-   git clone https://github.com/itsdawei/dynamically_programmed.git
+   git clone https://github.com/itsdawei/dpvis.git
 
-   cd dynamically_programmed
+   cd dpvis
    ```
 
 1. (Optional) Create a virtual environment
@@ -44,8 +44,8 @@ The library has three major features:
    poetry:
 
    ```bash
-   conda create -n dynvis
-   conda activate dynvis
+   conda create -n dpvis
+   conda activate dpvis
    conda install poetry
    ```
 
@@ -78,7 +78,7 @@ poetry run make servedocs
 
 ## Contributors
 
-dynvis is developed and maintained by
+dpvis is developed and maintained by
 
 - Ramiro Deo-Campo Vuong
 - Eric Han
@@ -88,5 +88,5 @@ dynvis is developed and maintained by
 
 ## License
 
-dynvis is released under the
-[MIT License](https://github.com/itsdawei/dynamically_programmed/blob/main/LICENSE).
+dpvis is released under the
+[MIT License](https://github.com/itsdawei/dpvis/blob/main/LICENSE).

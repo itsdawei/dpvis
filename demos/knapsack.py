@@ -56,8 +56,8 @@ def knapsack(items, capacity):
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
-        if rem - capacity >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
-                                                        capacity] + value:
+        if (rem - capacity >= 0 and
+                arr[i - 1, rem] < arr[i - 1, rem - capacity] + value):
             current = (i - 1, rem - capacity)
             path.append(current)
             solution.append(i)
@@ -75,15 +75,7 @@ def knapsack(items, capacity):
     row_labels = [f"Item {i+1}: {item}" for i, item in enumerate(items)]
     row_labels.insert(0, "No item")
     column_labels = [f"Capacity {i}" for i in range(capacity + 1)]
-    description = """
-Recurrence: $OPT(i, C) = \max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$
-```python
-if idx >= 1 and rem - item[0] >= 0:
-    OPT[idx, rem] = max(OPT[idx - 1, rem], OPT[idx - 1, rem-item[0]] + item[1])
-elif idx >= 1 and rem - item[0] < 0:
-    OPT[idx, rem] = OPT[idx - 1, rem]
-```
-"""
+    description = "Recurrence: $OPT(i, C) = \max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$"
 
     # Visualize with the items array
     visualizer = Visualizer()

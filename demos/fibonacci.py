@@ -3,6 +3,7 @@ from dp import DPArray, display
 # Number of iterations to run Fibonacci.
 n = 10
 
+
 # Fibonacci DP function
 def fib(n):
     # Initialize a DPArray instead of an array/list
@@ -33,18 +34,6 @@ description = """
 Recurrence:
 
 $$OPT(n) = OPT(n-1) + OPT(n-2)$$
-
-Code:
-
-```python
-# Base cases
-arr[0] = 1
-arr[1] = 1
-
-# Recurrence
-for i in range(2, n)
-    arr[i] = arr[i-1] + arr[i-2]
-```
 """
 
 # Visualize.

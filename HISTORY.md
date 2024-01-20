@@ -47,6 +47,7 @@
 
 ### Documentation
 
+- Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)
 - Documentation with mkdocs (#7)
