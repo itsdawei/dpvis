@@ -22,7 +22,6 @@ nav:
     - Matrix Traversal: examples/matrix_traversal.md
     - Excavation: examples/excavation.md
     - Weighted Interval Scheduling: examples/wis.md
-    - Weighted Interval Scheduling Images: examples/wis2.md
   - API:
     - DPArray: api/dp_array.md
     - Logger: api/logger.md
