@@ -37,7 +37,7 @@ def WIS_DP(intervals):
     Returns:
         int: Maximum sum of weight of compatible intervals.
     """
-    # Number of Intervals.
+    # Number of intervals.
     N = len(intervals)
 
     # Sort intervals by finish time.
@@ -81,7 +81,7 @@ def solve(intervals):
     Returns:
         int: Maximum sum of weight of compatible intervals.
     """
-    # Number of Intervals.
+    # Number of intervals.
     N = len(intervals)
 
     # Sort intervals by finish time.
