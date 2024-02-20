@@ -48,7 +48,7 @@ def solve(intervals):
     visualizer.add_array(OPT,
                          column_labels=column_labels,
                          description=description)
-    visualizer.add_array(p, description="P")
+    visualizer.add_array(p)
     visualizer.show()
 
     return OPT[N]
