@@ -24,7 +24,7 @@ def solve(intervals):
 
     # Compute p[i] = largest index j < i s.t. interval i is compatible with j.
     # p = [0] * (N + 1)  # [-1, ..., -1]
-    p = DPArray(N+1, logger=OPT.logger, dtype=int)
+    p = DPArray(N+1, logger=OPT.logger, array_name="P", dtype=int)
     p[:] = 0
     for i, a in enumerate(intervals, start=1):
         # Search up to the ith interval.
@@ -43,7 +43,7 @@ def solve(intervals):
     description = ("| Interval | Start | Finish | Weight | p |\n"
                    "| :------: | :---: | :----: | :----: | - |\n")
     for i, a in enumerate(intervals, start=1):
-        description += f"| {i} | {a[0]} | {a[1]} | {a[2]} | {p[i]} |\n"
+        description += f"| {i} | {a[0]} | {a[1]} | {a[2]} | {p._arr[i]} |\n"
     visualizer = Visualizer()
     visualizer.add_array(OPT,
                          column_labels=column_labels,
