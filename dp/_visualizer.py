@@ -278,8 +278,11 @@ class Visualizer:
         # Extra hovertext info:
         # <br>Value: {value_text}<br>Dependencies: {deps_text}
         # (if cell annotation present:) <br>{annotation}
-        value_text = np.where(np.isnan(t_value_matrix.astype(float)), "",
-                              t_value_matrix.astype("str"))
+        mask = np.isnan(t_value_matrix.astype(float))
+        t_value_matrix[mask] = -99
+        value_text = np.where(~mask,
+                              t_value_matrix.astype(arr.dtype).astype("str"),
+                              "")
         extra_hovertext = np.char.add("<br>Value: ", value_text)
 
         # Add cell dependencies.
@@ -440,7 +443,7 @@ class Visualizer:
             return next_figures
 
         @self.app.callback(Output("array-annotation", "children"),
-                           Input("slider", "value"), 
+                           Input("slider", "value"),
                            prevent_initial_call=False)
         def update_annotation(t):
             """Update the annotation based on the slider value."""
@@ -703,9 +706,7 @@ class Visualizer:
         ])
 
         description_md = [
-            dcc.Markdown(metadata["description"],
-                         mathjax=True,
-                         className="border border-primary")
+            dcc.Markdown(metadata["description"], mathjax=True)
             for metadata in self._graph_metadata.values()
         ]
 
@@ -726,8 +727,7 @@ class Visualizer:
                 dbc.Input(id="user-input", type="number", placeholder=""),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
-                      id="sidebar",
-                      className="border border-warning"),
+                      id="sidebar"),
         ])
 
         playback_control = [
@@ -773,11 +773,7 @@ class Visualizer:
                             class_name="g-0",
                             align="center",
                         ),
-                        dbc.Row(
-                            dbc.Stack(graphs),
-                            id="page-content",
-                            className="border border-warning",
-                        ),
+                        dbc.Row(dbc.Stack(graphs), id="page-content"),
                     ],
                             width=8),
                 ],

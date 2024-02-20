@@ -58,9 +58,7 @@ The library has three major features:
 1. (Optional) Run knapsack demo to verify installation:
 
    ```bash
-   poetry shell
-   python demo/knapsack.py
-   exit
+   python demos/knapsack.py
    ```
 
 ## Documentation

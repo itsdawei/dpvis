@@ -1,0 +1,21 @@
+/*  when using Bootstrap, this will add row borders to the table in dcc.Markdown
+ *   Table
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+table {
+  border-collapse: collapse;
+  border: 1px solid #e1e1e1;
+}
+th:not(.CalendarDay),
+td:not(.CalendarDay) {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e1e1e1;
+}
+th:first-child:not(.CalendarDay),
+td:first-child:not(.CalendarDay) {
+  padding-left: 10px;
+}
+th:last-child:not(.CalendarDay),
+td:last-child:not(.CalendarDay) {
+  padding-right: 10px;
+}
