@@ -46,9 +46,8 @@ def solve(intervals):
         description += f"| {i} | {a[0]} | {a[1]} | {a[2]} | {p._arr[i]} |\n"
     visualizer = Visualizer()
     visualizer.add_array(OPT,
-                         column_labels=column_labels,
-                         description=description)
-    visualizer.add_array(p)
+                         column_labels=column_labels)
+    # visualizer.add_array(p)
     visualizer.show()
 
     return OPT[N]

@@ -1,4 +1,6 @@
 
+
+
 ```
 import numpy as np
 
@@ -10,7 +12,7 @@ def solve(intervals):
     """Dynamic program for Weighted Interval Selection.
 
     Args:
-        intervlas (array-like): a list of intervals. Each interval is
+        intervals (array-like): a list of intervals. Each interval is
         represented as a list of [start time, finish time, weight].
 
     Returns:
