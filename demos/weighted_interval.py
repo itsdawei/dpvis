@@ -1,18 +1,20 @@
-import numpy as np
+"""Dynamic program visualization for weighted interval selection.
 
+To run this example: python3 weighted_interval.py
+"""
 from dp import DPArray
-from dp._visualizer import display, Visualizer
+from dp._visualizer import Visualizer, display
 
 
 def solve(intervals):
     """Dynamic program for Weighted Interval Selection.
 
     Args:
-        intervlas (array-like): a list of intervals. Each interval is
-        represented as a list of [start time, finish time, weight].
+        intervals (array-like): a list of intervals. Each interval is
+        a list with the following format [start time, finish time, weight].
 
     Returns:
-        int: Maximum value that can be attained from v given M months.
+        int: Maximum sum of weight of compatible intervals.
     """
     # Sort intervals by finish time.
     intervals = sorted(intervals, key=lambda x: x[1])
@@ -24,7 +26,7 @@ def solve(intervals):
 
     # Compute p[i] = largest index j < i s.t. interval i is compatible with j.
     # p = [0] * (N + 1)  # [-1, ..., -1]
-    p = DPArray(N+1, logger=OPT.logger, array_name="P", dtype=int)
+    p = DPArray(N + 1, logger=OPT.logger, array_name="P", dtype=int)
     p[:] = 0
     for i, a in enumerate(intervals, start=1):
         # Search up to the ith interval.
