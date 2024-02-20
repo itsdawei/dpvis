@@ -28,18 +28,18 @@ def solve(intervals):
     # p = [0] * (N + 1)  # [-1, ..., -1]
     p = DPArray(N + 1, logger=OPT.logger, array_name="P", dtype=int)
     p[:] = 0
-    for i, a in enumerate(intervals, start=1):
+    for i, int_i in enumerate(intervals, start=1):
         # Search up to the ith interval.
-        for j, b in enumerate(intervals[:i], start=1):
-            # Check that a and b are compatible.
-            if min(a[1], b[1]) - max(a[0], b[0]) < 1:
+        for j, int_j in enumerate(intervals[:i], start=1):
+            # Check that int_i and int_j are compatible.
+            if min(int_i[1], int_j[1]) - max(int_i[0], int_j[0]) < 1:
                 p[i] = j
 
     # Base Case.
     OPT[0] = 0
 
-    for i, a in enumerate(intervals, start=1):
-        OPT[i] = max(a[2] + OPT[p[i]], OPT[i - 1])
+    for i, int_i in enumerate(intervals, start=1):
+        OPT[i] = max(int_i[2] + OPT[p[i]], OPT[i - 1])
 
     column_labels = [f"{i} intervals" for i in range(N + 1)]
     description = ("| Interval | Start | Finish | Weight | p |\n"
@@ -48,8 +48,9 @@ def solve(intervals):
         description += f"| {i} | {a[0]} | {a[1]} | {a[2]} | {p._arr[i]} |\n"
     visualizer = Visualizer()
     visualizer.add_array(OPT,
-                         column_labels=column_labels)
-    # visualizer.add_array(p)
+                         column_labels=column_labels,
+                         description=description)
+    visualizer.add_array(p)
     visualizer.show()
 
     return OPT[N]

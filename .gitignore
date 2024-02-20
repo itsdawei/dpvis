@@ -101,6 +101,9 @@ ENV/
 # mkdocs documentation
 /site
 
+# poetry stuff
+poetry.lock
+
 # mypy
 .mypy_cache/
 
