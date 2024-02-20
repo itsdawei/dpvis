@@ -110,15 +110,8 @@ def solve(intervals):
 
     # Add more information for the visualization.
     column_labels = [f"{i} intervals" for i in range(N + 1)]
-    description = ("| Interval | Start | Finish | Weight | p |\n"
-                   "| :------: | :---: | :----: | :----: | - |\n")
-    for i, a in enumerate(intervals, start=1):
-        description += f"| {i} | {a[0]} | {a[1]} | {a[2]} | {p._arr[i]} |\n"
     visualizer = Visualizer()
-    visualizer.add_array(OPT,
-                         column_labels=column_labels,
-                         description=description)
-    visualizer.add_array(p)
+    visualizer.add_array(OPT, column_labels=column_labels)
     visualizer.show()
 
     return OPT[N]
