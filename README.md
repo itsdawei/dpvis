@@ -39,27 +39,40 @@ The library has three major features:
    cd dpvis
    ```
 
-1. (Optional) Create a virtual environment
-   ([Conda](https://docs.conda.io/projects/miniconda/en/latest/)) and install
-   poetry:
+There is a few options to managing virtual environment:
+
+2. (Recommended) Install
+   [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and install the
+   library locally via [pip](https://pypi.org/project/pip/):
 
    ```bash
-   conda create -n dpvis
+   conda create -n dpvis python=3.11
    conda activate dpvis
-   conda install poetry
+   pip install -e .
    ```
 
-1. Install library with poetry:
+3. Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
 
    ```bash
    poetry install
    ```
 
-1. (Optional) Run knapsack demo to verify installation:
+4. (Not recommended) Although highly recommended, a virtual environment is not
+   necessary as long as you have a Python package manager such as
+   [pip](https://pypi.org/project/pip/) installed:
 
    ```bash
-   python demos/knapsack.py
+   pip install -e .
    ```
+
+You can verify the installed by running one of our many demos.
+
+```bash
+python demos/knapsack.py
+
+# With Poetry
+poetry run python demos/knapsack.py
+```
 
 ## Documentation
 
