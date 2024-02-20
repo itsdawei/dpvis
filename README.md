@@ -28,51 +28,45 @@ The library has three major features:
 **NOTE: This instruction should be updated after we release to PyPI.**
 
 1. Clone the fork locally and change directory:
+    ```bash
+    # With SSH:
+    git clone git@github.com:itsdawei/dpvis.git
 
-   ```bash
-   # With SSH:
-   git clone git@github.com:itsdawei/dpvis.git
+    # Without SSH:
+    git clone https://github.com/itsdawei/dpvis.git
 
-   # Without SSH:
-   git clone https://github.com/itsdawei/dpvis.git
+    cd dpvis
+    ```
 
-   cd dpvis
-   ```
+1. There is a few options to managing virtual environment:
+    - (Recommended) Install
+       [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and install the
+       library locally via [pip](https://pypi.org/project/pip/):
+       ```bash
+       conda create -n dpvis python=3.11
+       conda activate dpvis
+       pip install -e .
+       ```
+    - Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
+       ```bash
+       poetry install
+       ```
 
-There is a few options to managing virtual environment:
+    - Although highly recommended, a virtual environment is not necessary as
+      long as you have installed a Python package manager such as
+      [pip](https://pypi.org/project/pip/). In this case, you can install the
+      library directly with:
+      ```python
+      pip install -e .
+      ```
 
-2. (Recommended) Install
-   [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and install the
-   library locally via [pip](https://pypi.org/project/pip/):
+1. You can verify the installation by running one of our many demos.
+    ```bash
+    python demos/knapsack.py
 
-   ```bash
-   conda create -n dpvis python=3.11
-   conda activate dpvis
-   pip install -e .
-   ```
-
-3. Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
-
-   ```bash
-   poetry install
-   ```
-
-4. (Not recommended) Although highly recommended, a virtual environment is not
-   necessary as long as you have a Python package manager such as
-   [pip](https://pypi.org/project/pip/) installed:
-
-   ```bash
-   pip install -e .
-   ```
-
-You can verify the installed by running one of our many demos.
-
-```bash
-python demos/knapsack.py
-
-# With Poetry
-poetry run python demos/knapsack.py
-```
+    # With Poetry
+    poetry run python demos/knapsack.py
+    ```
 
 ## Documentation
 
