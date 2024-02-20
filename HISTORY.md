@@ -48,6 +48,7 @@
 
 ### Documentation
 
+- Update installation instruction (#54)
 - Add WIS (#53)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
