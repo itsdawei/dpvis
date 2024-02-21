@@ -4,8 +4,9 @@
 
 ### API
 
+- Allow `int` dtype for `DPArray` (#53)
 - Self-testing mode perists over multiple timesteps (#43)
-- Add annotation functionality (#36)
+- Add annotation functionality (#36, #50)
 - Add to test queue based on selected tests checklist (#41)
 - Combine "Correct!" and "Incorrect!" alert (#40)
 - Execute self-tests sequentially (#39)
@@ -47,6 +48,10 @@
 
 ### Documentation
 
+- Update installation instruction (#54)
+- Add WIS (#53)
+- Add "tutorials" and "examples" to documentation (#52)
+- Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)
 - Documentation with mkdocs (#7)
 

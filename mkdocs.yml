@@ -1,15 +1,29 @@
 site_name: dpvis Documentation
+repo_url: https://github.com/itsdawei/dpvis
+repo_name: dpvis
 theme:
   name: material
   features:
     - content.code.copy
-    - navigation.sections
-    - navigation.path
+    - content.code.annotate
+    - navigation.instant
+    - navigation.expand
+    - navigation.indexes 
     - navigation.top
+  icon:
+    repo: fontawesome/brands/github
 nav:
   - Home: README.md
+  - Getting Started: getting_started.md
+  - Examples:
+    - examples/index.md
+    - Fibonacci: examples/fibonacci.md
+    - Knapsack: examples/knapsack.md
+    - Weighted Interval Scheduling: examples/wis.md
   - API:
-    - dp_array.md
+    - DPArray: api/dp_array.md
+    - Logger: api/logger.md
+    - Visualizer: api/visualizer.md
 plugins:
   - search
   - gen-files:
@@ -24,10 +38,26 @@ plugins:
             docstring_options:
               returns_named_value: False
 markdown_extensions:
+  - toc:
+      permalink: "#"
   - pymdownx.highlight:
-      anchor_linenums: true
+      # anchor_linenums: true
       line_spans: __span
       pygments_lang_class: true
+  - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - attr_list
+watch:
+  - dp
+  - demos
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+extra_css:
+  - stylesheets/extra.css

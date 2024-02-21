@@ -9,7 +9,7 @@ def matrix_traversal(M):
 
     Given a matrix M of shape (n + 1, m + 1), where M[x, y] is the cost of
     traveling to (x, y). An agent begins at index (0, 0), and find a least-cost
-    path to (n, m). The agent is only able to move South or Eest from its
+    path to (n, m). The agent is only able to move South or East from its
     current position. 
     """
     OPT = DPArray(shape=M.shape, array_name="OPT")

@@ -63,6 +63,8 @@ class DPArray:
             return np.float32
         if dtype == np.float64:
             return np.float64
+        if dtype == int:
+            return int
 
         raise ValueError("Unsupported dtype. Must be np.float32 or"
                          "np.float64")

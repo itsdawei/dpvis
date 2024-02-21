@@ -66,7 +66,7 @@ def _nd_slice_to_indices(arr, nd_slice):
         ValueError: Some element in ``nd_slice`` is not a valid slice
             object or integer.
     """
-    if isinstance(nd_slice, (slice, int)):
+    if isinstance(nd_slice, slice) or np.isscalar(nd_slice):
         # Convert 1d slice to nd slice.
         nd_slice = (nd_slice,)
     if isinstance(nd_slice, list):
@@ -82,7 +82,7 @@ def _nd_slice_to_indices(arr, nd_slice):
         if isinstance(s, slice):
             # Handle slice objects.
             slice_indices.append(np.arange(*s.indices(size)))
-        elif isinstance(s, int):
+        elif np.isscalar(s):
             # Handle tuple of integers for direct indexing.
             slice_indices.append(s)
         else:
