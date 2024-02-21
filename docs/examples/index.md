@@ -10,3 +10,4 @@ Here are the current examples:
 - [Knapsack](knapsack.md)
 - [Matrix Traversal](matrix_traversal.md)
 - [Excavation](excavation.md)
+- [Edit Distance](edit_distance.md)
