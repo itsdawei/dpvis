@@ -643,8 +643,9 @@ class Visualizer:
             ],
             color="danger",
             is_open=True,
-            duration=5000,
-            fade=True,
+            # duration=5000,
+            # fade=True,
+            dismissable=True,
             class_name="alert-auto")
 
             # If answer is correct, remove from truth and render the test
