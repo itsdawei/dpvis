@@ -728,7 +728,7 @@ class Visualizer:
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
-                dbc.Input(id="user-input", type="number", placeholder=""),
+                dbc.Input(id="user-input", type="number", placeholder="Enter value here"),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar"),
