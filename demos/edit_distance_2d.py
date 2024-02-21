@@ -30,11 +30,11 @@ def edit_distance(str1, str2):
         for j in range(n + 1):
             # Base case: either string is empty and has already been handled.
             if i == 0 or j == 0:
-                pass
+                continue
 
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
-            elif str1[i - 1] == str2[j - 1]:
+            if str1[i - 1] == str2[j - 1]:
                 OPT[i, j] = OPT[i - 1, j - 1]
                 OPT.annotate("Last character same: pay OPT cost for remaining "
                              "strings.")
