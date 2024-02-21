@@ -4,6 +4,7 @@
 
 ### API
 
+- Fix hover-text for 1D arrays (#58)
 - Allow `int` dtype for `DPArray` (#53)
 - Self-testing mode perists over multiple timesteps (#43)
 - Add annotation functionality (#36, #50)
