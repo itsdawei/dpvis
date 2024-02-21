@@ -15,7 +15,7 @@ def edit_distance(str1, str2):
     m = len(str1)
     n = len(str2)
     # Initialize an m+1 x n+1 array
-    OPT = DPArray((m + 1, n + 1), array_name="Edit Distance")
+    OPT = DPArray((m + 1, n + 1), array_name="Edit Distance", dtype=int)
 
     # Base cases: either str1 or str2 is empty
     # Then we have to pay to remove/add the remaining letters

@@ -53,7 +53,7 @@
 
 ### Documentation
 
-- Update installation instruction (#54)
+- Update installation instruction (#54, #55)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)
