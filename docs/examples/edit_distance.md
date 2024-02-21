@@ -1,7 +1,7 @@
 # Edit Distance
 
 - Given two strings `str1` and `str2`, what is the minimum number of edits
-- to convert `str1` to `str2`?
+  to convert `str1` to `str2`?
 - Each edit costs 1, and is either an add, delete, or replace.
 - Goal: find a minimum cost set of edits that converts `str1` to `str2`.
 
