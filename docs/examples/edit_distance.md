@@ -118,4 +118,5 @@ iteration, we pay one and choose between removing a letter from `str1`,
 removing a letter from `str2` or replacing a the last letter of `str1` 
 with `str2`. In this case, removing the last letter of `str2` is the 
 cheapest option with a cost of 3, so we pay 1 to delete the last letter of 
-`str2` and then we can pay 3 more to convert from there onwards (HELP ME).
+`str2` and then we can pay 3 more to convert from there onwards (TODO: clean 
+up).
