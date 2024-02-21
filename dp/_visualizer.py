@@ -793,9 +793,9 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
         # self.app.run_server(debug=False, use_reloader=True)
-        # self.app.run_server(debug= not self._debug, use_reloader=True)
+        self.app.run_server(debug= not self._debug, use_reloader=True)
 
     @property
     def app(self):
