@@ -629,24 +629,28 @@ class Visualizer:
             test_type = test["type"]
             alert_hint = ""
             if test_type == TestType.READ:
-                alert_hint = "The selected cell was not read from. Try clicking a different cell."
+                alert_hint = "The selected cell was not read from. " + \
+                    "Try clicking a different cell."
             elif test_type == TestType.WRITE:
-                alert_hint = "The selected cell was not written to. Try clicking on a different cell."
+                alert_hint = "The selected cell was not written to. " + \
+                    "Try clicking on a different cell."
             elif test_type == TestType.VALUE:
-                alert_hint = f"{answer} is the incorrect value. Try entering another value."
+                alert_hint = f"{answer} is the incorrect value. " + \
+                    "Try entering another value."
 
             # The alert for correct or incorrect input.
-            correct_alert = dbc.Alert([
-                html.H4("Incorrect!"),
-                html.Hr(),
-                html.P(alert_hint),
-            ],
-            color="danger",
-            is_open=True,
-            # duration=5000,
-            # fade=True,
-            dismissable=True,
-            class_name="alert-auto")
+            correct_alert = dbc.Alert(
+                [
+                    html.H4("Incorrect!"),
+                    html.Hr(),
+                    html.P(alert_hint),
+                ],
+                color="danger",
+                is_open=True,
+                # duration=5000,
+                # fade=True,
+                dismissable=True,
+                class_name="alert-auto")
 
             # If answer is correct, remove from truth and render the test
             # values. Also updates alert.
@@ -667,7 +671,8 @@ class Visualizer:
                 correct_alert.children = [
                     html.H4("Correct!"),
                     html.Hr(),
-                    html.P(alert_hint)]
+                    html.P(alert_hint)
+                ]
                 correct_alert.color = "success"
 
             # If all truths have been found, pop from test queue.
@@ -687,13 +692,11 @@ class Visualizer:
 
                     correct_alert.children[2] = html.P(alert_hint)
                     return new_info, correct_alert, None, t + 1
-                
-                else:
-                    # construct alert hint
-                    new_test_type = info["tests"][0]["type"]
-                    alert_hint = f"{TestType(test_type).name} test complete. You are moving on to the {TestType(new_test_type).name} test."
-                    correct_alert.children[2] = html.P(alert_hint)
 
+                # construct alert hint
+                new_test_type = info["tests"][0]["type"]
+                alert_hint = f"{TestType(test_type).name} test complete. You are moving on to the {TestType(new_test_type).name} test."
+                correct_alert.children[2] = html.P(alert_hint)
 
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
