@@ -162,7 +162,7 @@ class Visualizer:
 
         logger = self._graph_metadata[self._primary]["arr"].logger
         if logger is not arr.logger:
-            raise ValueError("Added arrays should have the same" "logger")
+            raise ValueError("Added arrays should have the same logger")
 
     def _parse_timesteps(self, arr):
         """Parse the timesteps of the logger."""
