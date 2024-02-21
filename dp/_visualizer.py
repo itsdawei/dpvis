@@ -123,6 +123,7 @@ class Visualizer:
         """Initialize Visualizer object."""
         self._primary = None
         self._graph_metadata = {}
+        self._traceback = False
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
@@ -140,12 +141,14 @@ class Visualizer:
                   column_labels=None,
                   row_labels=None,
                   description="",
-                  colorscale_name="Sunset"):
+                  colorscale_name="Sunset",
+                  traceback=False):
         """Add a DPArray to the visualization."""
         # TODO: @David Docstrings
         if not isinstance(arr, DPArray):
             raise TypeError("Array must be DPArray")
 
+        self._traceback= traceback or self._traceback
         # First array is the primary array.
         if self._primary is None:
             self._primary = arr.array_name
@@ -364,7 +367,8 @@ class Visualizer:
         def make_tests(t, selected_tests):
             print("[CALLBACK] helper")
             # On the last timestep, turn off self testing.
-            if t == len(values) - 1:
+            if ((not self._traceback and t >= len(values) - 1) or
+                (self._traceback and t >= len(values) - 2)):
                 return {"tests": []}
 
             # Create list of write indices for t+1.
@@ -523,8 +527,9 @@ class Visualizer:
                                      id="self-test-button",
                                      class_name="h-100",
                                      color="info")
-            # No tests to be performed on the last timestep.
-            if t == len(values) - 1:
+            # No tests to be performed on the last timestep.    
+            if ((not self._traceback and t >= len(values) - 1) or
+                (self._traceback and t >= len(values - 2))):
                 # TODO: notify user that there is no more testing
                 return {"tests": []}, test_button
 
