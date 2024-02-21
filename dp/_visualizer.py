@@ -667,7 +667,6 @@ class Visualizer:
                     html.Hr(),
                     html.P(alert_hint)]
                 correct_alert.color = "success"
-                correct_alert.duration = 5000
 
             # If all truths have been found, pop from test queue.
             if not truths:
