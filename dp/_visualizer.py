@@ -654,6 +654,7 @@ class Visualizer:
                 truths.remove(answer)
                 test["render"].append(answer)
 
+                # Construct alert hint.
                 test_type = test["type"]
                 if test_type == TestType.READ:
                     alert_hint = "Continue clicking on cells that were read from."
@@ -675,6 +676,8 @@ class Visualizer:
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
                     new_info = make_tests(t + 1, selected_tests)
+
+                    # Construct alert hint
                     if not new_info["tests"]:
                         alert_hint = "You completed all tests for this timestep. There are no more tests available."
                     else:
@@ -685,12 +688,10 @@ class Visualizer:
                     return new_info, correct_alert, None, t + 1
                 
                 else:
+                    # construct alert hint
                     new_test_type = info["tests"][0]["type"]
                     alert_hint = f"{TestType(test_type).name} test complete. You are moving on to the {TestType(new_test_type).name} test."
-                    correct_alert.children = [
-                        html.H4("Correct!"),
-                        html.Hr(),
-                        html.P(alert_hint)]
+                    correct_alert.children[2] = html.P(alert_hint)
 
 
             # Updates test info, the alert, and resets clickData.
