@@ -643,7 +643,7 @@ class Visualizer:
             ],
             color="danger",
             is_open=True,
-            duration=3000,
+            duration=5000,
             fade=True,
             class_name="alert-auto")
 
@@ -667,6 +667,7 @@ class Visualizer:
                     html.Hr(),
                     html.P(alert_hint)]
                 correct_alert.color = "success"
+                correct_alert.duration = 5000
 
             # If all truths have been found, pop from test queue.
             if not truths:
@@ -675,13 +676,18 @@ class Visualizer:
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
                     new_info = make_tests(t + 1, selected_tests)
-                    alert_hint = f"You completed all tests for this timestep. Starting tests for timestep {t + 1}."
+                    if not new_info["tests"]:
+                        alert_hint = "You completed all tests for this timestep. There are no more tests available."
+                    else:
+                        new_test_type = new_info["tests"][0]["type"]
+                        alert_hint = f"You completed all tests for this timestep. Starting {TestType(new_test_type).name} test for the next timestep."
+
                     correct_alert.children[2] = html.P(alert_hint)
                     return new_info, correct_alert, None, t + 1
                 
                 else:
-                    new_test_type = info["tests"]["type"]
-                    alert_hint = f"{test_type.name} test complete. You are moving on to the {new_test_type.name} test."
+                    new_test_type = info["tests"][0]["type"]
+                    alert_hint = f"{TestType(test_type).name} test complete. You are moving on to the {TestType(new_test_type).name} test."
                     correct_alert.children = [
                         html.H4("Correct!"),
                         html.Hr(),
