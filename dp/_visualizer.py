@@ -27,6 +27,14 @@ class CellType(IntEnum):
     WRITE = 4
 
 
+class TestType(IntEnum):
+    """TestType is used to distinguish between tests in test-info.
+    """
+    READ = 0
+    WRITE = 1
+    VALUE = 2
+
+
 def _get_colorbar_kwargs(name):
     """Get colorscale for the DP array visualization.
 
@@ -388,6 +396,7 @@ class Visualizer:
                     "render": [],
                     "color": CellType.WRITE,
                     "expected_triggered_id": self._primary,
+                    "type": TestType.WRITE,
                     "tip":
                         "What cells are written to in the next frame? (Click "
                         "in any order)"
@@ -400,6 +409,7 @@ class Visualizer:
                     "render": [],
                     "color": CellType.READ,
                     "expected_triggered_id": self._primary,
+                    "type": TestType.READ,
                     "tip": "What cells are read for the next timestep? (Click "
                            "in any order)"
                 })
@@ -412,6 +422,7 @@ class Visualizer:
                         "render": [(x, y)],
                         "color": CellType.WRITE,
                         "expected_triggered_id": "user-input",
+                        "type": TestType.VALUE,
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
             return {"tests": test_q}
@@ -614,13 +625,27 @@ class Visualizer:
                 # Enter number.
                 answer = user_input
 
+            # Construct alert hint.
+            test_type = test["type"]
+            alert_hint = ""
+            if test_type == TestType.READ:
+                alert_hint = "The selected cell was not read from. Try clicking a different cell."
+            elif test_type == TestType.WRITE:
+                alert_hint = "The selected cell was not written to. Try clicking on a different cell."
+            elif test_type == TestType.VALUE:
+                alert_hint = f"{answer} is the incorrect value. Try entering another value."
+
             # The alert for correct or incorrect input.
-            correct_alert = dbc.Alert("Incorrect!",
-                                      color="danger",
-                                      is_open=True,
-                                      duration=3000,
-                                      fade=True,
-                                      class_name="alert-auto")
+            correct_alert = dbc.Alert([
+                html.H4("Incorrect!"),
+                html.Hr(),
+                html.P(alert_hint),
+            ],
+            color="danger",
+            is_open=True,
+            duration=3000,
+            fade=True,
+            class_name="alert-auto")
 
             # If answer is correct, remove from truth and render the test
             # values. Also updates alert.
@@ -628,7 +653,19 @@ class Visualizer:
             if answer in truths:
                 truths.remove(answer)
                 test["render"].append(answer)
-                correct_alert.children = "Correct!"
+
+                test_type = test["type"]
+                if test_type == TestType.READ:
+                    alert_hint = "Continue clicking on cells that were read from."
+                elif test_type == TestType.WRITE:
+                    alert_hint = "Continue clicking on cells that were written to."
+                elif test_type == TestType.VALUE:
+                    alert_hint = "Enter the value of the next cell."
+
+                correct_alert.children = [
+                    html.H4("Correct!"),
+                    html.Hr(),
+                    html.P(alert_hint)]
                 correct_alert.color = "success"
 
             # If all truths have been found, pop from test queue.
@@ -638,7 +675,18 @@ class Visualizer:
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
                     new_info = make_tests(t + 1, selected_tests)
+                    alert_hint = f"You completed all tests for this timestep. Starting tests for timestep {t + 1}."
+                    correct_alert.children[2] = html.P(alert_hint)
                     return new_info, correct_alert, None, t + 1
+                
+                else:
+                    new_test_type = info["tests"]["type"]
+                    alert_hint = f"{test_type.name} test complete. You are moving on to the {new_test_type.name} test."
+                    correct_alert.children = [
+                        html.H4("Correct!"),
+                        html.Hr(),
+                        html.P(alert_hint)]
+
 
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
