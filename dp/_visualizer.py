@@ -302,10 +302,14 @@ class Visualizer:
         # Create the figure.
         column_alias = dict(enumerate(kwargs["column_labels"]))
         row_alias = dict(enumerate(kwargs["row_labels"]))
+        print(100 * h, 100 * w)
         figure = go.Figure(
             layout={
                 "title": arr.array_name,
                 "title_x": 0.5,
+                # "height": max(100 * h, 300),
+                "height": 250,
+                "width": 100 * (w - 1),
                 "xaxis": {
                     "tickmode": "array",
                     "tickvals": np.arange(w),
@@ -318,16 +322,19 @@ class Visualizer:
                     "tickvals": np.arange(h),
                     "labelalias": row_alias,
                     "showgrid": False,
-                    "zeroline": False
+                    "zeroline": False,
+                    "scaleanchor": "x",
                 },
                 "coloraxis": {
-                    "showscale": False
+                    "showscale": False,
                 },
                 "clickmode": "event+select",
                 "hoverlabel": {
                     "namelength": -1,
                 },
+                # "yaxis_scaleanchor": "x",
             })
+        # figure.update_layout(yaxis_scaleanchor="x")
 
         hovertemplate = "<b>%{y}, %{x}</b>%{customdata}<extra></extra>"
         if h == 1:
@@ -347,7 +354,8 @@ class Visualizer:
                 xgap=1,
                 ygap=1,
                 visible=False,
-                showscale=self._primary == arr.array_name,
+                # showscale=self._primary == arr.array_name,
+                showscale=False,
             )
 
         return self._show_figure_trace(figure, 0)
@@ -373,7 +381,7 @@ class Visualizer:
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
-            all_writes = np.transpose(np.nonzero(write_mask))
+            all_writes = list(np.transpose(np.nonzero(write_mask)))
 
             # Create list of dependencies for t+1.
             # Any all writes have the same reads on the same timestep, so we
@@ -383,6 +391,7 @@ class Visualizer:
             # Populate test_q according to what tests are selected.
             test_q = []
 
+            # NOTE: Render: (Index, Color) .
             if "What is the next cell?" in selected_tests:
                 # Write test.
                 test_q.append({
@@ -399,7 +408,7 @@ class Visualizer:
                 # Read test.
                 test_q.append({
                     "truth": all_reads,
-                    "render": [],
+                    "render": [(index, CellType.WRITE) for index in all_writes],
                     "color": CellType.READ,
                     "expected_triggered_id": self._primary,
                     "tip": "What cells are read for the next timestep? (Click "
@@ -408,10 +417,12 @@ class Visualizer:
 
             if "What is its value?" in selected_tests:
                 # Value tests.
+                r = [(index, CellType.READ) for index in all_reads]
                 for x, y in zip(*np.nonzero(write_mask)):
                     test_q.append({
                         "truth": [values[t + 1][x][y]],
-                        "render": [(x, y)],
+                        # "render": list(all_reads) + [(x, y)],
+                        "render": r + [[(x, y), CellType.WRITE]],
                         "color": CellType.WRITE,
                         "expected_triggered_id": "user-input",
                         "tip": f"What is the value of cell ({x}, {y})?"
@@ -558,6 +569,17 @@ class Visualizer:
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
 
+            main_figure.add_trace(
+                go.Scatter(
+                    mode="markers",
+                    x=[0],
+                    y=[0],
+                    marker_symbol=[101],
+                    marker_color="black",
+                    marker_line_width=2,
+                    marker_size=22,
+                ))
+
             fig = copy.deepcopy(main_figure)
 
             # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
@@ -566,8 +588,9 @@ class Visualizer:
             # Highlight the revelant cells as specified by "render".
             test = info["tests"][0]
             render = test["render"]
-            for x, y in render:
-                z[x][y] = test["color"]
+            print(render)
+            for (x, y), color in render:
+                z[x][y] = color
 
             # Bring up test-specific instructions.
             alert.is_open = True
@@ -622,7 +645,7 @@ class Visualizer:
             truths = test["truth"]
             if answer in truths:
                 truths.remove(answer)
-                test["render"].append(answer)
+                test["render"].append([answer, test["color"]])
                 correct_alert.children = "Correct!"
                 correct_alert.color = "success"
 
@@ -769,7 +792,7 @@ class Visualizer:
         self.app.layout = dbc.Container(
             [
                 dbc.Row([
-                    dbc.Col(sidebar, width=4),
+                    dbc.Col(sidebar, width=3),
                     dbc.Col([
                         dbc.Row(
                             playback_control,
@@ -777,7 +800,12 @@ class Visualizer:
                             class_name="g-0",
                             align="center",
                         ),
-                        dbc.Row(dbc.Stack(graphs), id="page-content"),
+                        dbc.Row(
+                            dbc.Stack(graphs),
+                            id="page-content",
+                            class_name="g-0",
+                            align="center",
+                        ),
                     ],
                             width=8),
                 ],
@@ -790,8 +818,8 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        # self.app.run_server(debug=True, use_reloader=True)
+        self.app.run_server(debug=False, use_reloader=True)
 
     @property
     def app(self):
