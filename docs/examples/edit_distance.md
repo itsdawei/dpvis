@@ -30,7 +30,7 @@ $OPT[i, j] = 1 + min(OPT[i, j - 1], OPT[i - 1, j], OPT[i - 1, j - 1])$.
 
 We can visualize this with `dpvis` as follows:
 
-```python linenums="1"  hl_lines="1 17 59-61"
+```python linenums="1"  hl_lines="1 17 60-62"
 from dp import DPArray, display
 
 def edit_distance(str1, str2):
