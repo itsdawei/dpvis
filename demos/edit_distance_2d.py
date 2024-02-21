@@ -47,7 +47,7 @@ def edit_distance(str1, str2):
                     (i - 1, j),  # Remove
                     (i - 1, j - 1)  # Replace
                 ]
-                OPT[i, j] = 1 + OPT.min(indices=indices)
+                OPT[i, j] = OPT.min(indices=indices) + 1
                 OPT.annotate("Last characters different: test between insert, "
                              "remove, replace.")
 
