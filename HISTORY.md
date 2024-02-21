@@ -2,6 +2,10 @@
 
 ## 0.1.0
 
+### Examples
+
+- Edit distance 1d and 2d (#49)
+
 ### API
 
 - Allow `int` dtype for `DPArray` (#53)

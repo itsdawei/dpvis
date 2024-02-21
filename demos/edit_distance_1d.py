@@ -1,17 +1,18 @@
 from dp import DPArray, display
 
-"""
-Edit Distance Problem:
-Given two strings str1 and str2 of lengths m and n, respectively, what is 
-the cost of the cheapest set of actions that converts str1 into str2. 
-The following actions are possible:
-add before/after index i, remove before/after index i, replace at index i
+def edit_distance_1d(str1, str2):
+    """
+    Edit Distance Problem:
+    Given two strings str1 and str2 of lengths m and n, respectively, what is 
+    the cost of the cheapest set of actions that converts str1 into str2. 
+    The following actions are possible:
+    add before/after index i, remove before/after index i, replace at index i
 
-Solution adapted from Bhavya Jain's solution:
-https://www.geeksforgeeks.org/edit-distance-dp-5/
-"""
-
-def edit_distance_1d(str1, str2, m, n):
+    Solution adapted from Bhavya Jain's solution:
+    https://www.geeksforgeeks.org/edit-distance-dp-5/
+    """
+    m = len(str1)
+    n = len(str2)
     curr = DPArray(n+1, array_name="OPT")
     for j in range(n+1):
         curr[j] = j
@@ -45,7 +46,7 @@ def edit_distance_1d(str1, str2, m, n):
 str1 = "sit"
 str2 = "kiit"
 
-ans = edit_distance_1d(str1, str2, len(str1), len(str2))
+ans = edit_distance_1d(str1, str2)
 print(ans)
 
 def edit_distance_different_costs(str1, str2, alpha, beta, tau):
