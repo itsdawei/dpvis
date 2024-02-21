@@ -17,7 +17,7 @@ so we should just pay the cost to remove the remaining letters in the other stri
 we should record that $OPT[i, j] = max(i, j)$.
 
 **CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as
-the last letter of `str2`. So we shouldn't pay for the last latters and look to convert
+the last letter of `str2`. So we should leave the last letters alone and convert
 `str1[i-1]` to `str2[j-1]` as cheaply as possible. So, $OPT[i, j] = OPT[i-1, j-1]$.
 
 **CASE 2: `str1[i] != str2[j]`.** The last letter of `str1` is not the same as
