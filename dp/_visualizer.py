@@ -163,8 +163,7 @@ class Visualizer:
 
         logger = self._graph_metadata[self._primary]["arr"].logger
         if logger is not arr.logger:
-            raise ValueError("Added arrays should have the same"
-                             "logger")
+            raise ValueError("Added arrays should have the same" "logger")
 
     def _parse_timesteps(self, arr):
         """Parse the timesteps of the logger."""
@@ -388,9 +387,8 @@ class Visualizer:
                     "render": [],
                     "color": CellType.WRITE,
                     "expected_triggered_id": self._primary,
-                    "tip":
-                        "What cells are written to in the next frame? (Click "
-                        "in any order)"
+                    "tip": "What cells are written to in the next frame? "
+                           "(Click in any order)"
                 })
 
             if "What are its dependencies?" in selected_tests:
@@ -643,10 +641,10 @@ class Visualizer:
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
 
-        @self.app.callback(
-            Output(self._primary, "figure", allow_duplicate=True),
-            Input(self._primary, "clickData"), State("test-info", "data"),
-            State("slider", "value"))
+        @self.app.callback(Output(self._primary, "figure",
+                                  allow_duplicate=True),
+                           Input(self._primary, "clickData"),
+                           State("test-info", "data"), State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["tests"] or not click_data:
