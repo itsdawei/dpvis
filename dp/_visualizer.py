@@ -162,8 +162,7 @@ class Visualizer:
 
         logger = self._graph_metadata[self._primary]["arr"].logger
         if logger is not arr.logger:
-            raise ValueError("Added arrays should have the same"
-                             "logger")
+            raise ValueError("Added arrays should have the same" "logger")
 
     def _parse_timesteps(self, arr):
         """Parse the timesteps of the logger."""
@@ -330,6 +329,11 @@ class Visualizer:
                 },
             })
 
+        hovertemplate = "<b>%{y}, %{x}</b>%{customdata}<extra></extra>"
+        if h == 1:
+            hovertemplate = "<b>%{x}</b>%{customdata}<extra></extra>"
+        if w == 1:
+            hovertemplate = "<b>%{y}</b>%{customdata}<extra></extra>"
         for color, val, extra in zip(t_color_matrix, value_text,
                                      extra_hovertext):
             figure.add_heatmap(
@@ -338,7 +342,7 @@ class Visualizer:
                 texttemplate="%{text}",
                 textfont={"size": 20},
                 customdata=extra,
-                hovertemplate="<b>%{y}, %{x}</b>%{customdata}<extra></extra>",
+                hovertemplate=hovertemplate,
                 **_get_colorbar_kwargs(colorscale_name),
                 xgap=1,
                 ygap=1,
@@ -634,10 +638,10 @@ class Visualizer:
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
 
-        @self.app.callback(
-            Output(self._primary, "figure", allow_duplicate=True),
-            Input(self._primary, "clickData"), State("test-info", "data"),
-            State("slider", "value"))
+        @self.app.callback(Output(self._primary, "figure",
+                                  allow_duplicate=True),
+                           Input(self._primary, "clickData"),
+                           State("test-info", "data"), State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["tests"] or not click_data:
