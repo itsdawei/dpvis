@@ -4,7 +4,8 @@
 
 ### Examples
 
-- Edit distance 1d and 2d (#49)
+- Add edit distance 1d and 2d (#49)
+- Add weighted interval scheduling (#53)
 
 ### API
 
@@ -53,7 +54,6 @@
 ### Documentation
 
 - Update installation instruction (#54)
-- Add WIS (#53)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)
