@@ -1,5 +1,6 @@
 from dp import DPArray, display
 
+
 def edit_distance(str1, str2):
     """
     Edit Distance Problem:
@@ -36,8 +37,7 @@ def edit_distance(str1, str2):
             elif str1[i - 1] == str2[j - 1]:
                 OPT[i, j] = OPT[i - 1, j - 1]
                 OPT.annotate(
-                    "Last character same: pay OPT cost for remaining strings."
-                )
+                    "Last character same: pay OPT cost for remaining strings.")
 
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
