@@ -22,10 +22,7 @@ def edit_distance(str1, str2, m, n):
         OPT[i, 0] = i
     for j in range(n+1):
         OPT[0, j] = j
-    OPT.annotate("a b")
-    OPT.annotate("c d")
-    
-    # __import__("pdb").set_trace();
+    OPT.annotate("Base cases: no remaining letters in str1 or str2.")
 
     # Fill OPT[][] iteratively
     for i in range(m+1):
@@ -38,6 +35,7 @@ def edit_distance(str1, str2, m, n):
             # costs for the remaining strings.
             elif str1[i-1] == str2[j-1]:
                 OPT[i, j] = OPT[i-1, j-1]
+                OPT.annotate("Last character same: pay the opt cost for remaining strings.")
 
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
@@ -48,6 +46,7 @@ def edit_distance(str1, str2, m, n):
                     (i-1, j-1)      # Replace
                 ]
                 OPT[i, j] = 1 + OPT.min(indices=indices)
+                OPT.annotate("Last characters different: test between insert, remove, replace.")
     
     return OPT
 

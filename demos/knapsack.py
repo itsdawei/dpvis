@@ -14,6 +14,7 @@ def knapsack(items, capacity):
     # Put in base cases
     OPT[0, :] = 0
     OPT[:, 0] = 0
+    OPT.annotate("Base cases: No items or no capacity = 0")
     # Recurrence: OPT(i, C) = max(OPT(i-1, C), OPT(i-1, C-i.space) + i.val)
     for idx in range(len(items) + 1):
         for rem in range(capacity + 1):
@@ -52,13 +53,13 @@ def knapsack(items, capacity):
     # While the path is not fully constructed.
     while current[0] != 0 and current[1] != 0:
         i, rem = current
-        capacity, value = items[i - 1]
+        cap, value = items[i - 1]
 
         # Find the predecessor of current.
         # Case 1: adding item is possible and more optimal
-        if rem - capacity >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
-                                                        capacity] + value:
-            current = (i - 1, rem - capacity)
+        if rem - cap >= 0 and arr[i - 1, rem] < arr[i - 1, rem -
+                                                        cap] + value:
+            current = (i - 1, rem - cap)
             path.append(current)
             solution.append(i)
 
@@ -91,7 +92,7 @@ elif idx >= 1 and rem - item[0] < 0:
                          row_labels=row_labels,
                          column_labels=column_labels,
                          description=description)
-    item_col_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    item_col_labels = [f"Item {i+1}: {item}" for i, item in enumerate(items)]
     visualizer.add_array(DP_items,
                          row_labels=" ",
                          column_labels=item_col_labels)
