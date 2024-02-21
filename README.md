@@ -68,6 +68,9 @@ The library has three major features:
     poetry run python demos/knapsack.py
     ```
 
+1. Open [https://127.0.0.1:8050/](https://127.0.0.1:8050/) with your favorite
+   browser.
+
 ## Documentation
 
 The documentation is compiled with
