@@ -36,8 +36,8 @@ def edit_distance(str1, str2):
             # costs for the remaining strings.
             elif str1[i - 1] == str2[j - 1]:
                 OPT[i, j] = OPT[i - 1, j - 1]
-                OPT.annotate(
-                    "Last character same: pay OPT cost for remaining strings.")
+                OPT.annotate("Last character same: pay OPT cost for remaining "
+                             "strings.")
 
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
@@ -48,9 +48,8 @@ def edit_distance(str1, str2):
                     (i - 1, j - 1)  # Replace
                 ]
                 OPT[i, j] = 1 + OPT.min(indices=indices)
-                OPT.annotate(
-                    "Last characters different: test between insert, remove, replace."
-                )
+                OPT.annotate("Last characters different: test between insert, "
+                             "remove, replace.")
 
     return OPT
 
