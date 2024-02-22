@@ -126,7 +126,7 @@ class Visualizer:
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
-        themes = [dbc.themes.CERULEAN]
+        themes = [dbc.themes.JOURNAL]
 
         # Create Dash App.
         self._app = Dash(
@@ -453,21 +453,23 @@ class Visualizer:
             return next_figures
 
         @self.app.callback(Output("array-annotation", "children"),
+                           Output("array-annotation", "style"),
                            Input("slider", "value"),
                            prevent_initial_call=False)
         def update_annotation(t):
             """Update the annotation based on the slider value."""
-            card_body = dbc.CardBody([])
+            annotation = ""
             for name, metadata in self._graph_metadata.items():
                 ann = metadata["t_annotations"][t]
                 if not ann:
                     continue
-                card_body.children.append(
-                    html.P(f"{name}: {ann}", className="text-center w-auto"))
+                annotation += f"[{name}] {ann}"
 
-            # Hides card if it is empty.
-            card_body.class_name = "d-block" if card_body.children else "d-none"
-            return card_body
+            # Hides the textbox if annotation is empty.
+            style = {}
+            if not annotation:
+                style = {"display": "none"}
+            return annotation, style
 
         @self.app.callback(
             Output("slider", "value", allow_duplicate=True),
@@ -702,18 +704,14 @@ class Visualizer:
         ]
 
         test_select_checkbox = dbc.Row([
-            dbc.Col(
-                dbc.Checklist(
-                    questions,
-                    questions,
-                    id="test-select-checkbox",
-                )),
             dbc.Col(dbc.Button("Test Myself!",
                                id="self-test-button",
                                class_name="h-100",
                                color="info"),
                     width="auto",
-                    id="test-mode-toggle")
+                    id="test-mode-toggle"),
+            dbc.Col(
+                dbc.Checklist(questions, questions, id="test-select-checkbox"))
         ])
 
         description_md = [
@@ -726,18 +724,24 @@ class Visualizer:
                 [
                     *description_md,
                     test_select_checkbox,
+                    # User input box.
                     dbc.Input(id="user-input",
                               type="number",
-                              placeholder="Enter value here"),
-                    dbc.Card(
-                        [], id="array-annotation", color="info", outline=True),
-                    # Container for an alert that displays the test instructions.
-                    html.Div(id="test-instructions", className="m-3"),
-                    # Container for an alert that displays the correctness of the
-                    # input.
-                    html.Div(id="correct-alert", className="m-3"),
+                              placeholder="Enter value here",
+                              className="my-1"),
+                    # Textbox to display array annotations.
+                    html.P("",
+                           id="array-annotation",
+                           className="bg-secondary-subtle text-center py-3"
+                           " rounded",
+                           style={"display": "none"}),
+                    # An alert to display the test instructions.
+                    html.Div(id="test-instructions", className="mx-3"),
+                    # An alert to display the correctness of the input.
+                    html.Div(id="correct-alert", className="mx-3"),
                 ],
-                id="sidebar"),
+                id="sidebar",
+                className="bg-secondary vh-100 px-3"),
         ])
 
         playback_control = [
@@ -780,19 +784,17 @@ class Visualizer:
                         dbc.Row(
                             playback_control,
                             id="playback-control",
-                            class_name="g-0",
+                            class_name="g-1",
                             align="center",
                         ),
                         dbc.Row(
                             dbc.Stack(graphs),
                             id="page-content",
-                            class_name="g-0",
                             align="center",
                         ),
                     ],
                             width=8),
-                ],
-                        class_name="g-3"),
+                ]),
                 *datastores,
             ],
             fluid=True,
