@@ -667,9 +667,11 @@ class Visualizer:
                 # Construct alert hint.
                 test_type = test["type"]
                 if test_type == TestType.READ:
-                    alert_hint = "Continue clicking on cells that were read from."
+                    alert_hint = ("Continue clicking on cells that were read "
+                                  "from.")
                 elif test_type == TestType.WRITE:
-                    alert_hint = "Continue clicking on cells that were written to."
+                    alert_hint = ("Continue clicking on cells that were "
+                                  "written to.")
                 elif test_type == TestType.VALUE:
                     alert_hint = "Enter the value of the next cell."
 
@@ -688,19 +690,24 @@ class Visualizer:
                 if not info["tests"]:
                     new_info = make_tests(t + 1, selected_tests)
 
-                    # Construct alert hint
-                    if not new_info["tests"]:
-                        alert_hint = "You completed all tests for this timestep. There are no more tests available."
+                    # Hint: starting new tests for the next timestep or testing
+                    #       mode terminated.
+                    alert_hint = "You have completed all tests for this timestep."
+                    if new_info["tests"]:
+                        next_test = new_info["tests"][0]["type"]
+                        alert_hint += (f"Starting {TestType(next_test).name}"
+                                       f" test for the next timestep.")
                     else:
-                        new_test_type = new_info["tests"][0]["type"]
-                        alert_hint = f"You completed all tests for this timestep. Starting {TestType(new_test_type).name} test for the next timestep."
+                        alert_hint += "There are no more tests available."
 
                     correct_alert.children[2] = html.P(alert_hint)
                     return new_info, correct_alert, None, t + 1
 
-                # construct alert hint
-                new_test_type = info["tests"][0]["type"]
-                alert_hint = f"{TestType(test_type).name} test complete. You are moving on to the {TestType(new_test_type).name} test."
+                # Hint: starting new tests for the same timestep.
+                next_test = info["tests"][0]["type"]
+                alert_hint = (f"{TestType(test_type).name} test complete. You "
+                              f"are moving on to the "
+                              f"{TestType(next_test).name} test.")
                 correct_alert.children[2] = html.P(alert_hint)
 
             # Updates test info, the alert, and resets clickData.
@@ -860,7 +867,7 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug= not self._debug, use_reloader=True)
+        self.app.run_server(debug=not self._debug, use_reloader=True)
 
     @property
     def app(self):
