@@ -307,7 +307,7 @@ class Visualizer:
                 "title": arr.array_name,
                 "title_x": 0.5,
                 "height": max(100 * h, 250),
-                "width": max(100 * w, 250),
+                # "width": max(100 * w, 250),
                 "xaxis": {
                     "tickmode": "array",
                     "tickvals": np.arange(w),
@@ -779,7 +779,7 @@ class Visualizer:
         self.app.layout = dbc.Container(
             [
                 dbc.Row([
-                    dbc.Col(sidebar, width=3),
+                    dbc.Col(sidebar, width=4),
                     dbc.Col([
                         dbc.Row(
                             playback_control,
