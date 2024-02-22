@@ -126,7 +126,7 @@ class Visualizer:
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
-        themes = [dbc.themes.LUX]
+        themes = [dbc.themes.CERULEAN]
 
         # Create Dash App.
         self._app = Dash(
@@ -306,8 +306,7 @@ class Visualizer:
             layout={
                 "title": arr.array_name,
                 "title_x": 0.5,
-                "height": max(100 * h, 250),
-                # "width": max(100 * w, 250),
+                "height": max(100 * h, 300),
                 "xaxis": {
                     "tickmode": "array",
                     "tickvals": np.arange(w),
@@ -350,8 +349,8 @@ class Visualizer:
                 xgap=1,
                 ygap=1,
                 visible=False,
-                # showscale=self._primary == arr.array_name,
-                showscale=False,
+                showscale=self._primary == arr.array_name,
+                # showscale=False,
             )
 
         return self._show_figure_trace(figure, 0)
@@ -722,16 +721,6 @@ class Visualizer:
             for metadata in self._graph_metadata.values()
         ]
 
-        alerts = [
-            html.Div(id="correct-alert",
-                     className="position-fixed z-9999 w-25",
-                     style={
-                         "bottom": 10,
-                         "left": 10,
-                     }),
-            html.Div(id="test-instructions", className="bottom-50 z-9999 w-25"),
-        ]
-
         sidebar = html.Div([
             dbc.Stack([
                 *description_md,
@@ -740,6 +729,11 @@ class Visualizer:
                           type="number",
                           placeholder="Enter value here"),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
+                # Container for an alert that displays the test instructions.
+                html.Div(id="test-instructions", className="m-3"),
+                # Container for an alert that displays the correctness of the
+                # input.
+                html.Div(id="correct-alert", className="m-3"),
             ],
                       id="sidebar"),
         ])
@@ -797,7 +791,6 @@ class Visualizer:
                             width=8),
                 ],
                         class_name="g-3"),
-                *alerts,
                 *datastores,
             ],
             fluid=True,

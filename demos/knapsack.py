@@ -72,8 +72,8 @@ def knapsack(items, capacity):
     OPT.add_traceback_path(path)
 
     # Define labels.
-    row_labels = [f"Item {i+1}: {item}" for i, item in enumerate(items)]
-    row_labels.insert(0, "No item")
+    row_labels = ["No item"]
+    row_labels += [f"Item {i}: {item}" for i, item in enumerate(items, start=1)]
     column_labels = [f"Capacity {i}" for i in range(max_capacity + 1)]
     description = "Recurrence: $OPT(i, C) = \\max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$"
 
@@ -83,7 +83,7 @@ def knapsack(items, capacity):
                          row_labels=row_labels,
                          column_labels=column_labels,
                          description=description)
-    item_col_labels = [f"Item {i}: {item}" for i, item in enumerate(items)]
+    item_col_labels = [f"Item {i}: {item}" for i, item in enumerate(items, start=1)]
     visualizer.add_array(DP_items,
                          row_labels=" ",
                          column_labels=item_col_labels)
