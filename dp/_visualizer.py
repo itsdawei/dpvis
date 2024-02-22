@@ -722,20 +722,22 @@ class Visualizer:
         ]
 
         sidebar = html.Div([
-            dbc.Stack([
-                *description_md,
-                test_select_checkbox,
-                dbc.Input(id="user-input",
-                          type="number",
-                          placeholder="Enter value here"),
-                dbc.Card([], id="array-annotation", color="info", outline=True),
-                # Container for an alert that displays the test instructions.
-                html.Div(id="test-instructions", className="m-3"),
-                # Container for an alert that displays the correctness of the
-                # input.
-                html.Div(id="correct-alert", className="m-3"),
-            ],
-                      id="sidebar"),
+            dbc.Stack(
+                [
+                    *description_md,
+                    test_select_checkbox,
+                    dbc.Input(id="user-input",
+                              type="number",
+                              placeholder="Enter value here"),
+                    dbc.Card(
+                        [], id="array-annotation", color="info", outline=True),
+                    # Container for an alert that displays the test instructions.
+                    html.Div(id="test-instructions", className="m-3"),
+                    # Container for an alert that displays the correctness of the
+                    # input.
+                    html.Div(id="correct-alert", className="m-3"),
+                ],
+                id="sidebar"),
         ])
 
         playback_control = [
