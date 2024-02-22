@@ -692,7 +692,8 @@ class Visualizer:
 
                     # Hint: starting new tests for the next timestep or testing
                     #       mode terminated.
-                    alert_hint = "You have completed all tests for this timestep."
+                    alert_hint = ("You have completed all tests for this "
+                                  "timestep.")
                     if new_info["tests"]:
                         next_test = new_info["tests"][0]["type"]
                         alert_hint += (f"Starting {TestType(next_test).name}"
