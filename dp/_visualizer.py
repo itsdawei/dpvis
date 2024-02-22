@@ -478,11 +478,7 @@ class Visualizer:
             State("slider", "value"),
         )
         def update_slider(key_data, _, t):
-            """Update the value of slider based on state of play/stop button.
-
-            Update slider value based on store-keypress. Store-keypress is
-            changed in assets/custom.js.
-            """
+            """Update the value of slider based on state of play/stop button."""
             print("[CALLBACK] update_slider")
             if ctx.triggered_id == "interval":
                 return (t + 1) % len(values)
@@ -490,9 +486,12 @@ class Visualizer:
                 return (t + key_data - 38) % len(values)
             return dash.no_update
 
-        @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
-                           Input("self-test-button", "n_clicks"))
+        @self.app.callback(
+            Output("interval", "max_intervals"),
+            Input("play", "n_clicks"),
+            Input("stop", "n_clicks"),
+            Input("self-test-button", "n_clicks"),
+        )
         def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
             """Starts and stop playback from running.
 
@@ -506,8 +505,9 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(
-            Output(component_id="playback-control", component_property="style"),
-            Input("test-info", "data"))
+            Output("playback-control", "style"),
+            Input("test-info", "data"),
+        )
         def toggle_layout(info):
             print("[CALLBACK] toggle_layout")
             if info["tests"]:
