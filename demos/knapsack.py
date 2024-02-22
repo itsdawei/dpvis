@@ -75,7 +75,7 @@ def knapsack(items, capacity):
     row_labels = [f"Item {i+1}: {item}" for i, item in enumerate(items)]
     row_labels.insert(0, "No item")
     column_labels = [f"Capacity {i}" for i in range(max_capacity + 1)]
-    description = "Recurrence: $OPT(i, C) = \max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$"
+    description = "Recurrence: $OPT(i, C) = \\max(OPT(i-1, C), OPT(i-1, C-c(i)) + v(i))$"
 
     # Visualize with the items array
     visualizer = Visualizer()
