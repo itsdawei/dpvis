@@ -514,11 +514,14 @@ class Visualizer:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(Output("test-info", "data", allow_duplicate=True),
-                           Output("test-mode-toggle", "children"),
-                           Input("self-test-button", "n_clicks"),
-                           State("test-info", "data"), State("slider", "value"),
-                           State("test-select-checkbox", "value"))
+        @self.app.callback(
+            Output("test-info", "data", allow_duplicate=True),
+            Output("test-mode-toggle", "children"),
+            Input("self-test-button", "n_clicks"),
+            State("test-info", "data"),
+            State("slider", "value"),
+            State("test-select-checkbox", "value"),
+        )
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
@@ -647,10 +650,12 @@ class Visualizer:
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
 
-        @self.app.callback(Output(self._primary, "figure",
-                                  allow_duplicate=True),
-                           Input(self._primary, "clickData"),
-                           State("test-info", "data"), State("slider", "value"))
+        @self.app.callback(
+            Output(self._primary, "figure", allow_duplicate=True),
+            Input(self._primary, "clickData"),
+            State("test-info", "data"),
+            State("slider", "value"),
+        )
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["tests"] or not click_data:
