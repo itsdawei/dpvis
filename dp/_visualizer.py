@@ -633,14 +633,16 @@ class Visualizer:
             test_type = test["type"]
             alert_hint = ""
             if test_type == TestType.READ:
-                alert_hint = "The selected cell was not read from. " + \
-                    "Try clicking a different cell."
+                alert_hint = ("The selected cell was not read from. Try "
+                              "clicking a different cell.")
             elif test_type == TestType.WRITE:
-                alert_hint = "The selected cell was not written to. " + \
-                    "Try clicking on a different cell."
+                alert_hint = ("The selected cell was not written to. Try "
+                              "clicking on a different cell.")
             elif test_type == TestType.VALUE:
-                alert_hint = f"{answer} is the incorrect value. " + \
-                    "Try entering another value."
+                alert_hint = (f"{answer} is the incorrect value. Try entering "
+                              f"another value.")
+            else:
+                raise ValueError(f"Invalid test type {test_type}")
 
             # The alert for correct or incorrect input.
             correct_alert = dbc.Alert(
@@ -652,7 +654,8 @@ class Visualizer:
                 color="danger",
                 is_open=True,
                 dismissable=True,
-                class_name="alert-auto")
+                class_name="alert-auto",
+            )
 
             # If answer is correct, remove from truth and render the test
             # values. Also updates alert.
@@ -793,7 +796,9 @@ class Visualizer:
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
-                dbc.Input(id="user-input", type="number", placeholder="Enter value here"),
+                dbc.Input(id="user-input",
+                          type="number",
+                          placeholder="Enter value here"),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar"),
