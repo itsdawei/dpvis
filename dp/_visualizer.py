@@ -302,14 +302,12 @@ class Visualizer:
         # Create the figure.
         column_alias = dict(enumerate(kwargs["column_labels"]))
         row_alias = dict(enumerate(kwargs["row_labels"]))
-        print(100 * h, 100 * w)
         figure = go.Figure(
             layout={
                 "title": arr.array_name,
                 "title_x": 0.5,
-                # "height": max(100 * h, 300),
-                "height": 250,
-                "width": 100 * (w - 1),
+                "height": max(100 * h, 250),
+                "width": max(100 * w, 250),
                 "xaxis": {
                     "tickmode": "array",
                     "tickvals": np.arange(w),
@@ -332,9 +330,7 @@ class Visualizer:
                 "hoverlabel": {
                     "namelength": -1,
                 },
-                # "yaxis_scaleanchor": "x",
             })
-        # figure.update_layout(yaxis_scaleanchor="x")
 
         hovertemplate = "<b>%{y}, %{x}</b>%{customdata}<extra></extra>"
         if h == 1:
@@ -569,17 +565,6 @@ class Visualizer:
             if not info["tests"]:
                 return self._show_figure_trace(main_figure, t), alert
 
-            main_figure.add_trace(
-                go.Scatter(
-                    mode="markers",
-                    x=[0],
-                    y=[0],
-                    marker_symbol=[101],
-                    marker_color="black",
-                    marker_line_width=2,
-                    marker_size=22,
-                ))
-
             fig = copy.deepcopy(main_figure)
 
             # Clear HIGHLIGHT, READ, and WRITE cells to FILLED.
@@ -751,7 +736,9 @@ class Visualizer:
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
-                dbc.Input(id="user-input", type="number", placeholder="Enter value here"),
+                dbc.Input(id="user-input",
+                          type="number",
+                          placeholder="Enter value here"),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar"),
