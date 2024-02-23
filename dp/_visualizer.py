@@ -577,7 +577,6 @@ class Visualizer:
             # Highlight the revelant cells as specified by "render".
             test = info["tests"][0]
             render = test["render"]
-            print(render)
             for (x, y), color in render:
                 z[x][y] = color
 
