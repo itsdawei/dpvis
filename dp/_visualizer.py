@@ -27,6 +27,14 @@ class CellType(IntEnum):
     WRITE = 4
 
 
+class TestType(IntEnum):
+    """TestType is used to distinguish between tests in test-info.
+    """
+    READ = 0
+    WRITE = 1
+    VALUE = 2
+
+
 def _get_colorbar_kwargs(name):
     """Get colorscale for the DP array visualization.
 
@@ -119,11 +127,12 @@ class Visualizer:
             }
     """
 
-    def __init__(self):
+    def __init__(self, debug=False):
         """Initialize Visualizer object."""
         self._primary = None
         self._graph_metadata = {}
         self._traceback = False
+        self._debug = debug
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
@@ -165,8 +174,7 @@ class Visualizer:
 
         logger = self._graph_metadata[self._primary]["arr"].logger
         if logger is not arr.logger:
-            raise ValueError("Added arrays should have the same"
-                             "logger")
+            raise ValueError("Added arrays should have the same logger")
 
     def _parse_timesteps(self, arr):
         """Parse the timesteps of the logger."""
@@ -333,6 +341,11 @@ class Visualizer:
                 },
             })
 
+        hovertemplate = "<b>%{y}, %{x}</b>%{customdata}<extra></extra>"
+        if h == 1:
+            hovertemplate = "<b>%{x}</b>%{customdata}<extra></extra>"
+        if w == 1:
+            hovertemplate = "<b>%{y}</b>%{customdata}<extra></extra>"
         for color, val, extra in zip(t_color_matrix, value_text,
                                      extra_hovertext):
             figure.add_heatmap(
@@ -341,7 +354,7 @@ class Visualizer:
                 texttemplate="%{text}",
                 textfont={"size": 20},
                 customdata=extra,
-                hovertemplate="<b>%{y}, %{x}</b>%{customdata}<extra></extra>",
+                hovertemplate=hovertemplate,
                 **_get_colorbar_kwargs(colorscale_name),
                 xgap=1,
                 ygap=1,
@@ -365,7 +378,8 @@ class Visualizer:
         ]
 
         def make_tests(t, selected_tests):
-            print("[CALLBACK] helper")
+            if self._debug:
+                print("[CALLBACK] helper")
             # On the last timestep, turn off self testing.
             if ((not self._traceback and t >= len(values) - 1) or
                 (self._traceback and t >= len(values) - 2)):
@@ -390,6 +404,7 @@ class Visualizer:
                     "render": [],
                     "color": CellType.WRITE,
                     "expected_triggered_id": self._primary,
+                    "type": TestType.WRITE,
                     "tip":
                         "What cells are written to in the next frame? (Click "
                         "in any order)"
@@ -402,6 +417,7 @@ class Visualizer:
                     "render": [],
                     "color": CellType.READ,
                     "expected_triggered_id": self._primary,
+                    "type": TestType.READ,
                     "tip": "What cells are read for the next timestep? (Click "
                            "in any order)"
                 })
@@ -414,6 +430,7 @@ class Visualizer:
                         "render": [(x, y)],
                         "color": CellType.WRITE,
                         "expected_triggered_id": "user-input",
+                        "type": TestType.VALUE,
                         "tip": f"What is the value of cell ({x}, {y})?"
                     })
             return {"tests": test_q}
@@ -422,7 +439,8 @@ class Visualizer:
                            State("test-info", "data"))
         def update_figure(t, info):
             """Update each graph based on the slider value."""
-            print("[CALLBACK] update_figure")
+            if self._debug:
+                print("[CALLBACK] update_figure")
             # Edge case: in self testing mode and ran out of tests.
             if t > len(values):
                 return dash.no_update
@@ -475,7 +493,8 @@ class Visualizer:
             Update slider value based on store-keypress. Store-keypress is
             changed in assets/custom.js.
             """
-            print("[CALLBACK] update_slider")
+            if self._debug:
+                print("[CALLBACK] update_slider")
             if ctx.triggered_id == "interval":
                 return (t + 1) % len(values)
             if key_data in [37, 39]:
@@ -490,7 +509,8 @@ class Visualizer:
 
             Pauses the playback when "stop" or "self-test-button" is pressed.
             """
-            print("[CALLBACK] play_pause_playback")
+            if self._debug:
+                print("[CALLBACK] play_pause_playback")
             if ctx.triggered_id == "play":
                 return -1  # Runs interval indefinitely.
             if ctx.triggered_id in ["stop", "self-test-button"]:
@@ -501,7 +521,8 @@ class Visualizer:
             Output(component_id="playback-control", component_property="style"),
             Input("test-info", "data"))
         def toggle_layout(info):
-            print("[CALLBACK] toggle_layout")
+            if self._debug:
+                print("[CALLBACK] toggle_layout")
             if info["tests"]:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
@@ -522,7 +543,8 @@ class Visualizer:
             This callback is triggered by clicking the self-test-button
             component and updates the test info.
             """
-            print("[CALLBACK] toggle_test_mode")
+            if self._debug:
+                print("[CALLBACK] toggle_test_mode")
             test_button = dbc.Button("Test Myself!",
                                      id="self-test-button",
                                      class_name="h-100",
@@ -552,7 +574,8 @@ class Visualizer:
             State("slider", "value"),
         )
         def display_tests(info, t):
-            print("[CALLBACK] display_tests")
+            if self._debug:
+                print("[CALLBACK] display_tests")
             alert = dbc.Alert(is_open=False,
                               color="danger",
                               class_name="alert-auto")
@@ -592,7 +615,8 @@ class Visualizer:
         )
         def validate(_, click_data, user_input, info, t, selected_tests):
             """Validates the user input."""
-            print("[CALLBACK] validate")
+            if self._debug:
+                print("[CALLBACK] validate")
             if not info["tests"]:
                 return dash.no_update
 
@@ -610,13 +634,33 @@ class Visualizer:
                 # Enter number.
                 answer = user_input
 
+            # Construct alert hint.
+            test_type = test["type"]
+            alert_hint = ""
+            if test_type == TestType.READ:
+                alert_hint = ("The selected cell was not read from. Try "
+                              "clicking a different cell.")
+            elif test_type == TestType.WRITE:
+                alert_hint = ("The selected cell was not written to. Try "
+                              "clicking on a different cell.")
+            elif test_type == TestType.VALUE:
+                alert_hint = (f"{answer} is the incorrect value. Try entering "
+                              f"another value.")
+            else:
+                raise ValueError(f"Invalid test type {test_type}")
+
             # The alert for correct or incorrect input.
-            correct_alert = dbc.Alert("Incorrect!",
-                                      color="danger",
-                                      is_open=True,
-                                      duration=3000,
-                                      fade=True,
-                                      class_name="alert-auto")
+            correct_alert = dbc.Alert(
+                [
+                    html.H4("Incorrect!"),
+                    html.Hr(),
+                    html.P(alert_hint),
+                ],
+                color="danger",
+                is_open=True,
+                dismissable=True,
+                class_name="alert-auto",
+            )
 
             # If answer is correct, remove from truth and render the test
             # values. Also updates alert.
@@ -624,7 +668,23 @@ class Visualizer:
             if answer in truths:
                 truths.remove(answer)
                 test["render"].append(answer)
-                correct_alert.children = "Correct!"
+
+                # Construct alert hint.
+                test_type = test["type"]
+                if test_type == TestType.READ:
+                    alert_hint = ("Continue clicking on cells that were read "
+                                  "from.")
+                elif test_type == TestType.WRITE:
+                    alert_hint = ("Continue clicking on cells that were "
+                                  "written to.")
+                elif test_type == TestType.VALUE:
+                    alert_hint = "Enter the value of the next cell."
+
+                correct_alert.children = [
+                    html.H4("Correct!"),
+                    html.Hr(),
+                    html.P(alert_hint)
+                ]
                 correct_alert.color = "success"
 
             # If all truths have been found, pop from test queue.
@@ -634,15 +694,35 @@ class Visualizer:
                 # If all tests are done, update slider value and make tests.
                 if not info["tests"]:
                     new_info = make_tests(t + 1, selected_tests)
+
+                    # Hint: starting new tests for the next timestep or testing
+                    #       mode terminated.
+                    alert_hint = ("You have completed all tests for this "
+                                  "timestep.")
+                    if new_info["tests"]:
+                        next_test = new_info["tests"][0]["type"]
+                        alert_hint += (f"Starting {TestType(next_test).name}"
+                                       f" test for the next timestep.")
+                    else:
+                        alert_hint += "There are no more tests available."
+
+                    correct_alert.children[2] = html.P(alert_hint)
                     return new_info, correct_alert, None, t + 1
+
+                # Hint: starting new tests for the same timestep.
+                next_test = info["tests"][0]["type"]
+                alert_hint = (f"{TestType(test_type).name} test complete. You "
+                              f"are moving on to the "
+                              f"{TestType(next_test).name} test.")
+                correct_alert.children[2] = html.P(alert_hint)
 
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
 
-        @self.app.callback(
-            Output(self._primary, "figure", allow_duplicate=True),
-            Input(self._primary, "clickData"), State("test-info", "data"),
-            State("slider", "value"))
+        @self.app.callback(Output(self._primary, "figure",
+                                  allow_duplicate=True),
+                           Input(self._primary, "clickData"),
+                           State("test-info", "data"), State("slider", "value"))
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["tests"] or not click_data:
@@ -729,7 +809,9 @@ class Visualizer:
             dbc.Stack([
                 *description_md,
                 test_select_checkbox,
-                dbc.Input(id="user-input", type="number", placeholder=""),
+                dbc.Input(id="user-input",
+                          type="number",
+                          placeholder="Enter value here"),
                 dbc.Card([], id="array-annotation", color="info", outline=True),
             ],
                       id="sidebar"),
@@ -791,8 +873,7 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        self.app.run_server(debug=True, use_reloader=True)
-        # self.app.run_server(debug=False, use_reloader=True)
+        self.app.run_server(debug=not self._debug, use_reloader=True)
 
     @property
     def app(self):
