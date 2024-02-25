@@ -33,17 +33,6 @@ def edit_distance(str1, str2, alpha, beta, gamma):
             # Base case: either string is empty and has already been handled.
             annotate_string = "str1: " + str1[:i]
             annotate_string += ", str2: " + str2[:j] + " " + ("_"*50)
-            # if i == 0:
-            #     OPT[i, j] = i
-            #     annotate_string += "Base case: no remaining letters in str1."
-            #     OPT.annotate(annotate_string)
-            #     continue
-
-            # elif j == 0:
-            #     OPT[i, j] = j
-            #     annotate_string += "Base case: no remaining letters in str2."
-            #     OPT.annotate(annotate_string)
-            #     continue
             
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
@@ -54,14 +43,6 @@ def edit_distance(str1, str2, alpha, beta, gamma):
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
             else:
-                # indices = [
-                #     (i, j - 1),  # Insert
-                #     (i - 1, j),  # Remove
-                #     (i - 1, j - 1)  # Replace
-                # ]
-                # OPT[i, j] = OPT.min(indices=indices) + 1
-                
-                # annotate_string += "Last characters different: test between insert, remove, and replace.\n"
                 OPT[i, j] = min(OPT[i, j - 1] + alpha, 
                                 OPT[i-1, j] + beta,
                                 OPT[i-1, j - 1] + gamma)
