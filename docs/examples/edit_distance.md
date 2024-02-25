@@ -12,9 +12,13 @@
 Let $OPT[i, j]$ denote the cheapest conversion between the first $i$ characters of `str1`
 and the first $j$ characters of `str2`.
 
-**BASE CASES: $i$ or $j$ is $0$.** At least one of our strings is empty, 
+**BASE CASE: $i$ is $0$.** `str1` is empty, 
 so we should just pay the cost to remove the remaining letters in the other string. So
-we should record that $OPT[i, j] = max(i, j)$.
+we should record that $OPT[i, j] = j$.
+
+**BASE CASE: $j$ is $0$.** `str2` is empty, 
+so we should just pay the cost to remove the remaining letters in the other string. So
+we should record that $OPT[i, j] = i$.
 
 **CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as
 the last letter of `str2`. So we should leave the last letters alone and convert
@@ -30,7 +34,7 @@ $OPT[i, j] = 1 + min(OPT[i, j - 1], OPT[i - 1, j], OPT[i - 1, j - 1])$.
 
 We can visualize this with `dpvis` as follows:
 
-```python linenums="1"  hl_lines="1 17 60-62"
+```python linenums="1"
 from dp import DPArray, display
 
 def edit_distance(str1, str2):
