@@ -9,6 +9,7 @@
 
 ### API
 
+- Extract callback attachment to a different module (#63)
 - Fixing colors in test mode tutorial to account for max/min (#65)
 - Adding a test mode tutorial (#64)
 - Adding more descriptive alerts in test mode (#57)
