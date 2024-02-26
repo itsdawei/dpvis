@@ -86,8 +86,3 @@ description += "\n\n Cost of removing from string 1: " + str(BETA)
 description += "\n\n Cost of replacing last letter of string 1: " + str(GAMMA)
 
 display(dp_array, description=description,  row_labels="_" + str1, column_labels="_" + str2)
-"""
-Question for student:
-1. How can we optimize the above DP to use a 2 x m array?
-2. How can we optimize the above DP to use just a 1d array?
-"""
