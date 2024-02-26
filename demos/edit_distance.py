@@ -90,7 +90,4 @@ display(dp_array, description=description,  row_labels="_" + str1, column_labels
 Question for student:
 1. How can we optimize the above DP to use a 2 x m array?
 2. How can we optimize the above DP to use just a 1d array?
-3. The above solution works when the cost of each action is 1, how
-   would you modify it if the cost of an add is alpha, the cost
-   of a remove is beta, and the cost of a replace is tau?
 """
