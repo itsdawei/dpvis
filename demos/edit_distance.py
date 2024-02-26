@@ -22,9 +22,9 @@ def edit_distance(str1, str2, alpha, beta, gamma):
     # Base cases: either str1 or str2 is empty
     # Then we have to pay to remove/add the remaining letters
     for i in range(m + 1):
-        OPT[i, 0] = min(alpha, beta) * i
+        OPT[i, 0] = beta * i
     for j in range(n + 1):
-        OPT[0, j] = min(alpha, beta) * j
+        OPT[0, j] = alpha * j
     OPT.annotate("No remaining letters in str1 or str2.")
 
     # Fill OPT[][] iteratively
@@ -32,7 +32,7 @@ def edit_distance(str1, str2, alpha, beta, gamma):
         for j in range(1, n + 1):
             # Base case: either string is empty and has already been handled.
             annotate_string = "str1: " + str1[:i]
-            annotate_string += ", str2: " + str2[:j] + " " + ("_"*50)
+            annotate_string += ", str2: " + str2[:j] + " " + ("_"*50) + " "
             
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
@@ -43,9 +43,18 @@ def edit_distance(str1, str2, alpha, beta, gamma):
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
             else:
-                OPT[i, j] = min(OPT[i, j - 1] + alpha, 
-                                OPT[i-1, j] + beta,
-                                OPT[i-1, j - 1] + gamma)
+                indices = [
+                    (i, j - 1),  # Insert
+                    (i - 1, j),  # Remove
+                    (i - 1, j - 1)  # Replace
+                ]
+                elements = [
+                    OPT[i, j - 1] + alpha,
+                    OPT[i-1, j] + beta,
+                    OPT[i-1, j - 1] + gamma
+                ]
+
+                OPT[i, j] = OPT.min(indices=indices, elements=elements)
                 arr = OPT.arr
                 if min(arr[i, j - 1] + alpha, arr[i-1, j] + beta, arr[i-1, j - 1] + gamma) == arr[i, j-1] + alpha:
                     annotate_string += "Add the last letter str2 to end of str1."
@@ -72,9 +81,9 @@ dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
 description = "# Edit Distance \n\n"
 description += "Change \"*" + str1 + "*\" to \"*" + str2 + "*\""
-description += "\n\n Cost of add: " + str(ALPHA)
-description += "\n\n Cost of remove: " + str(BETA)
-description += "\n\n Cost of swap: " + str(GAMMA)
+description += "\n\n Cost of adding to string 1: " + str(ALPHA)
+description += "\n\n Cost of removing from string 1: " + str(BETA)
+description += "\n\n Cost of replacing last letter of string 1: " + str(GAMMA)
 
 display(dp_array, description=description,  row_labels="_" + str1, column_labels="_" + str2)
 """
