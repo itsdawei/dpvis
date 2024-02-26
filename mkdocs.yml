@@ -21,6 +21,7 @@ nav:
     - Fibonacci: examples/fibonacci.md
     - Knapsack: examples/knapsack.md
     - Weighted Interval Scheduling: examples/wis.md
+    - Edit Distance: examples/edit_distance.md
   - API:
     - DPArray: api/dp_array.md
     - Logger: api/logger.md
