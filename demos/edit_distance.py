@@ -76,7 +76,7 @@ str1 = "sunday"
 str2 = "saturday"
 ALPHA = 10
 BETA = 12
-GAMMA = 3
+GAMMA = 7
 
 dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
