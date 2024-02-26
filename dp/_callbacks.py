@@ -1,10 +1,12 @@
 """This file provides the callbacks attached to the visualizer."""
 import copy
+from enum import IntEnum
+
 import dash
 import dash_bootstrap_components as dbc
 import numpy as np
 from dash import Dash, Input, Output, State, ctx, dcc, html
-from enum import IntEnum
+
 
 class CellType(IntEnum):
     """CellType determines the color of elements in the DP array.
@@ -58,7 +60,7 @@ def make_tests(visualizer, t, selected_tests):
             "truth": all_writes,
             "render": [],
             "color": CellType.WRITE,
-            "expected_triggered_id": visualizer._primary,
+            "expected_triggered_id": visualizer.primary,
             "type": TestType.WRITE,
             "tip": "What cells are written to in the next frame? (Click "
                    "in any order)"
@@ -70,7 +72,7 @@ def make_tests(visualizer, t, selected_tests):
             "truth": all_reads,
             "render": [(index, CellType.WRITE) for index in all_writes],
             "color": CellType.READ,
-            "expected_triggered_id": visualizer._primary,
+            "expected_triggered_id": visualizer.primary,
             "type": TestType.READ,
             "tip": "What cells are read for the next timestep? (Click "
                    "in any order)"
@@ -82,7 +84,6 @@ def make_tests(visualizer, t, selected_tests):
         for x, y in zip(*np.nonzero(write_mask)):
             test_q.append({
                 "truth": [values[t + 1][x][y]],
-                # "render": list(all_reads) + [(x, y)],
                 "render": r + [[(x, y), CellType.WRITE]],
                 "color": CellType.WRITE,
                 "expected_triggered_id": "user-input",
@@ -93,12 +94,8 @@ def make_tests(visualizer, t, selected_tests):
 
 
 def attach_slider_updates(visualizer):
-    values = (visualizer._graph_metadata[visualizer._primary]["t_value_matrix"])
-    t_write_matrix = (
-        visualizer._graph_metadata[visualizer._primary]["t_write_matrix"])
-    t_read_matrix = (
-        visualizer._graph_metadata[visualizer._primary]["t_read_matrix"])
-    main_figure = visualizer._graph_metadata[visualizer._primary]["figure"]
+    values = visualizer.get_data(visualizer.primary, "t_value_matrix")
+    main_figure = visualizer.get_data(visualizer.primary, "figure")
 
     output_figure = [
         Output(name, "figure", allow_duplicate=True)
@@ -120,7 +117,7 @@ def attach_slider_updates(visualizer):
             return dash.no_update
 
         next_figures = [
-            visualizer._show_figure_trace(metadata["figure"], t)
+            visualizer.show_figure_trace(metadata["figure"], t)
             for metadata in visualizer._graph_metadata.values()
         ]
 
@@ -145,7 +142,7 @@ def attach_slider_updates(visualizer):
                           color="danger",
                           class_name="alert-auto")
         if not info["tests"]:
-            return visualizer._show_figure_trace(main_figure, t), alert
+            return visualizer.show_figure_trace(main_figure, t), alert
 
         fig = copy.deepcopy(main_figure)
 
@@ -203,12 +200,10 @@ def attach_slider_updates(visualizer):
 
 
 def attach_test_mode(visualizer):
-    values = (visualizer._graph_metadata[visualizer._primary]["t_value_matrix"])
-    t_write_matrix = (
-        visualizer._graph_metadata[visualizer._primary]["t_write_matrix"])
-    t_read_matrix = (
-        visualizer._graph_metadata[visualizer._primary]["t_read_matrix"])
-    main_figure = visualizer._graph_metadata[visualizer._primary]["figure"]
+    values = visualizer.get_data(visualizer.primary, "t_value_matrix")
+    t_write_matrix = visualizer.get_data(visualizer.primary, "t_write_matrix")
+    t_read_matrix = visualizer.get_data(visualizer.primary, "t_read_matrix")
+    main_figure = visualizer.get_data(visualizer.primary, "figure")
 
     @visualizer.app.callback(
         Output("interval", "max_intervals"),
@@ -295,7 +290,7 @@ def attach_test_mode(visualizer):
                           color="danger",
                           class_name="alert-auto")
         if not info["tests"]:
-            return visualizer._show_figure_trace(main_figure, t), alert
+            return visualizer.show_figure_trace(main_figure, t), alert
 
         fig = copy.deepcopy(main_figure)
 

@@ -29,8 +29,7 @@ class CellType(IntEnum):
 
 
 class TestType(IntEnum):
-    """TestType is used to distinguish between tests in test-info.
-    """
+    """TestType is used to distinguish between tests in test-info."""
     READ = 0
     WRITE = 1
     VALUE = 2
@@ -145,6 +144,23 @@ class Visualizer:
             external_stylesheets=themes,
             prevent_initial_callbacks=True)
 
+    @property
+    def primary(self):
+        return self._primary
+
+    @property
+    def app(self):
+        """Returns the Dash app object."""
+        return self._app
+
+    @property
+    def debug(self):
+        """Returns the Dash app object."""
+        return self._debug
+
+    def get_data(self, array_name, field ):
+        return self._graph_metadata[array_name][field]
+
     def add_array(self,
                   arr,
                   column_labels=None,
@@ -244,7 +260,7 @@ class Visualizer:
             "t_cell_annotations": t_cell_annotations,
         }
 
-    def _show_figure_trace(self, figure, i):
+    def show_figure_trace(self, figure, i):
         """Make exactly one trace of the figure visible.
 
         Args:
@@ -363,7 +379,7 @@ class Visualizer:
                 # showscale=False,
             )
 
-        return self._show_figure_trace(figure, 0)
+        return self.show_figure_trace(figure, 0)
 
     def show(self):
         """Visualizes the DPArrays.
@@ -488,8 +504,3 @@ class Visualizer:
         attach_slider_updates(self)
 
         self.app.run_server(debug=not self._debug, use_reloader=True)
-
-    @property
-    def app(self):
-        """Returns the Dash app object."""
-        return self._app
