@@ -477,7 +477,7 @@ class Visualizer:
                 ann = metadata["t_annotations"][t]
                 if not ann:
                     continue
-                annotation += f"[{name}] {ann}"
+                annotation += f"**\[{name}\]** {ann}"  # pylint: disable=anomalous-backslash-in-string
 
             # Hides the textbox if annotation is empty.
             style = {}
@@ -810,11 +810,12 @@ class Visualizer:
                               placeholder="Enter value here",
                               className="my-1"),
                     # Textbox to display array annotations.
-                    html.P("",
-                           id="array-annotation",
-                           className="bg-secondary-subtle text-center py-3"
-                           " rounded",
-                           style={"display": "none"}),
+                    dcc.Markdown(
+                        "",
+                        id="array-annotation",
+                        className=("bg-secondary-subtle text-center py-3"
+                                   "rounded"),
+                        style={"display": "none"}),
                     # An alert to display the test instructions.
                     html.Div(id="test-instructions", className="mx-3"),
                     # An alert to display the correctness of the input.
