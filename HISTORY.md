@@ -4,6 +4,7 @@
 
 ### API
 
+- Adding a test mode tutorial (#64)
 - Adding more descriptive alerts in test mode (#57)
 - Fix hover-text for 1D arrays (#58)
 - Allow `int` dtype for `DPArray` (#53)
