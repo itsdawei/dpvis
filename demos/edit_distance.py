@@ -1,6 +1,5 @@
 from dp import DPArray, display
 
-
 def edit_distance(str1, str2, alpha, beta, gamma):
     """
     Edit Distance Problem:
@@ -79,9 +78,7 @@ ALPHA = 10
 BETA = 12
 GAMMA = 3
 
-
 dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
-
 
 description = "# Edit Distance \n\n"
 description += "Change \"*" + str1 + "*\" to \"*" + str2 + "*\""

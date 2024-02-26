@@ -4,7 +4,7 @@
 
 ### Examples
 
-- Add edit distance 1d and 2d (#49)
+- Add edit distance (#49)
 - Add weighted interval scheduling (#53)
 
 ### API
