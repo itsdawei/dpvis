@@ -1,6 +1,6 @@
 # How to use Self-Testing Mode
 
-Self-testing mode is a feature that can be used in any dpvis program to test your knowledge of a program's execution. For the entirety of this tutotial, we will use the [Knapsack](../examples/knapsack.md) example.
+Self-testing mode is a feature that can be used in any dpvis program to test your knowledge of a program's execution. For the entirety of this tutorial, we will use the [Knapsack](../examples/knapsack.md) example.
 
 After running the code for Knapsack, the following window will show up.
 
