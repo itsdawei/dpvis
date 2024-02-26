@@ -45,7 +45,7 @@ style="background-color:#5c53a5">purple</span> because it was correct. Since the
 This test can be turned off by unchecking the "What are its dependencies?" checkbox before switching to testing mode.
 
 In the read test, our goal is to select all cells that were read from in the next timestep (would be <span
-style="background-color:#b7609a">pink</span>). Just like in the write test, you can select cells as your answer by clicking on them. Try answering the question on your own by clicking cells (hint: use the recurrence on the top left of the screen to see what cells are read from)
+style="background-color:#b7609a">violet</span> or <span style="background-color:#eb7f86">pink</span>). Just like in the write test, you can select cells as your answer by clicking on them. Try answering the question on your own by clicking cells (hint: use the recurrence on the top left of the screen to see what cells are read from)
 
 <!-- ![alt text](/docs/test_mode/images/recurrence.png "Title") -->
 
@@ -58,7 +58,7 @@ Recall from the write test that we wrote to cell `i=1` and `C=1`. As shown in th
 <img src="../images/correct_read.png" width="75%"/>
 
 The cell will turn <span
-style="background-color:#b7609a">pink</span> since it was the correct answer. Since only one cell was read from, we completed the read test and the test mode will prompt you for the value test. Note that if more cells were read from, they would have to be clicked on before moving on to the next test.
+style="background-color:#b7609a">violet</span> since it was the correct answer. Since only one cell was read from, we completed the read test and the test mode will prompt you for the value test. Note that if more cells were read from, they would have to be clicked on before moving on to the next test.
 
 ## Value Tests
 This test can be turned off by unchecking the "What is its value?" checkbox before switching to testing mode.
