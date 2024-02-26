@@ -9,6 +9,7 @@
 
 ### API
 
+- Fixing colors in test mode tutorial to account for max/min (#65)
 - Adding a test mode tutorial (#64)
 - Adding more descriptive alerts in test mode (#57)
 - Fix hover-text for 1D arrays (#58)
