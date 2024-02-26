@@ -15,7 +15,7 @@ theme:
 nav:
   - Home: README.md
   - Getting Started: getting_started.md
-  - Using Test Mode: test_mode/test_mode.md
+  - Test Mode Tutorial: test_mode/test_mode.md
   - Examples:
     - examples/index.md
     - Fibonacci: examples/fibonacci.md
