@@ -71,4 +71,11 @@ style="background-color:#5c53a5">purple</span> cell that was written to (recall 
 <img src="../images/value_textbox" width="75%"/>
 
 Using the recurrence relation try to enter the value written to the <span
-style="background-color:#5c53a5">purple</span> cell on your own. Well, we read a single cell `OPT[0, 1]` with which has value `0`.
+style="background-color:#5c53a5">purple</span> cell on your own. Recall from the read test that we read cell `OPT[0, 1]` which has value `0` and ignore cell `OPT[0, 1 - c(1)]` because we are in a basecase. From our recurrence relation, that means we write the following value to the purple cell:
+```
+OPT[1, 1] = max(OPT[0, 1]) = 0
+``` 
+If you have not already done so, enter `0` into the textbox. The value test will be complete and the write test for the next timestep will be prompted.
+
+## Navigating Test Mode
+To exit test mode, click on the "Exit Testing Mode" button. The slider at the top of the screen will return to the screen so you can view other timesteps. Test mode can be started from any timestep. Try testing yourself on timestep `3` by moving the slider to the prior timestep (i.e. `2`) and then clicking the "Test Myself" button.
