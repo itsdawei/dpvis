@@ -55,7 +55,7 @@ Recall from the write test that we wrote to cell `i=1` and `C=1`. As shown in th
 
 <!-- ![alt text](/docs/test_mode/images/correct_read.png "Title") -->
 
-<img src="../images/correct_read" width="75%"/>
+<img src="../images/correct_read.png" width="75%"/>
 
 The cell will turn <span
 style="background-color:#b7609a">pink</span> since it was the correct answer. Since only one cell was read from, we completed the read test and the test mode will prompt you for the value test. Note that if more cells were read from, they would have to be clicked on before moving on to the next test.
@@ -68,7 +68,7 @@ style="background-color:#5c53a5">purple</span> cell that was written to (recall 
 
 <!-- ![alt text](/docs/test_mode/images/value_textbox.png "Title") -->
 
-<img src="../images/value_textbox" width="75%"/>
+<img src="../images/value_textbox.png" width="75%"/>
 
 Using the recurrence relation try to enter the value written to the <span
 style="background-color:#5c53a5">purple</span> cell on your own. Recall from the read test that we read cell `OPT[0, 1]` which has value `0` and ignore cell `OPT[0, 1 - c(1)]` because we are in a basecase. From our recurrence relation, that means we write the following value to the purple cell:
