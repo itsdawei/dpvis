@@ -2,23 +2,25 @@
 
 - Given two strings `str1` and `str2`, what is the minimum number of edits
   to convert `str1` to `str2`?
-- Each edit costs 1, and is either an add, delete, or replace.
+- We can insert a letter in `str1` for a cost of $\alpha$, delete a letter from
+  `str1` for a cost of $\beta$, or substitue a letter of `str1` with a letter
+   from `str2` for a cost of $\gamma$.
 - Goal: find a minimum cost set of edits that converts `str1` to `str2`.
 
 ## Dynamic Programming Solution
 
 > A fully executable example can be found on our [GitHub](https://github.com/itsdawei/dpvis/tree/main/demos/edit_distance_2d.py).
 
-Let $OPT[i, j]$ denote the cheapest conversion between the first $i$ characters of `str1`
-and the first $j$ characters of `str2`.
+Let $OPT[i, j]$ denote the cheapest distance from the first $i$ characters of `str1`
+to the first $j$ characters of `str2`.
 
 **BASE CASE: $i$ is $0$.** `str1` is empty, 
-so we should just pay the cost to remove the remaining letters in the other string. So
-we should record that $OPT[i, j] = j$.
+so we should just pay the cost of adding the remaining letters in `str2`. So
+we should record that $OPT[i, j] = \alpha * j$.
 
 **BASE CASE: $j$ is $0$.** `str2` is empty, 
-so we should just pay the cost to remove the remaining letters in the other string. So
-we should record that $OPT[i, j] = i$.
+so we should just pay the cost to removing the remaining letters in `str1`. So
+we should record that $OPT[i, j] = \beta * i$.
 
 **CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as
 the last letter of `str2`. So we should leave the last letters alone and convert
@@ -28,7 +30,7 @@ the last letter of `str2`. So we should leave the last letters alone and convert
 the last letter of `str2`. At this point, we have to either add the last letter of 
 `str2` to `str1`, delete the last letter of `str1`, or replace the last letter of 
 `str1` with the last letter of `str2`. Each option is an edit, so we must record
-$OPT[i, j] = 1 + min(OPT[i, j - 1], OPT[i - 1, j], OPT[i - 1, j - 1])$.
+$OPT[i, j] = \min(\alpha + OPT[i, j - 1], \beta + OPT[i - 1, j], \gamma + OPT[i - 1, j - 1])$.
 
 ## Visualization with `dpvis`
 
@@ -37,13 +39,16 @@ We can visualize this with `dpvis` as follows:
 ```python linenums="1"
 from dp import DPArray, display
 
-def edit_distance(str1, str2):
+
+def edit_distance(str1, str2, alpha, beta, gamma):
     """
     Edit Distance Problem:
     Given two strings str1 and str2 of lengths m and n, respectively, what is 
-    the cost of the cheapest set of actions that converts str1 into str2. 
+    the cost of the cheapest set of actions that converts str1 into str2?
     The following actions are possible:
-    add before/after index i, remove before/after index i, replace at index i
+    insert before/after index i - costs alpha
+    delete before/after index i - costs beta
+    substitute at index i - costs gamma
 
     Solution adapted from Bhavya Jain's solution:
     https://www.geeksforgeeks.org/edit-distance-dp-5/
@@ -54,26 +59,25 @@ def edit_distance(str1, str2):
     OPT = DPArray((m + 1, n + 1), array_name="Edit Distance", dtype=int)
 
     # Base cases: either str1 or str2 is empty
-    # Then we have to pay to remove/add the remaining letters
+    # Then we have to pay to insert/delete the remaining letters
     for i in range(m + 1):
-        OPT[i, 0] = i
+        OPT[i, 0] = beta * i
     for j in range(n + 1):
-        OPT[0, j] = j
-    OPT.annotate("Base cases: no remaining letters in str1 or str2.")
+        OPT[0, j] = alpha * j
+    OPT.annotate("No remaining letters in str1 or str2.")
 
     # Fill OPT[][] iteratively
-    for i in range(m + 1):
-        for j in range(n + 1):
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
             # Base case: either string is empty and has already been handled.
-            if i == 0 or j == 0:
-                pass
-
+            annotate_string = "str1: " + str1[:i]
+            annotate_string += ", str2: " + str2[:j] + " " + ("_"*50) + " "
+            
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
-            elif str1[i - 1] == str2[j - 1]:
+            if str1[i - 1] == str2[j - 1]:
                 OPT[i, j] = OPT[i - 1, j - 1]
-                OPT.annotate("Last character same: pay OPT cost for remaining "
-                             "strings.")
+                annotate_string += "Last character same: pay OPT cost for remaining strings."
 
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
@@ -83,20 +87,29 @@ def edit_distance(str1, str2):
                     (i - 1, j),  # Remove
                     (i - 1, j - 1)  # Replace
                 ]
-                OPT[i, j] = 1 + OPT.min(indices=indices)
-                OPT.annotate("Last characters different: test between insert, "
-                             "remove, replace.")
+                elements = [
+                    OPT[i, j - 1] + alpha,
+                    OPT[i-1, j] + beta,
+                    OPT[i-1, j - 1] + gamma
+                ]
+
+                OPT[i, j] = OPT.min(indices=indices, elements=elements)
+
+            OPT.annotate(annotate_string)
 
     return OPT
 
-if __name__ == "__main__":
-    # Test Example
-    str1 = "sunday"
-    str2 = "saturday"
 
-    dp_array = edit_distance(str1, str2)
+# Test Example
+str1 = "sunday"
+str2 = "saturday"
+ALPHA = 10
+BETA = 12
+GAMMA = 3
 
-    display(dp_array, row_labels="_" + str1, column_labels="_" + str2)
+dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
+
+display(dp_array,  row_labels="_" + str1, column_labels="_" + str2)
 ```
 
 This is what you will see when you execute the above code.
@@ -122,4 +135,4 @@ iteration, we pay one and choose between removing a letter from `str1`,
 removing a letter from `str2` or replacing a the last letter of `str1` 
 with `str2`. In this case, removing the last letter of `str2` is the 
 cheapest option with a cost of 3, so we pay 1 to delete the last letter of 
-`str2` and then we can pay 3 more to convert from there onwards (TODO: clean up).
+`str2` and then we can pay 3 more to convert from there onwards.

@@ -7,9 +7,9 @@ def edit_distance(str1, str2, alpha, beta, gamma):
     Given two strings str1 and str2 of lengths m and n, respectively, what is 
     the cost of the cheapest set of actions that converts str1 into str2?
     The following actions are possible:
-    add before/after index i - costs alpha
-    remove before/after index i - costs beta
-    replace at index i - costs gamma
+    insert before/after index i - costs alpha
+    delete before/after index i - costs beta
+    substitute at index i - costs gamma
 
     Solution adapted from Bhavya Jain's solution:
     https://www.geeksforgeeks.org/edit-distance-dp-5/
@@ -20,7 +20,7 @@ def edit_distance(str1, str2, alpha, beta, gamma):
     OPT = DPArray((m + 1, n + 1), array_name="Edit Distance", dtype=int)
 
     # Base cases: either str1 or str2 is empty
-    # Then we have to pay to remove/add the remaining letters
+    # Then we have to pay to insert/delete the remaining letters
     for i in range(m + 1):
         OPT[i, 0] = beta * i
     for j in range(n + 1):
@@ -57,13 +57,13 @@ def edit_distance(str1, str2, alpha, beta, gamma):
                 OPT[i, j] = OPT.min(indices=indices, elements=elements)
                 arr = OPT.arr
                 if min(arr[i, j - 1] + alpha, arr[i-1, j] + beta, arr[i-1, j - 1] + gamma) == arr[i, j-1] + alpha:
-                    annotate_string += "Add the last letter str2 to end of str1, obtaining str1 = " + str1[:i]
+                    annotate_string += "Insert the last letter str2 to end of str1, obtaining str1 = " + str1[:i]
                     annotate_string += str2[j-1] + " and str2 = " + str2[:j] + ". Then, since the last letters"
                     annotate_string += " are the same, iterate to str1 = " + str1[:i] + " and str2 = " + str2[:j-1] + "."
                 elif min(arr[i, j - 1] + alpha, arr[i-1, j] + beta, arr[i-1, j - 1] + gamma) == arr[i-1, j] + beta:
-                    annotate_string += "Remove the last letter of str1."
+                    annotate_string += "Delete the last letter of str1."
                 else:
-                    annotate_string += "Replace the last letter of str1 with the last letter of str2, obtaining str1 = "
+                    annotate_string += "Substitute the last letter of str1 with the last letter of str2, obtaining str1 = "
                     annotate_string += str1[:i-1] + str2[j-1] + " and str2 = " + str2[:j] + ". Then, since the last letters"
                     annotate_string += " are the same, iterate to str1 = " + str1[:i-1] + " and str2 = " + str2[:j-1] + "."
 
@@ -85,8 +85,8 @@ dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
 description = "# Edit Distance \n\n"
 description += "Change \"*" + str1 + "*\" to \"*" + str2 + "*\""
-description += "\n\n Cost of adding to string 1: " + str(ALPHA)
-description += "\n\n Cost of removing from string 1: " + str(BETA)
-description += "\n\n Cost of replacing last letter of string 1: " + str(GAMMA)
+description += "\n\n Cost of inserting to string 1: " + str(ALPHA)
+description += "\n\n Cost of deleting from string 1: " + str(BETA)
+description += "\n\n Cost of substituting last letter of string 1: " + str(GAMMA)
 
 display(dp_array, description=description,  row_labels="_" + str1, column_labels="_" + str2)
