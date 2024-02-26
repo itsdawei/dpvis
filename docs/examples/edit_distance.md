@@ -111,28 +111,3 @@ dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
 display(dp_array,  row_labels="_" + str1, column_labels="_" + str2)
 ```
-
-This is what you will see when you execute the above code.
-
-<img src="../images/edit_distance_empty.png" width="75%"/>
-
-On the top of the page is a slider to control what timestep is being
-visualized. The slider can be used to show different timesteps by clicking and
-dragging or using the <span
-style="color:white;background-color:black">PLAY</span> and <span
-style="color:white;background-color:black">STOP</span> buttons. Below the
-slider is a visualization presenting the elements of the array on the current
-timestep. The zeroth timestep shows the base cases (when one of the strings is
-completely empty).
-
-Try dragging the slider to timestep 5.
-
-<img src="../images/edit_distance_partial.png" width="75%"/>
-
-Now the visual shows that we're comparing `"s"` from `str1` to `"satur"` from 
-`str2`. Since the last letters of the partial strings are not equal in this 
-iteration, we pay one and choose between removing a letter from `str1`, 
-removing a letter from `str2` or replacing a the last letter of `str1` 
-with `str2`. In this case, removing the last letter of `str2` is the 
-cheapest option with a cost of 3, so we pay 1 to delete the last letter of 
-`str2` and then we can pay 3 more to convert from there onwards.
