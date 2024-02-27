@@ -53,13 +53,12 @@ The library has three major features:
        poetry install
        ```
     - Although highly recommended, a virtual environment is not necessary as
-      long as you have installed a Python package manager such as
+      long as you have Python 3.8+ and a Python package manager such as
       [pip](https://pypi.org/project/pip/). In this case, you can install the
       library directly with:
       ```python
       pip install -e .
       ```
-      (Make sure you have Python 3.8+ installed)
 
 1. You can verify the installation by running one of our many demos.
     ```bash
@@ -70,7 +69,7 @@ The library has three major features:
     ```
 
 1. Open [http://127.0.0.1:8050/](http://127.0.0.1:8050/) with your favorite
-   browser.
+   browser. (Make sure that it is "http" not "https")
 
 ## Documentation
 
