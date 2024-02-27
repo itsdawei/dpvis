@@ -26,57 +26,66 @@ def edit_distance(str1, str2, alpha, beta, gamma):
         OPT[i, 0] = beta * i
     for j in range(n + 1):
         OPT[0, j] = alpha * j
-    OPT.annotate("Base case: str1 or str2 is empty")
+    OPT.annotate("**Base cases:** `str1 = ''` or `str2 = ''`")
 
     # Fill OPT[][] iteratively
     for i in range(1, m + 1):
         for j in range(1, n + 1):
             # Base case: either string is empty and has already been handled.
-            annotate_string = f"str1: {str1[:i]}, str2: {str2[:j]} \n\n"
+            annotation = f"`str1 = '{str1[:i]}'` and `str2 = '{str2[:j]}'` \n\n"
 
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
             if str1[i - 1] == str2[j - 1]:
                 OPT[i, j] = OPT[i - 1, j - 1]
-                annotate_string += ("Last character same: pay OPT cost for "
-                                    "remaining strings.")
+                arr = OPT.arr
+                annotation += (
+                    f"`'{str1[i-1]}' == '{str2[j-1]}'`\n\n"
+                    f"**New strings:** `str1 = '{str1[:i-1]}'` and "
+                    f"`str2 = '{str2[:j-1]}'`\n\n"
+                    f"Now we invoke the optimal substructure "
+                    f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i, j-1]}`")
+                OPT.annotate(annotation)
+                continue
 
             # At this point the last characters are different, so consider
             # each possible action and pick the cheapest.
-            else:
-                indices = [
-                    (i, j - 1),  # insert
-                    (i - 1, j),  # remove
-                    (i - 1, j - 1)  # replace
-                ]
-                elements = [
-                    OPT[i, j - 1] + alpha,  # insert
-                    OPT[i - 1, j] + beta,  # remove
-                    OPT[i - 1, j - 1] + gamma,  # replace
-                ]
+            indices = [
+                (i, j - 1),  # insert
+                (i - 1, j),  # remove
+                (i - 1, j - 1)  # replace
+            ]
+            elements = [
+                OPT[i, j - 1] + alpha,  # insert
+                OPT[i - 1, j] + beta,  # remove
+                OPT[i - 1, j - 1] + gamma,  # replace
+            ]
 
-                OPT[i, j] = OPT.min(indices=indices, elements=elements)
-                arr = OPT.arr
-                if OPT[i, j] == arr[i, j - 1] + alpha:
-                    annotate_string += (f"Insert the last letter str2 (\'{str1[i]}\') to end "
-                                        f"of str1, obtaining str1 = {str1[:i]} "
-                                        f"{str2[j-1]} and str2 = {str2[:j]}."
-                                        f"Then, since the last letters are "
-                                        f"the same, iterate to str1 = "
-                                        f"{str1[:i]} str2 = {str2[:j - 1]}.")
-                elif OPT[i, j] == arr[i - 1, j - 1] + gamma:
-                    annotate_string += (f"Substitute the last letter of str1 "
-                                        f"with the last letter of str2, "
-                                        f"obtaining str1 = {str1[:i - 1]}"
-                                        f" {str2[j - 1]} and str2 = "
-                                        f"{str2[:j]}. Then, since the last "
-                                        f"letters are the same, iterate to str1"
-                                        f" = {str1[:i - 1]} and str2 = "
-                                        f"{str2[:j-1]}.")
-                elif OPT[i, j] == arr[i - 1, j] + beta:
-                    annotate_string += "Delete the last letter of str1."
-
-            OPT.annotate(annotate_string)
+            OPT[i, j] = OPT.min(indices=indices, elements=elements)
+            arr = OPT.arr
+            if arr[i, j] == arr[i, j - 1] + alpha:
+                annotation += (
+                    f"Append `'{str2[j-1]}'` to str1\n\n"
+                    f"**New strings:** `str1 = '{str1[:i] + str2[j-1]}'` and "
+                    f"`str2 = '{str2[:j]}'`\n\n"
+                    f"Now we invoke the optimal substructure "
+                    f"`OPT['{str1[:i]}']['{str2[:j-1]}'] = {arr[i, j-1]}`")
+            elif arr[i, j] == arr[i - 1, j - 1] + gamma:
+                annotation += (
+                    f"Replace `str1[{i}] = '{str1[i-1]}'` with "
+                    f"`'{str2[j-1]}'`\n\n"
+                    f"**New strings:** `str1 = '{str1[:i-1] + str2[j-1]}'` and "
+                    f"`str2 = '{str2[:j]}'`\n\n"
+                    f"Now we invoke the optimal substructure "
+                    f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i-1, j-1]}`")
+            elif arr[i, j] == arr[i - 1, j] + beta:
+                annotation += (
+                    f"Delete `'{str1[i-1]}'` from str1\n\n"
+                    f"**New strings:** `str1 = '{str1[:i-1]}'` and "
+                    f"`str2 = '{str2[:j]}'`\n\n"
+                    f"Now we invoke the optimal substructure "
+                    f"`OPT['{str1[:i-1]}']['{str2[:j]}'] = {arr[i-1, j]}`")
+            OPT.annotate(annotation)
 
     return OPT
 
@@ -91,11 +100,12 @@ if __name__ == '__main__':
 
     dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
-    desc = (f"# Edit Distance \n\n"
-            f"Change \"*{str1}*\" to \"*{str2}*\""
-            f"\n\n Cost of inserting to string 1: {ALPHA}"
-            f"\n\n Cost of deleting from string 1: {BETA}"
-            f"\n\n Cost of substituting last letter of string 1: {GAMMA}")
+    desc = (f"# Edit Distance\n\n"
+            f"**PROBLEM**: Change \"*{str1}*\" to \"*{str2}*\"\n\n"
+            f"**OPERATIONS ALLOWED ON `str1` AND THEIR COSTS**:\n"
+            f"- Inserting ($$\\alpha$$) = {ALPHA}\n"
+            f"- Deleting ($$\\beta$$) = {BETA}\n"
+            f"- Replacing ($$\\gamma$$) = {GAMMA}\n")
 
     display(dp_array,
             description=desc,

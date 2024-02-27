@@ -473,11 +473,11 @@ class Visualizer:
         def update_annotation(t):
             """Update the annotation based on the slider value."""
             annotation = ""
-            for name, metadata in self._graph_metadata.items():
+            for _, metadata in self._graph_metadata.items():
                 ann = metadata["t_annotations"][t]
                 if not ann:
                     continue
-                annotation += f"**\[{name}\]** {ann}"  # pylint: disable=anomalous-backslash-in-string
+                annotation += ann
 
             # Hides the textbox if annotation is empty.
             style = {}
