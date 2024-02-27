@@ -6,33 +6,36 @@
     - Inserting a letter costs $\alpha$.
     - Deleting a letter costs $\beta$.
     - Replacing a letter with a different letter costs $\gamma$.
-- **Question**: Given two strings `str1` and `str2`, what is the *edit distance*
-  between `str1` and `str2`?
+- **Question**: Given two strings `str1` and `str2`, what is the *edit
+  distance* between `str1` and `str2`?
 
 ## Dynamic Programming Solution
 
-> A fully executable example can be found on our [GitHub](https://github.com/itsdawei/dpvis/tree/main/demos/edit_distance.py).
+> A fully executable example can be found on our
+> [GitHub](https://github.com/itsdawei/dpvis/tree/main/demos/edit_distance.py).
 
-Let $OPT[i, j]$ denote the cheapest distance from the first $i$ characters of `str1`
-to the first $j$ characters of `str2`.
+Let $OPT[i, j]$ denote the edit distance from the first $i$ characters of
+`str1` to the first $j$ characters of `str2`.
 
-**BASE CASE: $i$ is $0$.** `str1` is empty,
-so we should just pay the cost of adding the remaining letters in `str2`. So
-we should record that $OPT[i, j] = \alpha \cdot j$.
+**BASE CASE: $i$ is $0$.** `str1` is empty, so we should just pay the cost of
+adding the remaining letters in `str2`. So we should record that $OPT[0, j]
+= \alpha \cdot j$.
 
-**BASE CASE: $j$ is $0$.** `str2` is empty,
-so we should just pay the cost to removing the remaining letters in `str1`. So
-we should record that $OPT[i, j] = \beta \cdot i$.
+**BASE CASE: $j$ is $0$.** `str2` is empty, so we should just pay the cost to
+removing the remaining letters in `str1`. So we should record that $OPT[i, 0]
+= \beta \cdot i$.
 
-**CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as
-the last letter of `str2`. So we should leave the last letters alone and convert
-`str1[i-1]` to `str2[j-1]` as cheaply as possible. So, $OPT[i, j] = OPT[i-1, j-1]$.
+**CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as the
+last letter of `str2`. So we should leave the last letters alone and convert
+`str1[i-1]` to `str2[j-1]` as cheaply as possible. So, $OPT[i, j] = OPT[i-1,
+j-1]$.
 
 **CASE 2: `str1[i] != str2[j]`.** The last letter of `str1` is not the same as
-the last letter of `str2`. At this point, we have to either add the last letter of
-`str2` to `str1`, delete the last letter of `str1`, or replace the last letter of
-`str1` with the last letter of `str2`. Each option is an edit, so we must record
-$OPT[i, j] = \min(\alpha + OPT[i, j - 1], \beta + OPT[i - 1, j], \gamma + OPT[i - 1, j - 1])$.
+the last letter of `str2`. At this point, we have to either add the last letter
+of `str2` to `str1`, delete the last letter of `str1`, or replace the last
+letter of `str1` with the last letter of `str2`. Each option is an edit, so we
+must record $OPT[i, j] = \min(\alpha + OPT[i, j - 1], \beta + OPT[i - 1, j],
+\gamma + OPT[i - 1, j - 1])$.
 
 ## Visualization with `dpvis`
 
