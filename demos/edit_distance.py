@@ -63,24 +63,22 @@ def edit_distance(str1, str2, alpha, beta, gamma):
             arr = OPT.arr
             if arr[i, j] == arr[i, j - 1] + alpha:
                 annotation += (
-                    f"Append `'{str2[j-1]}'` to str1\n\n"
-                    f"**New strings:** `str1 = '{str1[:i] + str2[j-1]}'` and "
-                    f"`str2 = '{str2[:j]}'`\n\n"
-                    f"Now we invoke the optimal substructure "
+                    f"The most efficient operation is to **append "
+                    f"`'{str2[j-1]}'` to `str1`**\n\n"
+                    f"Now, we need to find the edit distance between "
+                    f"`'{str1[:i]}'` and `'{str2[:j-1]}'`. "
+                    f"Using DP, we can invoke the optimal substructure "
                     f"`OPT['{str1[:i]}']['{str2[:j-1]}'] = {arr[i, j-1]}`")
             elif arr[i, j] == arr[i - 1, j - 1] + gamma:
                 annotation += (
                     f"Replace `str1[{i}] = '{str1[i-1]}'` with "
                     f"`'{str2[j-1]}'`\n\n"
-                    f"**New strings:** `str1 = '{str1[:i-1] + str2[j-1]}'` and "
                     f"`str2 = '{str2[:j]}'`\n\n"
                     f"Now we invoke the optimal substructure "
                     f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i-1, j-1]}`")
             elif arr[i, j] == arr[i - 1, j] + beta:
                 annotation += (
-                    f"Delete `'{str1[i-1]}'` from str1\n\n"
-                    f"**New strings:** `str1 = '{str1[:i-1]}'` and "
-                    f"`str2 = '{str2[:j]}'`\n\n"
+                    f"Delete `'{str1[i-1]}'` from `str1`\n\n"
                     f"Now we invoke the optimal substructure "
                     f"`OPT['{str1[:i-1]}']['{str2[:j]}'] = {arr[i-1, j]}`")
             OPT.annotate(annotation)
