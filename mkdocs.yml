@@ -8,7 +8,7 @@ theme:
     - content.code.annotate
     - navigation.instant
     - navigation.expand
-    - navigation.indexes 
+    - navigation.indexes
     - navigation.top
   icon:
     repo: fontawesome/brands/github
@@ -17,28 +17,30 @@ nav:
   - Getting Started: getting_started.md
   - Test Mode Tutorial: test_mode/test_mode.md
   - Examples:
-    - examples/index.md
-    - Fibonacci: examples/fibonacci.md
-    - Knapsack: examples/knapsack.md
-    - Weighted Interval Scheduling: examples/wis.md
-    - Edit Distance: examples/edit_distance.md
+      - examples/index.md
+      - Fibonacci: examples/fibonacci.md
+      - Knapsack: examples/knapsack.md
+      - Weighted Interval Scheduling: examples/test.ipynb
+      - Edit Distance: examples/edit_distance.md
   - API:
-    - DPArray: api/dp_array.md
-    - Logger: api/logger.md
-    - Visualizer: api/visualizer.md
+      - DPArray: api/dp_array.md
+      - Logger: api/logger.md
+      - Visualizer: api/visualizer.md
 plugins:
+  - mkdocs-jupyter
+    # execute: true
   - search
   - gen-files:
       scripts:
-      - docs/gen_ref_pages.py 
+        - docs/gen_ref_pages.py
   - mkdocstrings:
-      default_handler: python
+      defapip install nbconvert==5.6.1ult_handler: python
       handlers:
         python:
           options:
             docstring_style: google
             docstring_options:
-              returns_named_value: False
+              returns_named_value: false
 markdown_extensions:
   - toc:
       permalink: "#"
