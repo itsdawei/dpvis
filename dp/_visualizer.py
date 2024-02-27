@@ -136,7 +136,7 @@ class Visualizer:
 
         # https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/
         # If we use a dark theme, make the layout background transparent
-        themes = [dbc.themes.LUX]
+        themes = [dbc.themes.JOURNAL]
 
         # Create Dash App.
         self._app = Dash(
@@ -318,6 +318,7 @@ class Visualizer:
             layout={
                 "title": arr.array_name,
                 "title_x": 0.5,
+                "height": max(100 * h, 300),
                 "xaxis": {
                     "tickmode": "array",
                     "tickvals": np.arange(w),
@@ -330,10 +331,11 @@ class Visualizer:
                     "tickvals": np.arange(h),
                     "labelalias": row_alias,
                     "showgrid": False,
-                    "zeroline": False
+                    "zeroline": False,
+                    "scaleanchor": "x",
                 },
                 "coloraxis": {
-                    "showscale": False
+                    "showscale": False,
                 },
                 "clickmode": "event+select",
                 "hoverlabel": {
@@ -360,6 +362,7 @@ class Visualizer:
                 ygap=1,
                 visible=False,
                 showscale=self._primary == arr.array_name,
+                # showscale=False,
             )
 
         return self._show_figure_trace(figure, 0)
@@ -387,7 +390,7 @@ class Visualizer:
 
             # Create list of write indices for t+1.
             write_mask = t_write_matrix[t + 1]
-            all_writes = np.transpose(np.nonzero(write_mask))
+            all_writes = list(np.transpose(np.nonzero(write_mask)))
 
             # Create list of dependencies for t+1.
             # Any all writes have the same reads on the same timestep, so we
@@ -397,6 +400,7 @@ class Visualizer:
             # Populate test_q according to what tests are selected.
             test_q = []
 
+            # NOTE: Render: (Index, Color) .
             if "What is the next cell?" in selected_tests:
                 # Write test.
                 test_q.append({
@@ -414,7 +418,7 @@ class Visualizer:
                 # Read test.
                 test_q.append({
                     "truth": all_reads,
-                    "render": [],
+                    "render": [(index, CellType.WRITE) for index in all_writes],
                     "color": CellType.READ,
                     "expected_triggered_id": self._primary,
                     "type": TestType.READ,
@@ -424,10 +428,12 @@ class Visualizer:
 
             if "What is its value?" in selected_tests:
                 # Value tests.
+                r = [(index, CellType.READ) for index in all_reads]
                 for x, y in zip(*np.nonzero(write_mask)):
                     test_q.append({
                         "truth": [values[t + 1][x][y]],
-                        "render": [(x, y)],
+                        # "render": list(all_reads) + [(x, y)],
+                        "render": r + [[(x, y), CellType.WRITE]],
                         "color": CellType.WRITE,
                         "expected_triggered_id": "user-input",
                         "type": TestType.VALUE,
@@ -465,21 +471,23 @@ class Visualizer:
             return next_figures
 
         @self.app.callback(Output("array-annotation", "children"),
+                           Output("array-annotation", "style"),
                            Input("slider", "value"),
                            prevent_initial_call=False)
         def update_annotation(t):
             """Update the annotation based on the slider value."""
-            card_body = dbc.CardBody([])
-            for name, metadata in self._graph_metadata.items():
+            annotation = ""
+            for _, metadata in self._graph_metadata.items():
                 ann = metadata["t_annotations"][t]
                 if not ann:
                     continue
-                card_body.children.append(
-                    html.P(f"{name}: {ann}", className="text-center w-auto"))
+                annotation += ann
 
-            # Hides card if it is empty.
-            card_body.class_name = "d-block" if card_body.children else "d-none"
-            return card_body
+            # Hides the textbox if annotation is empty.
+            style = {}
+            if not annotation:
+                style = {"display": "none"}
+            return annotation, style
 
         @self.app.callback(
             Output("slider", "value", allow_duplicate=True),
@@ -488,11 +496,7 @@ class Visualizer:
             State("slider", "value"),
         )
         def update_slider(key_data, _, t):
-            """Update the value of slider based on state of play/stop button.
-
-            Update slider value based on store-keypress. Store-keypress is
-            changed in assets/custom.js.
-            """
+            """Update the value of slider based on state of play/stop button."""
             if self._debug:
                 print("[CALLBACK] update_slider")
             if ctx.triggered_id == "interval":
@@ -501,9 +505,12 @@ class Visualizer:
                 return (t + key_data - 38) % len(values)
             return dash.no_update
 
-        @self.app.callback(Output("interval", "max_intervals"),
-                           Input("play", "n_clicks"), Input("stop", "n_clicks"),
-                           Input("self-test-button", "n_clicks"))
+        @self.app.callback(
+            Output("interval", "max_intervals"),
+            Input("play", "n_clicks"),
+            Input("stop", "n_clicks"),
+            Input("self-test-button", "n_clicks"),
+        )
         def play_pause_playback(_start_clicks, _stop_clicks, _n_clicks):
             """Starts and stop playback from running.
 
@@ -518,8 +525,9 @@ class Visualizer:
             return dash.no_update
 
         @self.app.callback(
-            Output(component_id="playback-control", component_property="style"),
-            Input("test-info", "data"))
+            Output("playback-control", "style"),
+            Input("test-info", "data"),
+        )
         def toggle_layout(info):
             if self._debug:
                 print("[CALLBACK] toggle_layout")
@@ -527,11 +535,14 @@ class Visualizer:
                 return {"visibility": "hidden"}
             return {"visibility": "visible"}
 
-        @self.app.callback(Output("test-info", "data", allow_duplicate=True),
-                           Output("test-mode-toggle", "children"),
-                           Input("self-test-button", "n_clicks"),
-                           State("test-info", "data"), State("slider", "value"),
-                           State("test-select-checkbox", "value"))
+        @self.app.callback(
+            Output("test-info", "data", allow_duplicate=True),
+            Output("test-mode-toggle", "children"),
+            Input("self-test-button", "n_clicks"),
+            State("test-info", "data"),
+            State("slider", "value"),
+            State("test-select-checkbox", "value"),
+        )
         def toggle_test_mode(_, info, t, selected_tests):
             """Toggles self-testing mode.
 
@@ -590,8 +601,8 @@ class Visualizer:
             # Highlight the revelant cells as specified by "render".
             test = info["tests"][0]
             render = test["render"]
-            for x, y in render:
-                z[x][y] = test["color"]
+            for (x, y), color in render:
+                z[x][y] = color
 
             # Bring up test-specific instructions.
             alert.is_open = True
@@ -667,7 +678,7 @@ class Visualizer:
             truths = test["truth"]
             if answer in truths:
                 truths.remove(answer)
-                test["render"].append(answer)
+                test["render"].append([answer, test["color"]])
 
                 # Construct alert hint.
                 test_type = test["type"]
@@ -719,10 +730,12 @@ class Visualizer:
             # Updates test info, the alert, and resets clickData.
             return info, correct_alert, None, dash.no_update
 
-        @self.app.callback(Output(self._primary, "figure",
-                                  allow_duplicate=True),
-                           Input(self._primary, "clickData"),
-                           State("test-info", "data"), State("slider", "value"))
+        @self.app.callback(
+            Output(self._primary, "figure", allow_duplicate=True),
+            Input(self._primary, "clickData"),
+            State("test-info", "data"),
+            State("slider", "value"),
+        )
         def display_dependencies(click_data, info, t):
             # Skip this callback in testing mode.
             if info["tests"] or not click_data:
@@ -776,18 +789,14 @@ class Visualizer:
         ]
 
         test_select_checkbox = dbc.Row([
-            dbc.Col(
-                dbc.Checklist(
-                    questions,
-                    questions,
-                    id="test-select-checkbox",
-                )),
             dbc.Col(dbc.Button("Test Myself!",
                                id="self-test-button",
                                class_name="h-100",
                                color="info"),
                     width="auto",
-                    id="test-mode-toggle")
+                    id="test-mode-toggle"),
+            dbc.Col(
+                dbc.Checklist(questions, questions, id="test-select-checkbox"))
         ])
 
         description_md = [
@@ -795,26 +804,30 @@ class Visualizer:
             for metadata in self._graph_metadata.values()
         ]
 
-        alerts = [
-            html.Div(id="correct-alert",
-                     className="position-fixed z-9999 w-25",
-                     style={
-                         "bottom": 10,
-                         "left": 10,
-                     }),
-            html.Div(id="test-instructions", className="bottom-50 z-9999 w-25"),
-        ]
-
         sidebar = html.Div([
-            dbc.Stack([
-                *description_md,
-                test_select_checkbox,
-                dbc.Input(id="user-input",
-                          type="number",
-                          placeholder="Enter value here"),
-                dbc.Card([], id="array-annotation", color="info", outline=True),
-            ],
-                      id="sidebar"),
+            dbc.Stack(
+                [
+                    *description_md,
+                    test_select_checkbox,
+                    # User input box.
+                    dbc.Input(id="user-input",
+                              type="number",
+                              placeholder="Enter value here",
+                              className="my-1"),
+                    # Textbox to display array annotations.
+                    dcc.Markdown(
+                        "",
+                        id="array-annotation",
+                        className=("bg-secondary-subtle text-center py-3"
+                                   "rounded"),
+                        style={"display": "none"}),
+                    # An alert to display the test instructions.
+                    html.Div(id="test-instructions", className="mx-3"),
+                    # An alert to display the correctness of the input.
+                    html.Div(id="correct-alert", className="mx-3"),
+                ],
+                id="sidebar",
+                className="bg-secondary vh-100 px-3"),
         ])
 
         playback_control = [
@@ -857,15 +870,17 @@ class Visualizer:
                         dbc.Row(
                             playback_control,
                             id="playback-control",
-                            class_name="g-0",
+                            class_name="g-1",
                             align="center",
                         ),
-                        dbc.Row(dbc.Stack(graphs), id="page-content"),
+                        dbc.Row(
+                            dbc.Stack(graphs),
+                            id="page-content",
+                            align="center",
+                        ),
                     ],
                             width=8),
-                ],
-                        class_name="g-3"),
-                *alerts,
+                ]),
                 *datastores,
             ],
             fluid=True,

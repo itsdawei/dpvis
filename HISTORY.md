@@ -2,8 +2,15 @@
 
 ## 0.1.0
 
+### Examples
+
+- Add edit distance (#49, #66)
+- Add weighted interval scheduling (#53)
+
 ### API
 
+- Fixing colors in test mode tutorial to account for max/min (#65)
+- Adding a test mode tutorial (#64)
 - Adding more descriptive alerts in test mode (#57)
 - Fix hover-text for 1D arrays (#58)
 - Allow `int` dtype for `DPArray` (#53)
@@ -50,8 +57,7 @@
 
 ### Documentation
 
-- Update installation instruction (#54, #55)
-- Add WIS (#53)
+- Update installation instruction (#54, #55, #68)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)
