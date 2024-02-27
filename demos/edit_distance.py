@@ -40,11 +40,9 @@ def edit_distance(str1, str2, alpha, beta, gamma):
                 OPT[i, j] = OPT[i - 1, j - 1]
                 arr = OPT.arr
                 annotation += (
-                    f"`'{str1[i-1]}' == '{str2[j-1]}'`\n\n"
-                    f"**New strings:** `str1 = '{str1[:i-1]}'` and "
-                    f"`str2 = '{str2[:j-1]}'`\n\n"
+                    f"`'{str1[i-1]}'` and `'{str2[j-1]}'` are equal\n\n"
                     f"Now we invoke the optimal substructure "
-                    f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i, j-1]}`")
+                    f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i-1, j-1]}`")
                 OPT.annotate(annotation)
                 continue
 

@@ -1,12 +1,13 @@
 # Edit Distance
 
-- Given two strings `str1` and `str2`, what is the *edit distance* between
-  `str1` and `str2`? cost of total operations
-  on `str1` to turn it into string `str2`?
-- We can insert a letter in `str1` for a cost of $\alpha$, delete a letter from
-  `str1` for a cost of $\beta$, or substitue a letter of `str1` with a letter
-  from `str2` for a cost of $\gamma$.
-- Goal: find a minimum cost set of edits that converts `str1` to `str2`.
+- The *edit distance* between two strings is the minimum total cost of the
+  operations required to convert `str1` to `str2`?
+- The allowed operations and their corresponding costs are as follows:
+    - Inserting a letter costs $\alpha$.
+    - Deleting a letter costs $\beta$.
+    - Replacing a letter with a different letter costs $\gamma$.
+- **Question**: Given two strings `str1` and `str2`, what is the *edit distance*
+  between `str1` and `str2`?
 
 ## Dynamic Programming Solution
 
@@ -17,11 +18,11 @@ to the first $j$ characters of `str2`.
 
 **BASE CASE: $i$ is $0$.** `str1` is empty,
 so we should just pay the cost of adding the remaining letters in `str2`. So
-we should record that $OPT[i, j] = \alpha * j$.
+we should record that $OPT[i, j] = \alpha \cdot j$.
 
 **BASE CASE: $j$ is $0$.** `str2` is empty,
 so we should just pay the cost to removing the remaining letters in `str1`. So
-we should record that $OPT[i, j] = \beta * i$.
+we should record that $OPT[i, j] = \beta \cdot i$.
 
 **CASE 1: `str1[i] == str2[j]`.** The last letter of `str1` is the same as
 the last letter of `str2`. So we should leave the last letters alone and convert
