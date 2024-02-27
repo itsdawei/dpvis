@@ -6,10 +6,10 @@ def edit_distance(str1, str2, alpha, beta, gamma):
     Edit Distance Problem:
     Given two strings str1 and str2 of lengths m and n, respectively, what is 
     the cost of the cheapest set of actions that converts str1 into str2?
-    The following actions are possible:
-    insert before/after index i - costs alpha
-    delete before/after index i - costs beta
-    substitute at index i - costs gamma
+    The following operations are possible:
+    - Insert a letter:  costs alpha
+    - Delete a letter: costs beta
+    - Replace a letter: costs gamma
 
     Solution adapted from Bhavya Jain's solution:
     https://www.geeksforgeeks.org/edit-distance-dp-5/
@@ -32,7 +32,7 @@ def edit_distance(str1, str2, alpha, beta, gamma):
     for i in range(1, m + 1):
         for j in range(1, n + 1):
             # Base case: either string is empty and has already been handled.
-            annotation = f"`str1 = '{str1[:i]}'` and `str2 = '{str2[:j]}'` \n\n"
+            annotation = f"`str1 = '{str1[:i]}'` and `str2 = '{str2[:j]}'`\n\n"
 
             # If last characters are the same, pay nothing and pay the optimal
             # costs for the remaining strings.
@@ -61,28 +61,28 @@ def edit_distance(str1, str2, alpha, beta, gamma):
 
             OPT[i, j] = OPT.min(indices=indices, elements=elements)
             arr = OPT.arr
+            annotation += "The most efficient operation is to "
             if arr[i, j] == arr[i, j - 1] + alpha:
-                annotation += (
-                    f"The most efficient operation is to **append "
-                    f"`'{str2[j-1]}'` to `str1`**\n\n"
-                    f"Now, we need to find the edit distance between "
-                    f"`'{str1[:i]}'` and `'{str2[:j-1]}'`. "
-                    f"Using DP, we can invoke the optimal substructure "
-                    f"`OPT['{str1[:i]}']['{str2[:j-1]}'] = {arr[i, j-1]}`")
+                a = str1[:i]
+                b = str2[:j - 1]
+                opt_ab = arr[i, j - 1]
+                annotation += f"**append `'{str2[j-1]}'` to `str1`**\n\n"
             elif arr[i, j] == arr[i - 1, j - 1] + gamma:
-                annotation += (
-                    f"Replace `str1[{i}] = '{str1[i-1]}'` with "
-                    f"`'{str2[j-1]}'`\n\n"
-                    f"`str2 = '{str2[:j]}'`\n\n"
-                    f"Now we invoke the optimal substructure "
-                    f"`OPT['{str1[:i-1]}']['{str2[:j-1]}'] = {arr[i-1, j-1]}`")
+                a = str1[:i - 1]
+                b = str2[:j - 1]
+                opt_ab = arr[i - 1, j - 1]
+                annotation += (f"**replace `str1[{i}] = '{str1[i-1]}'` with "
+                               f"`'{str2[j-1]}'`**\n\n")
             elif arr[i, j] == arr[i - 1, j] + beta:
-                annotation += (
-                    f"Delete `'{str1[i-1]}'` from `str1`\n\n"
-                    f"Now we invoke the optimal substructure "
-                    f"`OPT['{str1[:i-1]}']['{str2[:j]}'] = {arr[i-1, j]}`")
+                a = str1[:i - 1]
+                b = str2[:j]
+                opt_ab = arr[i - 1, j]
+                annotation += f"**delete `'{str1[i-1]}'` from `str1`**\n\n"
+            annotation += (f"Now, we need to find the edit distance between "
+                           f"`'{a}'` and `'{b}'`. Using the DP array, we can "
+                           f"read off the optimal value for the substructure "
+                           f"`OPT['{a}']['{b}'] = {opt_ab}`")
             OPT.annotate(annotation)
-
     return OPT
 
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     dp_array = edit_distance(str1, str2, ALPHA, BETA, GAMMA)
 
     desc = (f"# Edit Distance\n\n"
-            f"**PROBLEM**: Change \"*{str1}*\" to \"*{str2}*\"\n\n"
+            f"**PROBLEM**: Change `str1 = {str1}` to `str2 = '{str2}'`\n\n"
             f"**OPERATIONS ALLOWED ON `str1` AND THEIR COSTS**:\n"
             f"- Inserting ($$\\alpha$$) = {ALPHA}\n"
             f"- Deleting ($$\\beta$$) = {BETA}\n"
