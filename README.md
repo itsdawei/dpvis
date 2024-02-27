@@ -47,11 +47,11 @@ The library has three major features:
        conda activate dpvis
        pip install -e .
        ```
+       (Note the "." at the end of the last line)
     - Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
        ```bash
        poetry install
        ```
-
     - Although highly recommended, a virtual environment is not necessary as
       long as you have installed a Python package manager such as
       [pip](https://pypi.org/project/pip/). In this case, you can install the
@@ -59,6 +59,7 @@ The library has three major features:
       ```python
       pip install -e .
       ```
+      (Make sure you have Python 3.8+ installed)
 
 1. You can verify the installation by running one of our many demos.
     ```bash
@@ -68,7 +69,7 @@ The library has three major features:
     poetry run python demos/knapsack.py
     ```
 
-1. Open [https://127.0.0.1:8050/](https://127.0.0.1:8050/) with your favorite
+1. Open [http://127.0.0.1:8050/](http://127.0.0.1:8050/) with your favorite
    browser.
 
 ## Documentation
