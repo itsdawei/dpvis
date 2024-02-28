@@ -5,14 +5,14 @@ description = "" # TODO
 license = "MIT"
 authors = ["itsdawei <dhlee@usc.edu>"] # TODO Add authors
 readme = "README.md"
-repository = "https://github.com/itsdawei/dynamically-programmed"
+repository = "https://github.com/itsdawei/dpvis"
 packages = [
     { include = "dp" }
 ]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.25" # Later versions of numpy drops support for Python 3.8
+numpy = "^1.26"
 plotly = "^5.17.0"
 dash = "^2.14.0"
 fire = "^0.5.0"
