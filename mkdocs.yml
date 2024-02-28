@@ -20,7 +20,7 @@ nav:
       - examples/index.md
       - Fibonacci: examples/fibonacci.md
       - Knapsack: examples/knapsack.md
-      - Weighted Interval Scheduling: examples/test.ipynb
+      - Weighted Interval Scheduling: examples/wis.ipynb
       - Edit Distance: examples/edit_distance.md
   - API:
       - DPArray: api/dp_array.md
@@ -30,8 +30,8 @@ plugins:
   - mkdocs-jupyter:
       ignore: [".ipynb_checkpoints/*.ipynb"]
       remove_tag_config:
-        remove_input_tags:
-          - hide_code
+        remove_all_outputs_tags:
+          - hide_output
   - search
   - gen-files:
       scripts:
