@@ -1,11 +1,42 @@
 site_name: dpvis Documentation
 repo_url: https://github.com/itsdawei/dpvis
+edit_uri: edit/main/docs/
 repo_name: dpvis
 theme:
   name: material
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+      primary: green
+      accent: red
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: green
+      accent: red
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+      primary: green
+      accent: red
+  custom_dir: docs/overrides
   features:
+    - header.autohide
     - content.code.copy
     - content.code.annotate
+    - content.action.edit
+    - content.action.view
     - navigation.instant
     - navigation.expand
     - navigation.indexes 
@@ -39,6 +70,7 @@ plugins:
             docstring_style: google
             docstring_options:
               returns_named_value: False
+  - git-revision-date-localized
 markdown_extensions:
   - toc:
       permalink: "#"
