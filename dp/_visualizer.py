@@ -616,6 +616,7 @@ class Visualizer:
             # For manually resetting clickData.
             Output(self._primary, "clickData"),
             Output("slider", "value", allow_duplicate=True),
+            Output("test-mode-toggle", "children", allow_duplicate=True),
             # Trigger this callback every time "enter" is pressed.
             Input("user-input", "n_submit"),
             Input(self._primary, "clickData"),
@@ -714,11 +715,16 @@ class Visualizer:
                         next_test = new_info["tests"][0]["type"]
                         alert_hint += (f"Starting {TestType(next_test).name}"
                                        f" test for the next timestep.")
+                        test_button = dash.no_update
                     else:
                         alert_hint += "There are no more tests available."
+                        test_button = dbc.Button("Test Myself!",
+                                     id="self-test-button",
+                                     class_name="h-100",
+                                     color="info")
 
                     correct_alert.children[2] = html.P(alert_hint)
-                    return new_info, correct_alert, None, t + 1
+                    return new_info, correct_alert, None, t + 1, test_button
 
                 # Hint: starting new tests for the same timestep.
                 next_test = info["tests"][0]["type"]
