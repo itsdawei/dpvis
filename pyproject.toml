@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dynamically-programmed" # TODO Rename
+name = "dpvis"
 version = "0.1.0"
 description = "" # TODO
 license = "MIT"
