@@ -5,7 +5,7 @@
 ### Examples
 
 - Add edit distance (#49, #66)
-- Add weighted interval scheduling (#53)
+- Add weighted interval scheduling (#53, #69)
 
 ### API
 
