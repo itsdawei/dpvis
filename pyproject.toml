@@ -12,12 +12,15 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-numpy = "^1.24" # Later versions of numpy drops support for Python 3.8
+numpy = "^1.25" # Later versions of numpy drops support for Python 3.8
 plotly = "^5.17.0"
 dash = "^2.14.0"
 fire = "^0.5.0"
 colorama = "^0.4.6"
 dash-bootstrap-components = "^1.5.0"
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.5"
