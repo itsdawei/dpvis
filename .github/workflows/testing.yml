@@ -36,7 +36,7 @@ jobs:
           virtualenvs-in-project: true
           installer-parallel: true
       - name: Install dependecies
-        run: poetry install --no-interaction --no-root
+        run: poetry install --no-interaction --no-root --with dev
       - name: Install our library
         run: poetry install --no-interaction
       - name: pytest
