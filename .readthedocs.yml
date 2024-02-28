@@ -10,6 +10,7 @@ build:
       - pip install poetry==1.4.0
       - poetry config virtualenvs.create false
       - poetry install --with "docs"
+      - python3 demos/knapsack.py
 
 mkdocs:
   configuration: mkdocs.yml
