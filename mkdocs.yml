@@ -15,7 +15,7 @@ theme:
 
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
-      scheme: default 
+      scheme: default
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -39,7 +39,7 @@ theme:
     - content.action.view
     - navigation.instant
     - navigation.expand
-    - navigation.indexes 
+    - navigation.indexes
     - navigation.top
   icon:
     repo: fontawesome/brands/github
@@ -48,20 +48,20 @@ nav:
   - Getting Started: getting_started.md
   - Test Mode Tutorial: test_mode/test_mode.md
   - Examples:
-    - examples/index.md
-    - Fibonacci: examples/fibonacci.md
-    - Knapsack: examples/knapsack.md
-    - Weighted Interval Scheduling: examples/wis.md
-    - Edit Distance: examples/edit_distance.md
+      - examples/index.md
+      - Fibonacci: examples/fibonacci.md
+      - Knapsack: examples/knapsack.md
+      - Weighted Interval Scheduling: examples/wis.md
+      - Edit Distance: examples/edit_distance.md
   - API:
-    - DPArray: api/dp_array.md
-    - Logger: api/logger.md
-    - Visualizer: api/visualizer.md
+      - DPArray: api/dp_array.md
+      - Logger: api/logger.md
+      - Visualizer: api/visualizer.md
 plugins:
   - search
   - gen-files:
       scripts:
-      - docs/gen_ref_pages.py 
+        - docs/gen_ref_pages.py
   - mkdocstrings:
       default_handler: python
       handlers:
