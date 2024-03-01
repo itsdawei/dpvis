@@ -30,7 +30,6 @@ theme:
         name: Switch to system preference
       primary: green
       accent: red
-  custom_dir: docs/overrides
   features:
     - header.autohide
     - content.code.copy
