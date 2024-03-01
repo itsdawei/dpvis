@@ -57,7 +57,9 @@
 
 ### Documentation
 
-- Update installation instruction (#54, #55)
+- Show last edited time on page (#70)
+- Dark mode (#70)
+- Update installation instruction (#54, #55, #68)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
 - Excavation and Matrix Traversal examples (#19, #21)

@@ -38,6 +38,7 @@ mkdocstrings = { version = "^0.23.0",  extras = ["python"] }
 mkdocs-gen-files = "^0.5.0"
 mkdocs-autorefs = "^0.5.0"
 mkdocs-jupyter = "^0.24.6"
+mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 
 [build-system]
 requires = ["poetry-core"]
