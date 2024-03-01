@@ -38,7 +38,7 @@ The library has three major features:
     cd dpvis
     ```
 
-1. There is a few options to managing virtual environment:
+1. There are a few options to managing virtual environment:
     - (Recommended) Install
       [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and install the
       library locally via [pip](https://pypi.org/project/pip/):
@@ -68,7 +68,7 @@ The library has three major features:
    ```
 
 1. Open [http://127.0.0.1:8050/](http://127.0.0.1:8050/) with your favorite
-   browser. (Make sure that it is "http" not "https")
+   browser. (Make sure that it is "http" and not "https")
 
 ## Documentation
 

@@ -50,13 +50,18 @@ nav:
       - examples/index.md
       - Fibonacci: examples/fibonacci.md
       - Knapsack: examples/knapsack.md
-      - Weighted Interval Scheduling: examples/wis.md
+      - Weighted Interval Scheduling: examples/wis.ipynb
       - Edit Distance: examples/edit_distance.md
   - API:
       - DPArray: api/dp_array.md
       - Logger: api/logger.md
       - Visualizer: api/visualizer.md
 plugins:
+  - mkdocs-jupyter:
+      ignore: [".ipynb_checkpoints/*.ipynb"]
+      remove_tag_config:
+        remove_all_outputs_tags:
+          - hide_output
   - search
   - gen-files:
       scripts:
@@ -68,7 +73,7 @@ plugins:
           options:
             docstring_style: google
             docstring_options:
-              returns_named_value: False
+              returns_named_value: false
   - git-revision-date-localized
 markdown_extensions:
   - toc:

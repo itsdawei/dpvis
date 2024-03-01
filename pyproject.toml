@@ -1,23 +1,27 @@
 [tool.poetry]
-name = "dynamically-programmed" # TODO Rename
+name = "dpvis"
 version = "0.1.0"
 description = "" # TODO
 license = "MIT"
 authors = ["itsdawei <dhlee@usc.edu>"] # TODO Add authors
 readme = "README.md"
-repository = "https://github.com/itsdawei/dynamically-programmed"
+repository = "https://github.com/itsdawei/dpvis"
 packages = [
     { include = "dp" }
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-numpy = "^1.24" # Later versions of numpy drops support for Python 3.8
+python = "^3.9"
+numpy = "^1.26"
 plotly = "^5.17.0"
 dash = "^2.14.0"
 fire = "^0.5.0"
 colorama = "^0.4.6"
 dash-bootstrap-components = "^1.5.0"
+mkdocs-git-revision-date-localized-plugin = "^1.2.4"
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 pylint = "^2.17.5"
@@ -33,6 +37,7 @@ mkdocs-material = "^9.2.8"
 mkdocstrings = { version = "^0.23.0",  extras = ["python"] }
 mkdocs-gen-files = "^0.5.0"
 mkdocs-autorefs = "^0.5.0"
+mkdocs-jupyter = "^0.24.6"
 mkdocs-git-revision-date-localized-plugin = "^1.2.4"
 
 [build-system]
