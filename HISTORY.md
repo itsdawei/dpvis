@@ -57,6 +57,8 @@
 
 ### Documentation
 
+- Show last edited time on page (#70)
+- Dark mode (#70)
 - Update installation instruction (#54, #55)
 - Add "tutorials" and "examples" to documentation (#52)
 - Host documentation on readthedocs (#51)
