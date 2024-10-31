@@ -8,32 +8,40 @@ helps, and credit will always be given.
 Ready to contribute? Here's how to set up your environment for local development.
 
 1. Clone the fork locally and change directory:
+    ```bash
+    # With SSH:
+    git clone git@github.com:itsdawei/dpvis.git
 
-   ```bash
-   # With SSH:
-   git clone git@github.com:itsdawei/dynamically_programmed.git
+    # Without SSH:
+    git clone https://github.com/itsdawei/dpvis.git
 
-   # Without SSH:
-   git clone https://github.com/itsdawei/dynamically_programmed.git
+    cd dpvis
+    ```
 
-   cd dynamically_programmed
-   ```
+1. There are a few options to managing virtual environment:
+    - (Recommended) Install
+      [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and run:
 
-1. (Optional) Create a virtual environment
-   ([Conda](https://docs.conda.io/projects/miniconda/en/latest/)) and install
-   poetry:
+      ```bash
+      conda create -n dpvis python=3.11
+      conda activate dpvis
+      pip install -e .[dev]
+      ```
 
-   ```bash
-   conda create -n dynvis
-   conda activate dynvis
-   conda install poetry
-   ```
+    - Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
 
-1. Install library with poetry:
+      ```bash
+      poetry install
+      ```
 
-   ```bash
-   poetry install
-   ```
+    - Although highly recommended, a virtual environment is not necessary as
+      long as you have Python 3.9+ and a Python package manager such as
+      [pip](https://pypi.org/project/pip/). In this case, you can install the
+      library directly with:
+
+      ```python
+      pip install -e .[dev]
+      ```
 
 1. (Optional) Run knapsack demo to verify installation:
 
@@ -115,13 +123,13 @@ To run a subset of tests, use `pytest` with the directory name, such as:
 pytest tests/core/test1
 ```
 
-### Documentation
+## Documentation
 
 The documentation is compiled with
 [mkdocs-material](https://squidfunk.github.io/mkdocs-material/) and
 [mkdocstrings](https://mkdocstrings.github.io/)
 
-To preview documentation locally, use:
+To serve the documentation locally, run
 
 ```bash
 poetry install --with docs
