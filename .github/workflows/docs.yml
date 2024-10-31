@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: fetch-depth: 0 # Fix for git-revision-date-localized
       - uses: snok/install-poetry@v1.3.4
       - name: Install library
         run: poetry install --no-interaction --with docs
