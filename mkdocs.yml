@@ -48,7 +48,6 @@ nav:
   - Test Mode Tutorial: test_mode/test_mode.md
   - Examples:
       - examples/index.md
-      - Fibonacci: examples/fibonacci.md
       - Knapsack: examples/knapsack.md
       - Weighted Interval Scheduling: examples/wis.ipynb
       - Edit Distance: examples/edit_distance.md
@@ -86,6 +85,8 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.arithmatex:
       generic: true
   - tables

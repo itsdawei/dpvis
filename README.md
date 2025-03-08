@@ -25,63 +25,22 @@ The library has three major features:
 
 ## Installation
 
-**NOTE: This instruction should be updated after we release to PyPI.**
-
-1. Clone the fork locally and change directory:
-    ```bash
-    # With SSH:
-    git clone git@github.com:itsdawei/dpvis.git
-
-    # Without SSH:
-    git clone https://github.com/itsdawei/dpvis.git
-
-    cd dpvis
-    ```
-
-1. There are a few options to managing virtual environment:
-    - (Recommended) Install
-      [Conda](https://docs.conda.io/projects/miniconda/en/latest/) and install the
-      library locally via [pip](https://pypi.org/project/pip/):
-      ```bash
-      conda create -n dpvis python=3.11
-      conda activate dpvis
-      pip install -e . # Do not omit the '.' at the end
-      ```
-    - Alternatively, install [Poetry](https://python-poetry.org/docs/) and run:
-      ```bash
-      poetry install
-      ```
-    - Although highly recommended, a virtual environment is not necessary as
-      long as you have Python 3.8+ and a Python package manager such as
-      [pip](https://pypi.org/project/pip/). In this case, you can install the
-      library directly with:
-      ```python
-      pip install -e . # Do not omit the '.' at the end
-      ```
-
-1. You can verify the installation by running one of our many demos.
-   ```bash
-   python demos/knapsack.py
-
-   # With Poetry
-   poetry run python demos/knapsack.py
-   ```
-
-1. Open [http://127.0.0.1:8050/](http://127.0.0.1:8050/) with your favorite
-   browser. (Make sure that it is "http" and not "https")
-
-## Documentation
-
-The documentation is compiled with
-[mkdocs-material](https://squidfunk.github.io/mkdocs-material/) and
-[mkdocstrings](https://mkdocstrings.github.io/)
-
-To serve the documentation locally, run
+dpvis support Python 3.9 and above. The vast majority of users can install
+dpvis by running:
 
 ```bash
-poetry install --with docs
-poetry run make servedocs
+pip install dpvis
 ```
+
+You can test your installation by running one of our many demos.
+
+```bash
+python demos/knapsack.py
+```
+
+Then, open [http://127.0.0.1:8050/](http://127.0.0.1:8050/) with your favorite
+browser (make sure that the prefix is "http" rather than "https").
+
 
 ## Contributors
 
