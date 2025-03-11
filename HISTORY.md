@@ -4,6 +4,7 @@
 
 ### Examples
 
+- Add strange pointer (LC 664) (#73)
 - Add edit distance (#49, #66, #71)
 - Add weighted interval scheduling (#53, #69)
 
@@ -51,12 +52,13 @@
 
 ### Style
 
-- Remove colorbars in auxiliary heatmaps (#48) 
+- Remove colorbars in auxiliary heatmaps (#48)
 - `HIGHLIGHT` -> `MAXMIN` (#47)
 - Toggle style of test mode button (#45)
 
 ### Documentation
 
+- Improve Getting Started (#72)
 - Show last edited time on page (#70)
 - Dark mode (#70)
 - Update installation instruction (#54, #55, #68)
