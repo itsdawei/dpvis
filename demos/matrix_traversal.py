@@ -71,7 +71,8 @@ def matrix_traversal(M):
     visualizer.add_array(OPT,
                          column_labels=column_labels,
                          row_labels=row_labels,
-                         description="Description for DPArray.")
+                         description="Description for DPArray.",
+                         traceback=True)
     visualizer.add_array(V, description="Description for costs array.")
     visualizer.show()
 
