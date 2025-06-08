@@ -60,7 +60,7 @@ jobs:
 
     - name: Show deployed service URL
       run: |
-        URL=$(gcloud run services describe "${{ github.event.inputs.demo }}" \
+        URL=$(gcloud run services describe "$DEPLOY_AS" \
           --region "${{ env.REGION }}" \
           --platform managed \
           --format="value(status.url)")
