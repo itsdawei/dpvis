@@ -83,14 +83,24 @@ def knapsack(items, capacity):
                          row_labels=row_labels,
                          column_labels=column_labels,
                          description=description)
-    item_col_labels = [f"Item {i}: {item}" for i, item in enumerate(items, start=1)]
+    item_col_labels = [
+        f"Item {i}: {item}" for i, item in enumerate(items, start=1)
+    ]
     visualizer.add_array(DP_items,
                          row_labels=" ",
                          column_labels=item_col_labels)
-    visualizer.show()
+
+    return visualizer
+    # self.app.run_server(debug=not self._debug, use_reloader=True)
 
 
-if __name__ == "__main__":
-    items = [(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)]
-    max_capacity = 14
-    knapsack(items, max_capacity)
+items = [(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)]
+max_capacity = 14
+
+visualizer = knapsack(items, max_capacity)
+visualizer.show()
+app = visualizer.app
+server = app.server
+
+# if __name__ == "__main__":
+#     visualizer.show()
