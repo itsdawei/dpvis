@@ -28,7 +28,7 @@ jobs:
     - name: Find changed demo files
       id: filter
       run: |
-        ALLOWED=(wis)
+        ALLOWED=(wis knapsack)
 
         # Get changed .py files under demo/
         CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^demo/[^/]+\.py$' || true)
