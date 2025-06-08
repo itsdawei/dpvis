@@ -49,50 +49,50 @@ jobs:
         JSON=$(printf '%s\n' "${MATCHED[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
         echo "changed=$JSON" >> "$GITHUB_OUTPUT"
 
-  deploy:
-    needs: detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.demos != '[]'
-    strategy:
-      matrix:
-        demo: ${{ fromJson(needs.detect-changes.outputs.demos) }}
+  # deploy:
+  #   needs: detect-changes
+  #   runs-on: ubuntu-latest
+  #   if: needs.detect-changes.outputs.demos != '[]'
+  #   strategy:
+  #     matrix:
+  #       demo: ${{ fromJson(needs.detect-changes.outputs.demos) }}
 
-    steps:
-    - uses: actions/checkout@v3
+  #   steps:
+  #   - uses: actions/checkout@v3
 
-    - uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+  #   - uses: google-github-actions/auth@v2
+  #     with:
+  #       credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - uses: google-github-actions/setup-gcloud@v2
-      with:
-        project_id: ${{ env.PROJECT_ID }}
+  #   - uses: google-github-actions/setup-gcloud@v2
+  #     with:
+  #       project_id: ${{ env.PROJECT_ID }}
 
-    - name: Authenticate Docker with Artifact Registry
-      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+  #   - name: Authenticate Docker with Artifact Registry
+  #     run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-    - name: Build, Push, and Deploy to Cloud Run
-      run: |
-        DEMO=${{ matrix.demo }}
-        IMAGE=${{ env.REPO }}/$DEMO
+  #   - name: Build, Push, and Deploy to Cloud Run
+  #     run: |
+  #       DEMO=${{ matrix.demo }}
+  #       IMAGE=${{ env.REPO }}/$DEMO
 
-        echo "🔨 Building $DEMO → $IMAGE"
-        docker build -t "$IMAGE" --build-arg DEMO="$DEMO" .
+  #       echo "🔨 Building $DEMO → $IMAGE"
+  #       docker build -t "$IMAGE" --build-arg DEMO="$DEMO" .
 
-        echo "📤 Pushing image to Artifact Registry"
-        docker push "$IMAGE"
+  #       echo "📤 Pushing image to Artifact Registry"
+  #       docker push "$IMAGE"
 
-        echo "🚀 Deploying to Cloud Run: $DEMO"
-        gcloud run deploy "$DEMO" \
-          --image "$IMAGE" \
-          --region "${{ env.REGION }}" \
-          --platform managed \
-          --allow-unauthenticated
+  #       echo "🚀 Deploying to Cloud Run: $DEMO"
+  #       gcloud run deploy "$DEMO" \
+  #         --image "$IMAGE" \
+  #         --region "${{ env.REGION }}" \
+  #         --platform managed \
+  #         --allow-unauthenticated
 
-    - name: Show service URL
-      run: |
-        URL=$(gcloud run services describe "${{ matrix.demo }}" \
-          --region "${{ env.REGION }}" \
-          --platform managed \
-          --format="value(status.url)")
-        echo "✅ Service URL: $URL"
+  #   - name: Show service URL
+  #     run: |
+  #       URL=$(gcloud run services describe "${{ matrix.demo }}" \
+  #         --region "${{ env.REGION }}" \
+  #         --platform managed \
+  #         --format="value(status.url)")
+  #       echo "✅ Service URL: $URL"
