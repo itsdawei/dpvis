@@ -57,8 +57,7 @@ jobs:
           --image "$IMAGE" \
           --region "${{ env.REGION }}" \
           --platform managed \
-          --allow-unauthenticated \
-          --port 8080
+          --allow-unauthenticated
 
     - name: Show deployed service URL
       run: |

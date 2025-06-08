@@ -96,6 +96,5 @@ $(DEMOS):
 		--image $(REPO)/$@ \
 		--region $(REGION) \
 		--platform managed \
-		--allow-unauthenticated \
-		--port 8080
+		--allow-unauthenticated
 .PHONY: $(DEMOS)
