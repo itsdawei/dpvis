@@ -1,7 +1,6 @@
 name: Deploy Live Demos
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       demos:
