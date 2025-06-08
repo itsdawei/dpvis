@@ -19,8 +19,11 @@ env:
   REPO: us-central1-docker.pkg.dev/dpvis-demo/dpvis-repo
 
 jobs:
-  preview:
+  deploy:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        demo: ${{ fromJson(github.event.inputs.demos) }}
 
     steps:
     - uses: actions/checkout@v3
