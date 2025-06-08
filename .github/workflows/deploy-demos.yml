@@ -6,7 +6,7 @@ on:
       demos:
         description: 'Demos to deploy (e.g. ["wis", "knapsack"])'
         required: true
-        default: '["wis"]'
+        default: '[]'
       preview:
         description: 'Deploy to preview version?'
         type: boolean
