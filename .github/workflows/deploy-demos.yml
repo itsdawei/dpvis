@@ -3,11 +3,12 @@ name: Deploy Live Demos on Main
 
 on:
   push:
-    branches: [main]
+    branches: [*]
     paths:
       - 'demo/**'
       - 'Dockerfile'
       - 'Makefile'
+  workflow_dispatch:
 
 env:
   PROJECT_ID: dpvis-demo
@@ -35,6 +36,7 @@ jobs:
 
         MATCHED=()
         for file in $CHANGED; do
+          echo "Processing file: '$file'"
           name=$(basename "$file" .py)
           if [[ " ${ALLOWED[*]} " =~ " $name " ]]; then
             MATCHED+=("$name")
