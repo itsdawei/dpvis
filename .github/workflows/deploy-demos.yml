@@ -1,0 +1,74 @@
+name: Deploy Live Demos
+
+on:
+  push:
+    paths:
+      - "demo/**"
+      - "Dockerfile"
+      - "Makefile"
+      - ".github/workflows/deploy.yml"
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.filter.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Filter changed demos
+        id: filter
+        run: |
+          # List of allowed demos (edit here to control what's deployable)
+          ALLOWED=("wis")
+
+          # Get changed files from git
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+          # Extract demo names from changed files that match *_live.py
+          MATCHED=()
+          for file in $CHANGED_FILES; do
+            if [[ "$file" =~ ^demos/([a-zA-Z0-9_]+)\.py$ ]]; then
+              name="${BASH_REMATCH[1]}"
+              if [[ " ${ALLOWED[*]} " =~ " $name " ]]; then
+                MATCHED+=("$name")
+              fi
+            fi
+          done
+
+          # Convert to JSON array for matrix
+          JSON=$(printf '%s\n' "${MATCHED[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "Matched demos: $JSON"
+          echo "changed=$JSON" >> $GITHUB_OUTPUT
+
+  deploy:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        demo: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: your-gcp-project-id
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+      - name: Build and push image
+        run: |
+          docker build -t us-central1-docker.pkg.dev/your-gcp-project-id/dpvis-demo/${{ matrix.demo }} \
+            --build-arg DEMO=${{ matrix.demo }} .
+          docker push us-central1-docker.pkg.dev/your-gcp-project-id/dpvis-demo/${{ matrix.demo }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ matrix.demo }} \
+            --image us-central1-docker.pkg.dev/your-gcp-project-id/dpvis-demo/${{ matrix.demo }} \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
