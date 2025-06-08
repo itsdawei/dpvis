@@ -77,24 +77,3 @@ servedocs: ## compile the docs watching for changes
 # 	python setup.py bdist_wheel
 # 	ls -l dist
 # 	check-wheel-contents dist/*.whl
-
-# ===== DEPLOY LIVE DEMOS =====
-PROJECT_ID := dpvis-demo
-REGION := us-central1
-REPO := $(REGION)-docker.pkg.dev/$(PROJECT_ID)/dpvis-repo
-
-# ===== LIVE DEPLOYMENT (FIXED LIST) =====
-DEMOS := wis knapsack
-
-deployall: $(DEMOS)
-.PHONY: deploylive
-
-$(DEMOS):
-	docker build -t $(REPO)/$@ --build-arg DEMO=$@ .
-	docker push $(REPO)/$@
-	gcloud run deploy $@ \
-		--image $(REPO)/$@ \
-		--region $(REGION) \
-		--platform managed \
-		--allow-unauthenticated
-.PHONY: $(DEMOS)
