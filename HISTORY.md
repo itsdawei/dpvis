@@ -51,12 +51,13 @@
 
 ### Style
 
-- Remove colorbars in auxiliary heatmaps (#48) 
+- Remove colorbars in auxiliary heatmaps (#48)
 - `HIGHLIGHT` -> `MAXMIN` (#47)
 - Toggle style of test mode button (#45)
 
 ### Documentation
 
+- Semi-automatic live demo deployment to Google Cloud Run (#74)
 - Show last edited time on page (#70)
 - Dark mode (#70)
 - Update installation instruction (#54, #55, #68)
