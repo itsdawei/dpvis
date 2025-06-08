@@ -90,17 +90,13 @@ def knapsack(items, capacity):
                          row_labels=" ",
                          column_labels=item_col_labels)
 
-    return visualizer
-    # self.app.run_server(debug=not self._debug, use_reloader=True)
-
+    return visualizer.create_app()
 
 items = [(2, 4), (4, 3), (7, 12), (5, 6), (13, 13)]
 max_capacity = 14
 
-visualizer = knapsack(items, max_capacity)
-visualizer.show()
-app = visualizer.app
+app = knapsack(items, max_capacity)
 server = app.server
 
-# if __name__ == "__main__":
-#     visualizer.show()
+if __name__ == "__main__":
+    app.run_server(debug=True, use_reloader=True)
