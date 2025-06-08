@@ -5,8 +5,7 @@ on:
     inputs:
       demo:
         description: "Demo name (e.g. wis)"
-        required: false
-        default: "wis"
+        required: true
       suffix:
         description: "Optional suffix"
         required: false
