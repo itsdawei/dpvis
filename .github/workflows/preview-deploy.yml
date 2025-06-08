@@ -1,16 +1,16 @@
 name: Preview Deploy a Demo
 
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       demo:
-#         description: "Demo name (e.g. wis)"
-#         required: true
-#       suffix:
-#         description: "Optional suffix"
-#         required: false
-#         default: "preview"
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      demo:
+        description: "Demo name (e.g. wis)"
+        required: true
+      suffix:
+        description: "Optional suffix"
+        required: false
+        default: "preview"
+# on: [push]
 
 jobs:
   preview:
