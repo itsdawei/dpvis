@@ -91,6 +91,7 @@ markdown_extensions:
       generic: true
   - tables
   - attr_list
+  - md_in_html
 watch:
   - dp
   - demos
