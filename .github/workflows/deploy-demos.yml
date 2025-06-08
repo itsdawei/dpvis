@@ -24,15 +24,16 @@ jobs:
     strategy:
       matrix:
         demo: ${{ fromJson(github.event.inputs.demos) }}
-
     steps:
     - uses: actions/checkout@v3
 
-    - uses: google-github-actions/auth@v2
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - uses: google-github-actions/setup-gcloud@v2
+    - name: Set up gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: ${{ env.PROJECT_ID }}
 
@@ -41,41 +42,34 @@ jobs:
 
     - name: Build, Push, and Deploy to Cloud Run
       run: |
-        DEMO="${{ github.event.inputs.demo }}"
-        SUFFIX="${{ github.event.inputs.suffix }}"
+        DEMO="${{ matrix.demo }}"
+        PREVIEW="${{ github.event.inputs.preview }}"
         DEPLOY_AS="$DEMO"
-        if [[ "$SUFFIX" != "" ]]; then
-          DEPLOY_AS="${DEMO}-${SUFFIX}"
+
+        if [[ "$PREVIEW" == "true" ]]; then
+          DEPLOY_AS="${DEMO}-preview"
         fi
 
         IMAGE="${{ env.REPO }}/$DEPLOY_AS"
 
-        echo "🔨 Building $DEMO → $IMAGE"
+        echo "🔨 Building Docker image: $IMAGE"
         docker build -t "$IMAGE" --build-arg DEMO="$DEMO" .
 
-        echo "📤 Pushing image to Artifact Registry"
+        echo "📤 Pushing to Artifact Registry..."
         docker push "$IMAGE"
 
-        echo "🚀 Deploying to Cloud Run: $DEPLOY_AS"
+        echo "🚀 Deploying to Cloud Run as service: $DEPLOY_AS"
         gcloud run deploy "$DEPLOY_AS" \
           --image "$IMAGE" \
           --region "${{ env.REGION }}" \
           --platform managed \
-          --allow-unauthenticated
+          --allow-unauthenticated \
+          --port 8080
 
-    - name: Show deployed service URL
-      run: |
-        SRC="${{ github.event.inputs.demo }}"
-        SUFFIX="${{ github.event.inputs.suffix }}"
-        DEPLOY_AS="$SRC"
-        if [[ "$SUFFIX" != "" ]]; then
-          DEPLOY_AS="${SRC}-${SUFFIX}"
-        fi
-
+        echo "🔗 Fetching service URL..."
         URL=$(gcloud run services describe "$DEPLOY_AS" \
           --region "${{ env.REGION }}" \
           --platform managed \
           --format="value(status.url)")
 
-        echo "✅ Service URL: $URL"
-
+        echo "✅ Deployed $DEMO → $URL"
