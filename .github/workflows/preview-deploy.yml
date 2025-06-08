@@ -11,7 +11,6 @@ on:
         description: "Optional suffix"
         required: false
         default: "preview"
-  push:
 
 jobs:
   preview:
@@ -28,17 +27,16 @@ jobs:
         export_default_credentials: true
 
     - name: Auth Docker to Artifact Registry
-      run: gcloud auth configure-docker us-central1-docker.pkg.dev
-
-    - name: Debug
-      run: echo ${{ github.event.inputs.demo }}
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
     - name: Run preview deployment
+      env:
+        SRC: ${{ github.event.inputs.demo }}
+        SUFFIX: ${{ github.event.inputs.suffix }}
       run: |
-        SRC=${{ github.event.inputs.demo }}
-        DEPLOY_AS=$SRC
-        if [[ "${{ github.event.inputs.suffix }}" != "" ]]; then
-          DEPLOY_AS="${SRC}-${{ github.event.inputs.suffix }}"
+        DEPLOY_AS="$SRC"
+        if [[ "$SUFFIX" != "" ]]; then
+          DEPLOY_AS="${SRC}-${SUFFIX}"
         fi
 
         echo "Deploying $SRC.py as service '$DEPLOY_AS'"
