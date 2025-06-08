@@ -59,3 +59,10 @@ jobs:
           --platform managed \
           --allow-unauthenticated \
           --port 8080
+
+    - name: Show deployed service URL
+      run: |
+        gcloud run services describe "$DEPLOY_AS" \
+          --region "${{ env.REGION }}" \
+          --platform managed \
+          --format="value(status.url)"
