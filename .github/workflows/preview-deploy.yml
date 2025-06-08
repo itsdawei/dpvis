@@ -30,6 +30,9 @@ jobs:
     - name: Auth Docker to Artifact Registry
       run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
+    - name: Debug
+      run: echo ${{ github.event.inputs.demo }}
+
     - name: Run preview deployment
       run: |
         SRC=${{ github.event.inputs.demo }}
