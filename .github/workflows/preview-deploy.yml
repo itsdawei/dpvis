@@ -1,0 +1,40 @@
+name: Preview Deploy a Demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      demo:
+        description: "Demo name (e.g. wis)"
+        required: true
+      suffix:
+        description: "Optional suffix"
+        required: false
+        default: "preview"
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up gcloud
+      uses: google-github-actions/setup-gcloud@v1
+      with:
+        project_id: dpvis-demo
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Auth Docker to Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+    - name: Run preview deployment
+      run: |
+        SRC=${{ github.event.inputs.demo }}
+        DEPLOY_AS=$SRC
+        if [[ "${{ github.event.inputs.suffix }}" != "" ]]; then
+          DEPLOY_AS="${SRC}-${{ github.event.inputs.suffix }}"
+        fi
+
+        echo "Deploying $SRC.py as service '$DEPLOY_AS'"
+        make DEMO=$SRC DEPLOY_AS=$DEPLOY_AS deploy
