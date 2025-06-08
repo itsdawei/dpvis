@@ -3,7 +3,7 @@ name: Deploy Live Demos on Main
 
 on:
   push:
-    branches: [main]
+    # branches: [main]
     paths:
       - 'demo/**'
       - 'Dockerfile'
@@ -54,4 +54,4 @@ jobs:
         fi
 
         echo "Deploying changed demos: ${MATCHED[*]}"
-        make DEMOS="${MATCHED[*]}"
+        make "${MATCHED[*]}"

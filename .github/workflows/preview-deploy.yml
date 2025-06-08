@@ -10,7 +10,6 @@ on:
         description: "Optional suffix"
         required: false
         default: "preview"
-# on: [push]
 
 jobs:
   preview:
