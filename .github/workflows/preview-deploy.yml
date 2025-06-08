@@ -7,9 +7,14 @@ on:
         description: "Demo name (e.g. wis)"
         required: true
       suffix:
-        description: "Optional suffix"
+        description: "Optional suffix (e.g. preview)"
         required: false
         default: "preview"
+
+env:
+  PROJECT_ID: dpvis-demo
+  REGION: us-central1
+  REPO: us-central1-docker.pkg.dev/dpvis-demo/dpvis-repo
 
 jobs:
   preview:
@@ -19,24 +24,36 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Set up gcloud
-      uses: google-github-actions/setup-gcloud@v1
+      uses: google-github-actions/setup-gcloud@v2
       with:
-        project_id: dpvis-demo
+        project_id: ${{ env.PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
 
-    - name: Auth Docker to Artifact Registry
-      run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+    - name: Authenticate Docker with Artifact Registry
+      run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
-    - name: Run preview deployment
-      env:
-        SRC: ${{ github.event.inputs.demo }}
-        SUFFIX: ${{ github.event.inputs.suffix }}
+    - name: Build, Push, and Deploy to Cloud Run
       run: |
+        SRC="${{ github.event.inputs.demo }}"
+        SUFFIX="${{ github.event.inputs.suffix }}"
         DEPLOY_AS="$SRC"
         if [[ "$SUFFIX" != "" ]]; then
           DEPLOY_AS="${SRC}-${SUFFIX}"
         fi
 
-        echo "Deploying $SRC.py as service '$DEPLOY_AS'"
-        make DEMO=$SRC DEPLOY_AS=$DEPLOY_AS deploy
+        IMAGE="${{ env.REPO }}/$DEPLOY_AS"
+
+        echo "🔨 Building Docker image for $SRC as $IMAGE"
+        docker build -t "$IMAGE" --build-arg DEMO="$SRC" .
+
+        echo "📤 Pushing image to Artifact Registry"
+        docker push "$IMAGE"
+
+        echo "🚀 Deploying to Cloud Run as service $DEPLOY_AS"
+        gcloud run deploy "$DEPLOY_AS" \
+          --image "$IMAGE" \
+          --region "${{ env.REGION }}" \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8080
