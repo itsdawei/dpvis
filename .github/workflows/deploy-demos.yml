@@ -1,13 +1,17 @@
-name: Deploy Live Demos on Main
-
+name: Deploy Live Demos
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'demo/**'
-      - 'Dockerfile'
-      - 'Makefile'
+  workflow_dispatch:
+    inputs:
+      demos:
+        description: 'Demos to deploy (e.g. ["wis", "knapsack"])'
+        required: true
+        default: '[]'
+      preview:
+        description: 'Deploy to preview version?'
+        type: boolean
+        required: false
+        default: true
 
 env:
   PROJECT_ID: dpvis-demo
@@ -15,54 +19,21 @@ env:
   REPO: us-central1-docker.pkg.dev/dpvis-demo/dpvis-repo
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      demos: ${{ steps.filter.outputs.changed }}
-
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Find changed demo files
-      id: filter
-      run: |
-        ALLOWED=(wis knapsack)
-
-        # Get changed .py files under demo/
-        CHANGED=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '^demo/[^/]+\.py$' || true)
-
-        MATCHED=()
-        for file in $CHANGED; do
-          name=$(basename "$file" .py)
-          if [[ " ${ALLOWED[*]} " =~ " $name " ]]; then
-            MATCHED+=("$name")
-          fi
-        done
-
-        echo "Matched demos: ${MATCHED[*]}"
-
-        # Convert array to JSON list
-        JSON=$(printf '%s\n' "${MATCHED[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
-        echo "changed=$JSON" >> "$GITHUB_OUTPUT"
-
   deploy:
-    needs: detect-changes
     runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.demos != '[]'
     strategy:
       matrix:
-        demo: ${{ fromJson(needs.detect-changes.outputs.demos) }}
-
+        demo: ${{ fromJson(github.event.inputs.demos) }}
     steps:
     - uses: actions/checkout@v3
 
-    - uses: google-github-actions/auth@v2
+    - name: Authenticate to GCP
+      uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - uses: google-github-actions/setup-gcloud@v2
+    - name: Set up gcloud CLI
+      uses: google-github-actions/setup-gcloud@v2
       with:
         project_id: ${{ env.PROJECT_ID }}
 
@@ -71,26 +42,34 @@ jobs:
 
     - name: Build, Push, and Deploy to Cloud Run
       run: |
-        DEMO=${{ matrix.demo }}
-        IMAGE=${{ env.REPO }}/$DEMO
+        DEMO="${{ matrix.demo }}"
+        PREVIEW="${{ github.event.inputs.preview }}"
+        DEPLOY_AS="$DEMO"
 
-        echo "🔨 Building $DEMO → $IMAGE"
+        if [[ "$PREVIEW" == "true" ]]; then
+          DEPLOY_AS="${DEMO}-preview"
+        fi
+
+        IMAGE="${{ env.REPO }}/$DEPLOY_AS"
+
+        echo "🔨 Building Docker image: $IMAGE"
         docker build -t "$IMAGE" --build-arg DEMO="$DEMO" .
 
-        echo "📤 Pushing image to Artifact Registry"
+        echo "📤 Pushing to Artifact Registry..."
         docker push "$IMAGE"
 
-        echo "🚀 Deploying to Cloud Run: $DEMO"
-        gcloud run deploy "$DEMO" \
+        echo "🚀 Deploying to Cloud Run as service: $DEPLOY_AS"
+        gcloud run deploy "$DEPLOY_AS" \
           --image "$IMAGE" \
           --region "${{ env.REGION }}" \
           --platform managed \
-          --allow-unauthenticated
+          --allow-unauthenticated \
+          --port 8080
 
-    - name: Show service URL
-      run: |
-        URL=$(gcloud run services describe "${{ matrix.demo }}" \
+        echo "🔗 Fetching service URL..."
+        URL=$(gcloud run services describe "$DEPLOY_AS" \
           --region "${{ env.REGION }}" \
           --platform managed \
           --format="value(status.url)")
-        echo "✅ Service URL: $URL"
+
+        echo "✅ Deployed $DEMO → $URL"
