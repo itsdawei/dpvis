@@ -14,8 +14,6 @@ from dp import DPArray
 from dp._index_converter import _indices_to_np_indices
 from dp._logger import Op
 
-ON_RENDER = "RENDER" in os.environ
-
 
 class CellType(IntEnum):
     """CellType determines the color of elements in the DP array.
@@ -886,12 +884,7 @@ class Visualizer:
 
         self._attach_callbacks()
 
-        # self.app.run_server(debug=not self._debug, use_reloader=True)
-
-        port = int(os.environ.get("PORT", 8050))
-        self.app.run_server(host="0.0.0.0" if ON_RENDER else "127.0.0.1",
-                            port=port,
-                            debug=not ON_RENDER)
+        return self.app
 
     @property
     def app(self):
