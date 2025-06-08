@@ -83,15 +83,15 @@ PROJECT_ID := dpvis-demo
 REGION := us-central1
 REPO := $(REGION)-docker.pkg.dev/$(PROJECT_ID)/dpvis-repo
 
-# List of live demos to deploy
-DEMOS := wis
+# ===== LIVE DEPLOYMENT (FIXED LIST) =====
+DEMOS := wis knapsack
 
-deploylive: $(DEMOS)
+deployall: $(DEMOS)
 .PHONY: deploylive
 
 $(DEMOS):
 	docker build -t $(REPO)/$@ --build-arg DEMO=$@ .
-	docker push $(REPO)/$@ # Push to Google Artifact repo.
+	docker push $(REPO)/$@
 	gcloud run deploy $@ \
 		--image $(REPO)/$@ \
 		--region $(REGION) \
@@ -99,3 +99,20 @@ $(DEMOS):
 		--allow-unauthenticated \
 		--port 8080
 .PHONY: $(DEMOS)
+
+# ===== FLEXIBLE PREVIEW OR CUSTOM DEPLOYMENT =====
+# Usage: make DEMO=knapsack DEPLOY_AS=knapsack-preview deploy
+
+DEMO ?= wis
+DEPLOY_AS ?= $(DEMO)
+
+deploy:
+	docker build -t $(REPO)/$(DEPLOY_AS) --build-arg DEMO=$(DEMO) .
+	docker push $(REPO)/$(DEPLOY_AS) # Push to Google Artifact repo.
+	gcloud run deploy $(DEPLOY_AS) \
+		--image $(REPO)/$(DEPLOY_AS) \
+		--region $(REGION) \
+		--platform managed \
+		--allow-unauthenticated \
+		--port 8080
+.PHONY: deploy
