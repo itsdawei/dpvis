@@ -3,11 +3,11 @@ name: Deploy Live Demos on Main
 
 on:
   push:
-    branches: [*]
-    paths:
-      - 'demo/**'
-      - 'Dockerfile'
-      - 'Makefile'
+    # branches: [*]
+    # paths:
+    #   - 'demo/**'
+    #   - 'Dockerfile'
+    #   - 'Makefile'
   workflow_dispatch:
 
 env:
