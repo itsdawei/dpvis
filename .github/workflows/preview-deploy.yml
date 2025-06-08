@@ -60,8 +60,16 @@ jobs:
 
     - name: Show deployed service URL
       run: |
+        SRC="${{ github.event.inputs.demo }}"
+        SUFFIX="${{ github.event.inputs.suffix }}"
+        DEPLOY_AS="$SRC"
+        if [[ "$SUFFIX" != "" ]]; then
+          DEPLOY_AS="${SRC}-${SUFFIX}"
+        fi
+
         URL=$(gcloud run services describe "$DEPLOY_AS" \
           --region "${{ env.REGION }}" \
           --platform managed \
           --format="value(status.url)")
+
         echo "✅ Service URL: $URL"
