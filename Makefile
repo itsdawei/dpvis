@@ -16,7 +16,7 @@ help:
 	@echo "\033[0;1mCommands\033[0m"
 	@grep -E '^[.a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[34;1m%-30s\033[0m %s\n", $$1, $$2}'
 
-clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and Python artifacts
+clean: clean-build clean-pyc clean-test clean-docker ## remove all build, test, coverage and Python artifacts
 .PHONY: clean
 
 clean-build: ## remove build artifacts
@@ -40,6 +40,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 .PHONY: clean-test
 
+
+# Clean all locally built images
+clean-docker:
+	@for demo in $(DEMOS); do docker rmi -f $(REPO)/$$demo || true; done
+.PHONY: clean-docker
+
 lint: ## check style with pylint
 	pylint dp tests
 .PHONY: lint
@@ -57,7 +63,7 @@ servedocs: ## compile the docs watching for changes
 	mkdocs serve
 .PHONY: servedocs
 
-# TODO Setup deployment
+# TODO Setup deployment to pip
 # release-test: dist ## package and upload a release to TestPyPI
 # 	twine upload --repository testpypi dist/*
 # .PHONY: release-test

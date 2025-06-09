@@ -1,5 +1,6 @@
 """This file provides the visualizer for the DPArray class."""
 import copy
+import os
 from enum import IntEnum
 
 import dash
@@ -762,12 +763,9 @@ class Visualizer:
 
             return fig.update_traces(z=z, selector=t)
 
-    def show(self):
-        """Visualizes the DPArrays.
-
-        Create the figures for each DPArray, attach the callbacks, and render
-        the graph.
-        """
+    def create_app(self):
+        """Create the figures for each DPArray, attach the callbacks, and render
+        the graph."""
         graphs = []
         for name, metadata in self._graph_metadata.copy().items():
             arr = metadata["arr"]
@@ -883,6 +881,11 @@ class Visualizer:
 
         self._attach_callbacks()
 
+        return self.app
+
+    def show(self):
+        """Visualizes the DPArrays. """
+        self.create_app()
         self.app.run_server(debug=not self._debug, use_reloader=True)
 
     @property

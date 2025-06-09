@@ -59,6 +59,8 @@
 ### Documentation
 
 - Improve Getting Started (#72)
+- Update WIS with live demo (#76)
+- Semi-automatic live demo deployment to Google Cloud Run (#74, #75)
 - Show last edited time on page (#70)
 - Dark mode (#70)
 - Update installation instruction (#54, #55, #68)
