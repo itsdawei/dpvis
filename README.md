@@ -18,7 +18,7 @@ a frame-by-frame animation of dynamic programs.
 Dpvis can easily generate animations of dynamic programs with as little as two
 lines of modifications compared to a standard Python implementation.
 
-Our visualization library works with native Python implementations of DP.
+## Overview
 
 The library has two major features:
 
@@ -49,7 +49,7 @@ browser (make sure that the prefix is "http" rather than "https").
 
 ## Contributors
 
-dpvis is developed and maintained by
+Dpvis is developed and maintained by
 
 - Ramiro Deo-Campo Vuong
 - Eric Han
