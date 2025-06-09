@@ -9,6 +9,7 @@ Here are the current examples:
 - [Weighted Interval Scheduling](wis.ipynb)
 - [Knapsack](knapsack.md)
 - [Edit Distance](edit_distance.md)
+- [Strange Printer](strange_printers.md)
 
 You can also checkout the live demos for these examples:
 
