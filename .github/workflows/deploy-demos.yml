@@ -43,9 +43,9 @@ jobs:
     - name: Build, Push, and Deploy to Cloud Run
       run: |
         DEMO="${{ matrix.demo }}"
-        PREVIEW="${{ github.event.inputs.preview }}"
-        DEPLOY_AS="$DEMO"
+        DEPLOY_AS="${DEMO//_/-}"
 
+        PREVIEW="${{ github.event.inputs.preview }}"
         if [[ "$PREVIEW" == "true" ]]; then
           DEPLOY_AS="${DEMO}-preview"
         fi
