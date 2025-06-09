@@ -15,3 +15,4 @@ You can also checkout the live demos for these examples:
 
 - [Weighted Interval Scheduling](https://wis.demos.davidhaolong.com)
 - [Knapsack](https://knapsack.demos.davidhaolong.com)
+- [Strange Printer](https://strange-printer.demos.davidhaolong.com)
