@@ -1,20 +1,26 @@
 # dpvis
 
-[![Documentation Status](https://readthedocs.org/projects/dpvis/badge/?version=latest)](https://dpvis.readthedocs.io/en/latest/?badge=latest)
+|                   Source                    |                       Docs                      |                    Paper                   |
+| :-----------------------------------------: | :---------------------------------------------: | :------------------------------------------: |
+| [GitHub](https://github.com/itsdawei/dpvis) | [dpvis.readthedocs.io](https://dpvis.readthedocs.io) | [arXiv](https://arxiv.org/abs/2411.07705) |
 
-The topic of dynamic programming (DP) is particularly challenging for learners
-newly introduced to algorithm design. The library will serve as a learning aid
-for studying DP. To this end, we design a widely accessible library that can be
-used by students to visualize and interact with DP algorithms.
+|                                                       PyPI                                           |                                                                                                      CI/CD                                              |                                                                   Docs Status                                                                 |
+| :--------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------: |
+| [![PyPI - Version](https://img.shields.io/pypi/v/dpvis?color=blue)](https://pypi.org/project/dpvis/) | [![tests](https://github.com/itsdawei/dpvis/actions/workflows/testing.yml/badge.svg)](https://github.com/itsdawei/dpvis/actions/workflows/testing.yml) | [![Documentation Status](https://readthedocs.org/projects/dpvis/badge/?version=latest)](https://dpvis.readthedocs.io/en/latest/?badge=latest) |
 
-The ultimate goal of this library is not to implement visualization for any
-finite collection of DP problems.
-Instead, the library will have the capacity to visualize any DP algorithm,
-provided that the algorithm is implemented correctly.
+Dynamic programming (DP) is a fundamental and powerful algorithmic paradigm
+taught in most undergraduate (and many graduate) algorithms classes.
+DP problems are challenging for many computer science students because they
+require identifying unique problem structures and a refined understanding of
+recursion.
+Dpvis is a Python library that helps students understand DP through
+a frame-by-frame animation of dynamic programs.
+Dpvis can easily generate animations of dynamic programs with as little as two
+lines of modifications compared to a standard Python implementation.
 
-Our visualization library works with native Python implementations of DP.
+## Overview
 
-The library has three major features:
+The library has two major features:
 
 - Capability to illustrate step-by-step executions of the DP as it fills out
   the dynamic programming array. This includes visualization of pre-computations
@@ -23,16 +29,15 @@ The library has three major features:
   cells will be used to compute the result, which cell will the result be
   stored, and what is the value of the result.
 
-## Installation
+## Easy Installation
 
-dpvis support Python 3.9 and above. The vast majority of users can install
-dpvis by running:
+Dpvis support Python 3.9 and above. The vast majority of users can install dpvis by running:
 
 ```bash
 pip install dpvis
 ```
 
-You can test your installation by running one of our many demos.
+You can test your installation locally by running one of our many demos.
 
 ```bash
 python demos/knapsack.py
@@ -44,7 +49,7 @@ browser (make sure that the prefix is "http" rather than "https").
 
 ## Contributors
 
-dpvis is developed and maintained by
+Dpvis is developed and maintained by
 
 - Ramiro Deo-Campo Vuong
 - Eric Han

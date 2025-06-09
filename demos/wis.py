@@ -68,7 +68,7 @@ visualizer = Visualizer()
 visualizer.add_array(OPT, column_labels=column_labels, description=description)
 visualizer.add_array(p)
 
-app = visualizer.show()
+app = visualizer.create_app()
 server = app.server
 
 if __name__ == "__main__":
