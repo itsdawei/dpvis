@@ -7,7 +7,7 @@ for path in sorted(Path("dp").rglob("*.py")):
 
     parts = list(module_path.parts)
 
-    if parts[-1] == {"__init__",  "__main__"}:
+    if parts[-1] in {"__init__",  "__main__"}:
         continue
 
     identifier = ".".join(["dp"] + parts)
