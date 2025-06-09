@@ -15,6 +15,6 @@ Here are the current examples:
 
 You can also checkout the live demos for these examples:
 
-- [Weighted Interval Scheduling](https://wis.demos.davidhaolong.com)
+- [Weighted Interval Scheduling](../live_demos/wis.md)
 - [Knapsack](https://knapsack.demos.davidhaolong.com)
 - [Strange Printer](https://strange-printer.demos.davidhaolong.com)
