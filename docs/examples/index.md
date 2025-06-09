@@ -11,6 +11,8 @@ Here are the current examples:
 - [Edit Distance](edit_distance.md)
 - [Strange Printer](strange_printers.md)
 
+# Live Demos
+
 You can also checkout the live demos for these examples:
 
 - [Weighted Interval Scheduling](https://wis.demos.davidhaolong.com)
