@@ -1,3 +1,0 @@
-# `Visualizer`
-
-::: dp._visualizer

@@ -4,6 +4,7 @@
 
 ### Examples
 
+- Add strange pointer (LC 664) (#73)
 - Add edit distance (#49, #66, #71)
 - Add weighted interval scheduling (#53, #69)
 
@@ -57,6 +58,7 @@
 
 ### Documentation
 
+- Improve Getting Started (#72)
 - Update WIS with live demo (#76)
 - Semi-automatic live demo deployment to Google Cloud Run (#74, #75)
 - Show last edited time on page (#70)

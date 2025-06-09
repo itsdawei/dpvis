@@ -1,3 +1,0 @@
-# `Logger`
-
-::: dp._logger

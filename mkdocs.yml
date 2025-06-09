@@ -51,10 +51,9 @@ nav:
       - Knapsack: examples/knapsack.md
       - Weighted Interval Scheduling: examples/wis.ipynb
       - Edit Distance: examples/edit_distance.md
-  - API:
-      - DPArray: api/dp_array.md
-      - Logger: api/logger.md
-      - Visualizer: api/visualizer.md
+      - Strange Printer: examples/strange_printer.md
+  - Live Demos: demos/
+  - API: api/
 plugins:
   - mkdocs-jupyter:
       ignore: [".ipynb_checkpoints/*.ipynb"]
@@ -64,7 +63,8 @@ plugins:
   - search
   - gen-files:
       scripts:
-        - docs/gen_ref_pages.py
+        - docs/scripts/gen_ref_pages.py
+        - docs/scripts/gen_demo_pages.py
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -74,6 +74,7 @@ plugins:
             docstring_options:
               returns_named_value: false
   - git-revision-date-localized
+  - literate-nav
 markdown_extensions:
   - toc:
       permalink: "#"
