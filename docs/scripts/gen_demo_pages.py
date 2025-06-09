@@ -7,7 +7,7 @@ demos = {
 }
 
 index_lines = [
-    "# Live Demos\n", "These are interactive algorithm visualizations:\n"
+    "# Live Demos\n", "Try out these interactive examples:\n"
 ]
 
 for slug, url in demos.items():
