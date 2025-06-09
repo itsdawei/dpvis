@@ -12,5 +12,5 @@ Here are the current examples:
 
 You can also checkout the live demos for these examples:
 
-- [Weighted Interval Scheduling](wis.demos.davidhaolong.com)
-- [Knapsack](knapsack.demos.davidhaolong.com)
+- [Weighted Interval Scheduling](https://wis.demos.davidhaolong.com)
+- [Knapsack](https://knapsack.demos.davidhaolong.com)
