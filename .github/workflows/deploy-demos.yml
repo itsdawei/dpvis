@@ -47,7 +47,7 @@ jobs:
 
         PREVIEW="${{ github.event.inputs.preview }}"
         if [[ "$PREVIEW" == "true" ]]; then
-          DEPLOY_AS="${DEMO}-preview"
+          DEPLOY_AS="${DEPLOY_AS}-preview"
         fi
 
         IMAGE="${{ env.REPO }}/$DEPLOY_AS"
